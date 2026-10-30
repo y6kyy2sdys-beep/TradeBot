@@ -1,0 +1,56 @@
+name: Trading-Signale
+
+on:
+  schedule:
+    - cron: "30 7 * * 1-5"   # nach Börsenschluss Asien (Tokio/Hongkong) + Krypto
+    - cron: "50 16 * * 1-5"  # nach Börsenschluss Europa
+    - cron: "20 21 * * 1-5"  # nach Börsenschluss USA + Tagesbericht
+    - cron: "15 9 * * 0,6"   # Wochenende: Krypto
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "scan, report oder test"
+        default: "test"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: signals
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Bot ausführen
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          BUDGET_EUR: ${{ vars.BUDGET_EUR || '100' }}
+          FEE_PER_ORDER_EUR: ${{ vars.FEE_PER_ORDER_EUR || '1' }}
+          MIN_HIT_RATE: ${{ vars.MIN_HIT_RATE || '0.70' }}
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          if [ "$MODE" = "test" ]; then
+            python -m bot.main --test
+          elif [ "$MODE" = "report" ] || [ "${{ github.event.schedule }}" = "20 21 * * 1-5" ]; then
+            python -m bot.main --report
+          else
+            python -m bot.main
+          fi
+
+      - name: Signal-Verlauf speichern
+        run: |
+          git config user.name "signal-bot"
+          git config user.email "signal-bot@users.noreply.github.com"
+          git add state/signals.json
+          git diff --cached --quiet || (git commit -m "Signal-Verlauf aktualisiert" && git push)
