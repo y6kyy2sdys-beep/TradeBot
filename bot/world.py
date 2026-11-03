@@ -87,7 +87,8 @@ def fetch_leaders() -> dict[str, list[dict]]:
     """Aktuelles Staatsoberhaupt und Regierungschef je Land (Wikidata, mit Foto von Wikimedia Commons)."""
     query = """
 SELECT ?iso ?role ?person ?personLabel ?img WHERE {
-  ?c wdt:P31 wd:Q3624078; wdt:P298 ?iso.
+  VALUES ?type { wd:Q3624078 wd:Q6256 }
+  ?c wdt:P31 ?type; wdt:P298 ?iso.
   { ?c wdt:P35 ?person. BIND("Staatsoberhaupt" AS ?role) } UNION { ?c wdt:P6 ?person. BIND("Regierungschef" AS ?role) }
   OPTIONAL { ?person wdt:P18 ?img. }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
