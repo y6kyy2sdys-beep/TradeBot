@@ -25,6 +25,9 @@ class Alert:
     winners: list[str] = field(default_factory=list)
     losers: list[str] = field(default_factory=list)
     horizon: str = ""
+    germany: list[str] = field(default_factory=list)  # Folgen für Deutschland
+    reasons: list[str] = field(default_factory=list)  # mögliche Ursachen (Schlagzeilen oder KI)
+    explained: bool = False  # True, wenn die Gründe per KI recherchiert wurden
 
 
 # ---------------------------------------------------------------- Kennzahlen
@@ -141,7 +144,44 @@ MOVE_PLAYBOOK = {
 }
 
 
-def move_alerts(mv: dict[str, dict]) -> list[Alert]:
+# Folgen für Deutschland je Instrument und Richtung
+GERMANY = {
+    ("BZ=F", "up"): ["Benzin, Diesel und Heizöl werden teurer – Inflation in Deutschland steigt", "Belastung für Chemie (BASF), Logistik, Airlines (Lufthansa)", "EZB kann Zinsen schwerer senken"],
+    ("BZ=F", "down"): ["Tanken und Heizen werden günstiger – mehr Kaufkraft für Verbraucher", "Inflation in Deutschland sinkt, mehr Spielraum für EZB-Zinssenkungen", "Entlastung für energieintensive Industrie (Chemie, Stahl) und Lufthansa"],
+    ("TTF=F", "up"): ["Gas- und Strompreise für Haushalte und Industrie steigen", "Energieintensive Industrie (BASF, Stahl, Glas) verliert Wettbewerbsfähigkeit", "Rezessionsrisiko für Deutschland steigt"],
+    ("TTF=F", "down"): ["Entlastung bei Gas- und Stromrechnungen", "Positiv für Chemie und Industrie, stützt die Konjunktur"],
+    ("NG=F", "up"): ["Indirekt: US-LNG für Europa wird teurer"],
+    ("^TNX", "up"): ["Steigende US-Zinsen ziehen oft auch Bund-Renditen hoch – Baufinanzierung teurer", "Druck auf Tech- und Wachstumswerte, auch im DAX (SAP)"],
+    ("^TNX", "down"): ["Bauzinsen können sinken", "Rückenwind für Wachstumswerte und Immobilien (Vonovia)"],
+    ("DX-Y.NYB", "up"): ["Euro schwächer: Importe (Öl in Dollar) teurer, Exporteure profitieren", "US-Aktien bringen deutschen Anlegern Währungsgewinne"],
+    ("DX-Y.NYB", "down"): ["Euro stärker: Urlaub und Importe günstiger, Exporteure (Autos, Maschinen) unter Druck", "US-Aktien verlieren für deutsche Anleger durch den Wechselkurs"],
+    ("USDJPY=X", "down"): ["Weltweite Verkaufswellen können auch den DAX treffen"],
+    ("GC=F", "up"): ["Zeichen erhöhter Unsicherheit – Gold als Absicherung im Depot gefragt"],
+    ("HG=F", "up"): ["Gutes Zeichen für die Weltkonjunktur und deutsche Exporteure"],
+    ("HG=F", "down"): ["Warnsignal für China-Nachfrage – Risiko für deutsche Autobauer und Maschinenbauer"],
+    ("ZW=F", "up"): ["Lebensmittelpreise können steigen"],
+}
+# Stichworte, um passende Schlagzeilen als mögliche Ursache zu finden
+RELATED = {
+    "BZ=F": ("oil", "öl", "opec", "brent", "crude", "iran", "saudi", "barrel", "barrel"),
+    "CL=F": ("oil", "öl", "opec", "wti", "crude"),
+    "TTF=F": ("gas", "lng", "pipeline", "gazprom", "norway", "norwegen"),
+    "NG=F": ("gas", "lng"),
+    "^TNX": ("fed", "treasury", "yield", "rendite", "inflation", "powell", "zins"),
+    "DX-Y.NYB": ("dollar", "fed", "euro", "ezb", "ecb"),
+    "USDJPY=X": ("yen", "bank of japan", "boj"),
+    "GC=F": ("gold",),
+    "HG=F": ("copper", "kupfer", "china"),
+    "ZW=F": ("wheat", "weizen", "grain", "getreide"),
+}
+
+
+def related_headlines(sym: str, heads: list[str], limit: int = 3) -> list[str]:
+    words = RELATED.get(sym, ())
+    return [h for h in heads if any(w in h.lower() for w in words)][:limit]
+
+
+def move_alerts(mv: dict[str, dict], heads: list[str] = ()) -> list[Alert]:
     alerts = []
     for sym, (threshold, up, down) in MOVE_PLAYBOOK.items():
         m = mv.get(sym)
@@ -153,6 +193,7 @@ def move_alerts(mv: dict[str, dict]) -> list[Alert]:
         if not big or book is None:
             continue
         label = MACRO.get(sym, sym)
+        direction = "up" if d1 > 0 else "down"
         alerts.append(Alert(
             key=f"move:{sym}:{'up' if d1 > 0 else 'down'}",
             kind="macro",
@@ -163,6 +204,8 @@ def move_alerts(mv: dict[str, dict]) -> list[Alert]:
             ],
             chain=book["chain"], winners=book["winners"], losers=book["losers"],
             horizon="Tage bis Wochen – bestätigt sich der Trend, wirken die Folgen länger.",
+            germany=GERMANY.get((sym, direction), []),
+            reasons=related_headlines(sym, list(heads)),
         ))
     return alerts
 
@@ -206,6 +249,7 @@ FEEDS = [
     ("Börse OR Weltwirtschaft OR Notenbank OR Zölle when:1d", "de", "DE"),
     ("geopolitics OR oil OR Fed OR tariffs OR sanctions when:1d", "en", "US"),
     ("Iran OR Israel OR Taiwan OR Ukraine OR OPEC when:1d", "en", "US"),
+    ("war OR military OR sanctions OR missile OR coup when:1d", "en", "US"),
 ]
 
 
@@ -307,6 +351,18 @@ SCENARIOS = [
 ]
 
 
+SCENARIO_GERMANY = {
+    "iran": ["Höhere Energiepreise treiben die Inflation", "Chemie, Logistik und Lufthansa unter Druck; Rheinmetall gefragt"],
+    "taiwan": ["Chipmangel träfe Autobauer und Maschinenbau (wie 2021)", "Infineon und SAP schwanken mit dem Tech-Sektor"],
+    "russia": ["Gaspreise und Rüstungsausgaben im Fokus", "Bei Frieden: Entlastung für Industrie und Chemie"],
+    "tariffs": ["Exportland Deutschland besonders betroffen: Autos, Maschinen, Chemie", "Gefahr für Arbeitsplätze in der Industrie"],
+    "opec": ["Spritpreise und Inflation folgen dem Ölpreis"],
+    "fed": ["Die EZB folgt der Fed oft mit Verzögerung – wichtig für Bauzinsen und Sparzinsen"],
+    "banks": ["Deutsche Bank und Commerzbank reagieren mit, Sparer sind durch Einlagensicherung geschützt"],
+    "usfiscal": ["Unsicherheit am Weltmarkt, Dollar-Schwankungen treffen Exporteure"],
+}
+
+
 def scenario_alerts(heads: list[str], mv: dict[str, dict]) -> list[Alert]:
     low = [h.lower() for h in heads]
     out = []
@@ -326,5 +382,6 @@ def scenario_alerts(heads: list[str], mv: dict[str, dict]) -> list[Alert]:
             sym, _ = sc.confirm
             facts.append(f"Markt bestätigt: {MACRO.get(sym, sym)} {mv[sym]['d1']:+.1%} heute")
         out.append(Alert(f"scenario:{sc.key}", "macro", f"Szenario: {sc.title}", facts,
-                         list(sc.chain), list(sc.winners), list(sc.losers), sc.horizon))
+                         list(sc.chain), list(sc.winners), list(sc.losers), sc.horizon,
+                         germany=SCENARIO_GERMANY.get(sc.key, []), reasons=hits[:3]))
     return out

@@ -9,9 +9,11 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
+from . import sectors as sector_mod
 from .macro import SCENARIOS
 from .strategies import rsi
 from .watchlist import STOCKS_ASIA, STOCKS_EU, STOCKS_US
+from .wkn import name as display_name, search_url, wkn
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data.js"
 HISTORY = "10y"
@@ -109,15 +111,33 @@ def hot_picks(sector_closes: pd.DataFrame, stock_data: dict[str, pd.DataFrame]) 
     sectors = []
     for t, name in SECTORS.items():
         if t in sector_closes and (m := momentum(sector_closes[t])) and m["score"] is not None:
-            sectors.append({"ticker": t, "name": name, **m, "reason": _reason(m)})
+            sectors.append({"ticker": t, "name": name, **m, "reason": _reason(m), "wkn": "",
+                            "search": search_url(f"{name} ETF UCITS")})
     stocks = []
     for t in STOCKS_US + STOCKS_EU + STOCKS_ASIA:
         df = stock_data.get(t)
         if df is not None and (m := momentum(df["Close"])) and m["score"] is not None:
-            stocks.append({"ticker": t, "name": t, **m, "reason": _reason(m)})
+            nm = display_name(t)
+            stocks.append({"ticker": t, "name": nm, **m, "reason": _reason(m), "wkn": wkn(t), "search": search_url(nm)})
     sectors.sort(key=lambda x: x["score"], reverse=True)
     stocks.sort(key=lambda x: x["score"], reverse=True)
     return {"sectors": sectors[:6], "stocks": stocks[:8]}
+
+
+def sector_cards(closes: pd.DataFrame, analysis: dict | None) -> list[dict]:
+    outlook = {b["branche"]: b for b in (analysis or {}).get("branchen_ausblick", [])}
+    out = []
+    for key, name, etf, icon, query in sector_mod.SECTORS:
+        m = momentum(closes[etf]) if etf in closes else None
+        c = closes[etf].dropna() if etf in closes else None
+        out.append({
+            "key": key, "name": name, "etf": etf, "icon": icon,
+            "d1": _round(c.iat[-1] / c.iat[-2] - 1) if c is not None and len(c) > 2 else None,
+            "m1": m and m["m1"], "m3": m and m["m3"], "m6": m and m["m6"], "trend": bool(m and m["trend"]),
+            "news": sector_mod.sector_news(query),
+            "ki": outlook.get(key),
+        })
+    return out
 
 
 def export(stock_data: dict[str, pd.DataFrame], news_items: list[dict], state: dict, regime: str) -> None:
@@ -146,10 +166,13 @@ def export(stock_data: dict[str, pd.DataFrame], news_items: list[dict], state: d
         "picks": {
             **hot_picks(closes, stock_data),
             "positions": [
-                {k: s.get(k) for k in ("ticker", "name", "strategy", "signal_date", "ref_close", "target", "stop", "horizon")}
+                {**{k: s.get(k) for k in ("ticker", "name", "strategy", "signal_date", "ref_close", "target", "stop",
+                                          "horizon", "branche", "these", "warum_jetzt", "szenarien", "ev_pct", "risiken")},
+                 "wkn": s.get("wkn") or wkn(s["ticker"]), "search": search_url(s.get("name") or s["ticker"])}
                 for s in state["open"]
             ],
         },
+        "sectors": sector_cards(closes, state.get("last_analysis")),
         "alerts": state.get("alert_log", [])[-30:][::-1],
         "record": {
             "closed": len(state["closed"]),

@@ -167,6 +167,61 @@ table.data th { color: var(--muted); font-weight: normal; }
 .log div { padding: 4px 0; border-bottom: 1px dotted var(--line); }
 .log time { color: var(--muted); margin-right: 10px; }
 
+/* ---------- Weltkarte ---------- */
+.world { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 980px) { .world { grid-template-columns: 1fr; } }
+#worldMap { position: relative; }
+#worldMap svg { width: 100%; height: auto; display: block; }
+.cty { stroke: #000; stroke-width: .7; cursor: pointer; transition: opacity .15s; }
+.cty:hover { stroke: var(--matrix); stroke-width: 1.2; }
+.cty.sel { stroke: #fff; stroke-width: 1.4; }
+.cty.hot { animation: hot 1.6s ease-in-out infinite; }
+@keyframes hot { 50% { stroke: #ff9b7f; stroke-width: 1.6; } }
+.grat { fill: none; stroke: var(--grid); stroke-width: .5; }
+.maplegend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); margin-top: 6px; align-items: center; }
+.maplegend i { display: inline-block; width: 14px; height: 10px; margin-right: 5px; vertical-align: -1px; border-radius: 2px; }
+.yearbox { display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; font-size: 13px; color: var(--muted); }
+.yearbox input[type=range] { flex: 1; accent-color: #00ff41; }
+.yearbox b { color: var(--matrix); font-size: 22px; min-width: 56px; text-shadow: 0 0 8px rgba(0,255,65,.6); }
+.yearbox .fc { font-size: 11px; border: 1px solid var(--warn); color: var(--warn); padding: 0 6px; }
+#bars svg { width: 100%; height: auto; display: block; }
+#bars rect { cursor: pointer; }
+#bars text { font-family: var(--font); fill: var(--muted); font-size: 11px; }
+#bars text.v { fill: var(--text); }
+.detail { border: 1px solid var(--line); padding: 10px 12px; margin-top: 10px; background: rgba(0,0,0,.4); font-size: 13px; }
+.detail h3 { margin: 0 0 6px; color: var(--matrix); font-weight: normal; letter-spacing: .1em; font-size: 15px; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; }
+.kv span:nth-child(odd) { color: var(--muted); }
+.esc { display: inline-block; padding: 0 7px; border-radius: 3px; color: #000; font-size: 12px; }
+.outlook { margin-top: 12px; font-size: 13px; border-left: 2px solid var(--warn); padding: 4px 10px; }
+.outlook .muted { font-size: 12px; }
+
+/* ---------- Branchen ---------- */
+.sectors { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.sector { border: 1px solid var(--line); background: rgba(0,0,0,.4); display: flex; flex-direction: column; transition: border-color .15s, box-shadow .15s; }
+.sector:hover { border-color: var(--matrix); box-shadow: 0 0 18px rgba(0,255,65,.18); }
+.sector .art { height: 120px; background: #000; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+.sector .art svg { width: 100%; height: 100%; display: block; }
+.sector .art .lbl { position: absolute; left: 10px; bottom: 6px; color: var(--matrix); letter-spacing: .14em; font-size: 13px; text-shadow: 0 0 8px #000, 0 0 6px rgba(0,255,65,.8); }
+.sector .body { padding: 8px 10px 10px; font-size: 13px; }
+.sector .perf { display: flex; gap: 12px; margin-bottom: 6px; }
+.sector .ki { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.sector ul { list-style: none; margin: 0; padding: 0; }
+.sector li { padding: 4px 0; border-top: 1px dotted var(--line); }
+.sector li a { color: var(--text); text-decoration: none; }
+.sector li a:hover { color: var(--matrix); }
+.sector li small { display: block; color: var(--muted); }
+.ob { font-size: 11px; padding: 0 6px; border: 1px solid; margin-right: 6px; }
+.ob.positiv { color: var(--up); } .ob.negativ { color: var(--down); } .ob.neutral { color: var(--muted); }
+
+/* ---------- Calls ---------- */
+.wkn { grid-column: 2 / 4; font-size: 12px; color: var(--text); }
+.wkn a { color: var(--matrix); }
+.call { grid-column: 1 / 4; font-size: 12px; color: var(--muted); border-top: 1px dotted var(--line); padding-top: 6px; margin-top: 2px; }
+.call b { color: var(--text); font-weight: normal; }
+.scen { display: flex; height: 8px; margin: 6px 0 2px; gap: 2px; }
+.scen span { display: block; height: 100%; }
+
 footer { margin-top: 22px; font-size: 12px; color: var(--muted); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -236,12 +291,42 @@ footer { margin-top: 22px; font-size: 12px; color: var(--muted); text-align: cen
   </section>
 
   <section class="panel" aria-labelledby="h-picks">
-    <h2 id="h-picks">// Hot-Picks<span class="sub">Stärkster Trend + KI-Ideen · keine Garantie, keine Anlageberatung</span></h2>
+    <h2 id="h-picks">// Hot-Picks<span class="sub">Stärkster Trend + KI-Calls mit WKN · keine Garantie, keine Anlageberatung</span></h2>
     <div class="picks">
       <div><h3>BRANCHEN</h3><div id="pSectors"></div></div>
       <div><h3>UNTERNEHMEN</h3><div id="pStocks"></div></div>
-      <div><h3>AKTIVE SIGNALE &amp; KI-IDEEN</h3><div id="pPositions"></div></div>
+      <div><h3>AKTIVE CALLS &amp; SIGNALE</h3><div id="pPositions"></div></div>
     </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-world">
+    <h2 id="h-world">// Weltlage<span class="sub">Eskalation, Wirtschaft &amp; Inflation · Land anklicken für Details · Szenarien bis 2050</span></h2>
+    <div class="controls">
+      <span class="seg" role="group" aria-label="Kartenmodus" id="mapMode"></span>
+      <span class="seg" role="group" aria-label="Szenario" id="mapScen"></span>
+    </div>
+    <div class="yearbox" id="yearBox">
+      <button type="button" class="tbtn" id="yearPlay" aria-label="Jahre abspielen">▶</button>
+      <b id="yearVal">2026</b>
+      <input type="range" id="year" min="2000" max="2050" step="1" aria-label="Jahr">
+      <span class="fc" id="yearTag" hidden>SZENARIO</span>
+    </div>
+    <div class="world">
+      <div>
+        <div id="worldMap"><div class="tip" id="mapTip"></div></div>
+        <div class="maplegend" id="mapLegend"></div>
+        <div class="outlook" id="outlook"></div>
+      </div>
+      <div>
+        <div id="bars"></div>
+        <div class="detail" id="detail"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-sec">
+    <h2 id="h-sec">// Branchen<span class="sub">Branchen-Barometer mit den neuesten Meldungen</span></h2>
+    <div class="sectors" id="sectors"></div>
   </section>
 
   <section class="panel" aria-labelledby="h-com">
@@ -261,7 +346,11 @@ footer { margin-top: 22px; font-size: 12px; color: var(--muted); text-align: cen
 </div>
 
 <script src="vendor/uPlot.iife.min.js"></script>
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="vendor/world-geo.js"></script>
 <script src="data.js"></script>
+<script src="world.js"></script>
 <script>
 (() => {
 "use strict";
@@ -614,18 +703,78 @@ function renderComCards() {
 /* ================= Hot-Picks ================= */
 (function picks() {
   const P = D.picks;
-  const row = (rank, name, ticker, right, why, badge = "") => `<div class="pick"><div class="rk">${rank}</div>
-    <div class="nm">${esc(name)}${name !== ticker ? `<small>${esc(ticker)}</small>` : ""}${badge}</div><div class="rt">${right}</div><div class="why">${esc(why)}</div></div>`;
+  const row = (rank, p, right, why, extra = "", badge = "") => `<div class="pick"><div class="rk">${rank}</div>
+    <div class="nm">${esc(p.name || p.ticker)}${(p.name || p.ticker) !== p.ticker ? `<small>${esc(p.ticker)}</small>` : ""}${badge}</div><div class="rt">${right}</div>
+    <div class="wkn">${extra}</div><div class="why">${esc(why)}</div></div>`;
   const perf = p => `<span class="${cls(p.m3)}">3M ${p.m3 > 0 ? "+" : ""}${nf(p.m3 * 100, 0)}%</span><br><span class="${cls(p.m6)}">6M ${p.m6 > 0 ? "+" : ""}${nf(p.m6 * 100, 0)}%</span>`;
   const none = '<div class="empty">Aktuell erfüllt kein Wert die Trendkriterien.</div>';
-  document.getElementById("pSectors").innerHTML = P.sectors.map((p, i) => row(i + 1, p.name, p.ticker, perf(p), p.reason)).join("") || none;
-  document.getElementById("pStocks").innerHTML = P.stocks.map((p, i) => row(i + 1, p.name, p.ticker, perf(p), p.reason)).join("") || none;
+  document.getElementById("pSectors").innerHTML = P.sectors.map((p, i) => row(i + 1, p, perf(p), p.reason,
+    `US-ETF ${esc(p.ticker)} (in der EU meist nicht kaufbar) · <a href="${esc(p.search)}" target="_blank" rel="noopener noreferrer">UCITS-Alternative suchen ↗</a>`)).join("") || none;
+  document.getElementById("pStocks").innerHTML = P.stocks.map((p, i) => row(i + 1, p, perf(p), p.reason,
+    p.wkn ? `WKN <b>${esc(p.wkn)}</b>` : `<a href="${esc(p.search)}" target="_blank" rel="noopener noreferrer">WKN suchen ↗</a>`)).join("") || none;
+  const scen = sc => {
+    if (!sc) return "";
+    const parts = [["bull", "var(--up)"], ["basis", "var(--s1)"], ["bear", "var(--down)"]];
+    return `<div class="scen" aria-hidden="true">${parts.map(([k, c]) => `<span style="flex:${sc[k].wahrscheinlichkeit_prozent};background:${c}"></span>`).join("")}</div>` +
+      parts.map(([k]) => `${k[0].toUpperCase() + k.slice(1)} <b>${sc[k].kursziel_prozent > 0 ? "+" : ""}${nf(sc[k].kursziel_prozent, 0)} %</b> (${nf(sc[k].wahrscheinlichkeit_prozent, 0)} %)`).join(" · ");
+  };
   document.getElementById("pPositions").innerHTML = P.positions.map((p, i) => {
     const up = p.target / p.ref_close - 1, dn = p.stop / p.ref_close - 1;
-    return row(i + 1, p.name || p.ticker, p.ticker, `<span class="up">Ziel ${nf(up * 100, 0)}%</span><br><span class="down">Stop ${nf(dn * 100, 0)}%</span>`,
-      `seit ${p.signal_date}${p.horizon ? " · Horizont " + p.horizon : ""} · Einstieg bis ${nf(p.ref_close * 1.01)}`,
-      `<span class="badge">${p.strategy === "ki" ? "KI-IDEE" : "SWING"}</span>`);
-  }).join("") || '<div class="empty">Keine offenen Signale. Neue Kaufideen erscheinen hier und per Telegram.</div>';
+    const call = p.strategy === "ki" ? `<div class="call">${p.branche ? `<b>${esc(p.branche)}</b> · ` : ""}Horizont <b>${esc(p.horizon || "")}</b>${p.ev_pct != null ? ` · Erwartungswert <b class="${cls(p.ev_pct)}">${p.ev_pct > 0 ? "+" : ""}${nf(p.ev_pct, 1)} %</b>` : ""}
+      ${p.these ? `<p><b>These:</b> ${esc(p.these)}</p>` : ""}${p.warum_jetzt ? `<p><b>Warum jetzt:</b> ${esc(p.warum_jetzt)}</p>` : ""}
+      ${scen(p.szenarien)}${p.risiken && p.risiken.length ? `<p><b>Risiken:</b> ${esc(p.risiken.join(" · "))}</p>` : ""}</div>` : "";
+    return row(i + 1, p, `<span class="up">Ziel +${nf(up * 100, 0)}%</span><br><span class="down">Stop ${nf(dn * 100, 0)}%</span>`,
+      `seit ${p.signal_date} · Einstieg bis ${nf(p.ref_close * 1.01)}`,
+      (p.wkn ? `WKN <b>${esc(p.wkn)}</b>` : `<a href="${esc(p.search)}" target="_blank" rel="noopener noreferrer">WKN suchen ↗</a>`) + call,
+      `<span class="badge">${p.strategy === "ki" ? "KI-CALL" : "SWING"}</span>`);
+  }).join("") || '<div class="empty">Keine offenen Calls. Neue Calls erscheinen hier und per Telegram – nur mit hoher Überzeugung.</div>';
+})();
+
+/* ================= Branchen ================= */
+(function sectors() {
+  const ICONS = {
+    dna: "M40 4 C40 24 80 24 80 44 C80 64 40 64 40 84 M80 4 C80 24 40 24 40 44 C40 64 80 64 80 84 M42 10 H78 M46 34 H74 M41 44 H79 M46 54 H74 M42 78 H78",
+    code: "M45 25 L25 45 L45 65 M75 25 L95 45 L75 65 M66 16 L54 74",
+    chip: "M35 20 H85 V70 H35 Z M48 33 H72 V57 H48 Z M45 20 V8 M60 20 V8 M75 20 V8 M45 70 V82 M60 70 V82 M75 70 V82 M35 32 H23 M35 45 H23 M35 58 H23 M85 32 H97 M85 45 H97 M85 58 H97",
+    bank: "M20 32 L60 10 L100 32 Z M30 38 V70 M45 38 V70 M60 38 V70 M75 38 V70 M90 38 V70 M18 76 H102 M14 84 H106",
+    drop: "M60 8 C60 8 30 45 30 60 A30 30 0 0 0 90 60 C90 45 60 8 60 8 Z M46 60 A14 14 0 0 0 60 74",
+    gear: "M60 25 A20 20 0 1 1 59.9 25 Z M60 37 A8 8 0 1 1 59.9 37 Z M60 8 V20 M60 70 V82 M23 45 H35 M85 45 H97 M34 19 L42 27 M78 63 L86 71 M86 19 L78 27 M42 63 L34 71",
+    shield: "M60 8 L95 20 V45 C95 65 80 78 60 86 C40 78 25 65 25 45 V20 Z M44 46 L56 58 L78 34",
+    cart: "M12 18 H26 L36 60 H88 L98 30 H30 M44 74 A6 6 0 1 1 43.9 74 M80 74 A6 6 0 1 1 79.9 74",
+    bolt: "M68 6 L34 50 H58 L50 86 L88 38 H64 Z",
+    building: "M30 85 V15 H70 V85 M70 40 H95 V85 M20 85 H102 M40 25 H48 M52 25 H60 M40 38 H48 M52 38 H60 M40 51 H48 M52 51 H60 M40 64 H48 M52 64 H60 M78 50 H87 M78 63 H87",
+    cube: "M60 8 L95 26 V64 L60 82 L25 64 V26 Z M25 26 L60 44 L95 26 M60 44 V82",
+    antenna: "M60 40 V86 M45 86 H75 M60 40 L48 86 M60 40 L72 86 M50 30 A14 14 0 0 1 70 30 M40 22 A28 28 0 0 1 80 22 M30 14 A42 42 0 0 1 90 14",
+  };
+  const digits = (cols, rows, size, seed) => { let t = "", r = seed;
+    for (let c = 0; c < cols; c++) for (let k = 0; k < rows; k++) { r = (r * 9301 + 49297) % 233280;
+      t += `<text x="${c * size + 1}" y="${(k + 1) * size}" opacity="${(0.35 + (r / 233280) * 0.65).toFixed(2)}">${r % 2}</text>`; } return t; };
+  const art = (s, i) => `<svg viewBox="0 0 240 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(s.name)}">
+    <defs>
+      <pattern id="bg-${s.key}" width="40" height="60" patternUnits="userSpaceOnUse">
+        <g fill="#00ff41" font-size="8" font-family="Share Tech Mono, monospace">${digits(5, 6, 8, 7 + i)}</g>
+        ${reduced ? "" : `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="0 60" dur="${5 + i % 4}s" repeatCount="indefinite"/>`}
+      </pattern>
+      <pattern id="fg-${s.key}" width="24" height="24" patternUnits="userSpaceOnUse">
+        <g fill="#b6ffc6" font-size="7" font-family="Share Tech Mono, monospace">${digits(4, 3, 6, 99 + i)}</g>
+        ${reduced ? "" : `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="0 24" dur="2.4s" repeatCount="indefinite"/>`}
+      </pattern>
+      <filter id="gl-${s.key}"><feGaussianBlur stdDeviation="3"/></filter>
+    </defs>
+    <rect x="-400" y="-20" width="1040" height="160" fill="url(#bg-${s.key})" opacity=".18"/>
+    <g transform="translate(69 8) scale(.85)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="${ICONS[s.icon]}" stroke="#00ff41" stroke-width="7" opacity=".45" filter="url(#gl-${s.key})"/>
+      <path d="${ICONS[s.icon]}" stroke="url(#fg-${s.key})" stroke-width="6"/>
+      <path d="${ICONS[s.icon]}" stroke="#00ff41" stroke-width="1.2" opacity=".9"/>
+    </g></svg><span class="lbl">${esc(s.name.toUpperCase())}</span>`;
+  const p = (v, l) => v == null ? "" : `<span class="${cls(v)}">${l} ${v > 0 ? "+" : ""}${nf(v * 100, 1)}%</span>`;
+  document.getElementById("sectors").innerHTML = (D.sectors || []).map((s, i) => `<article class="sector">
+    <div class="art">${art(s, i)}</div>
+    <div class="body">
+      <div class="perf">${p(s.d1, "1T")}${p(s.m1, "1M")}${p(s.m3, "3M")}<span class="muted">${s.trend ? "▲ Trend intakt" : "▼ kein Aufwärtstrend"}</span></div>
+      ${s.ki ? `<div class="ki"><span class="ob ${esc(s.ki.ausblick)}">KI: ${esc(s.ki.ausblick)}</span>${esc(s.ki.begruendung)}</div>` : ""}
+      <ul>${s.news.map(n => `<li><a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a><small>${esc(n.source)} · ${esc(relTime(n.time))}</small></li>`).join("") || '<li class="muted">Keine neuen Meldungen.</li>'}</ul>
+    </div></article>`).join("") || '<div class="empty">Branchendaten folgen beim nächsten Lauf.</div>';
 })();
 
 /* ================= Protokoll ================= */
@@ -635,6 +784,208 @@ function renderComCards() {
     || '<div class="muted">Noch keine Meldungen.</div>';
   const r = D.record;
   document.getElementById("record").textContent = r.closed ? `Live-Bilanz: ${r.wins}/${r.closed} Treffer` : "Live-Bilanz: noch keine abgeschlossenen Signale";
+})();
+
+/* ================= Weltkarte ================= */
+(function worldMap() {
+  const W = window.WORLD, box = document.getElementById("worldMap");
+  if (!W || !window.d3 || !window.topojson || !window.WORLD_TOPO) {
+    box.innerHTML = '<div class="empty">Weltdaten folgen beim nächsten Lauf des Bots.</div>'; return;
+  }
+  const YRS = []; for (let y = 2000; y <= 2050; y++) YRS.push(y);
+  const NOW = new Date().getFullYear();
+  const SHORT = { USA: "USA", GBR: "Großbritannien", RUS: "Russland", KOR: "Südkorea", PRK: "Nordkorea", CHN: "China", DEU: "Deutschland",
+    IRN: "Iran", TWN: "Taiwan", VEN: "Venezuela", SYR: "Syrien", COD: "Kongo (DR)", BOL: "Bolivien", TZA: "Tansania" };
+  const NAME = {}; Object.values(window.ISO_NUM).forEach(([a3, n]) => NAME[a3] = n);
+  const nameOf = iso => SHORT[iso] || NAME[iso] || iso;
+  const ind = (code, iso) => (W.indicators[code] || {})[iso];
+  const latestReal = (code, iso) => { const v = ind(code, iso); if (!v) return null;
+    for (let i = W.years.indexOf(Math.min(NOW, W.years[W.years.length - 1])); i >= 0; i--) if (v[i] != null) return { v: v[i], y: W.years[i] }; return null; };
+  const lastIdx = arr => { let L = -1; arr.forEach((v, i) => { if (v != null) L = i; }); return L; };
+  const lastImfYear = (() => { const v = ind("NGDP_RPCH", "USA"); return v ? W.years[lastIdx(v)] : 2030; })();
+  const SCEN = { basis: "Basis", stagnation: "Stagnation", dystopie: "Dystopie" };
+  const cache = {};
+  function proj(code, iso, scen) {   // IMF-Werte bis ~2030, danach transparentes Szenario-Modell
+    const key = code + iso + scen; if (cache[key]) return cache[key];
+    const raw = ind(code, iso); if (!raw) return null;
+    const out = YRS.map(y => { const i = W.years.indexOf(y); return i >= 0 ? raw[i] : null; });
+    const L = lastIdx(out); if (L < 0) return out;
+    const recent = out.slice(Math.max(0, L - 2), L + 1).filter(v => v != null);
+    const gL = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const ppp = latestReal("PPPPC", iso), adv = ppp && ppp.v > 40000;
+    for (let i = L + 1; i < out.length; i++) {
+      const y = YRS[i], t = (i - L) / (out.length - 1 - L);
+      if (code === "NGDP_RPCH") {
+        const lr = adv ? 1.2 : Math.min(4.5, Math.max(1.5, gL * 0.6));
+        let g = gL + (lr - gL) * t;
+        if (scen === "stagnation") g -= 1.2;
+        if (scen === "dystopie") { g -= 2; if (y === 2033) g = adv ? -4 : -6; if (y === 2034) g = -1.5; if (y === 2041) g = -3; }
+        out[i] = g;
+      } else if (code === "PCPIPCH") {
+        const lr = adv ? 2 : 4; let v = gL + (lr - gL) * t;
+        if (scen === "stagnation") v += 1.5;
+        if (scen === "dystopie") v = y < 2033 ? v + 1 : y === 2033 ? 12 : Math.max(5, 12 - (y - 2033) * 0.6);
+        out[i] = v;
+      } else out[i] = null;
+    }
+    return cache[key] = out;
+  }
+  function gdpIndex(iso, scen) {     // reales BIP, 2025 = 100
+    const g = proj("NGDP_RPCH", iso, scen); if (!g) return null;
+    const out = YRS.map(() => null), b = YRS.indexOf(2025); out[b] = 100;
+    for (let i = b + 1; i < YRS.length; i++) out[i] = g[i] == null || out[i - 1] == null ? null : out[i - 1] * (1 + g[i] / 100);
+    for (let i = b - 1; i >= 0; i--) out[i] = g[i + 1] == null || out[i + 1] == null ? null : out[i + 1] / (1 + g[i + 1] / 100);
+    return out;
+  }
+  // ---- Farben (Eskalation: einfarbig ordinal · Wachstum: divergierend blau/rot · Inflation: einfarbig sequenziell)
+  const ESC = ["#1d2b22", "#92361f", "#c74726", "#f6623d", "#ff9b7f"];
+  const ESC_TXT = ["ruhig", "Spannungen", "ernste Krise", "bewaffneter Konflikt", "Krieg mit globaler Wirkung"];
+  const NODATA = "#0d1a12";
+  const growthColor = v => v == null ? NODATA : v <= -3 ? "#e66767" : v <= -1 ? "#a34a4a" : v < 1 ? "#383835" : v < 3 ? "#1c5cab" : "#3987e5";
+  const inflColor = v => v == null ? NODATA : v < 2 ? "#184f95" : v < 4 ? "#2a78d6" : v < 8 ? "#5598e7" : "#86b6ef";
+  const MODES = { esc: "ESKALATION", gdp: "WIRTSCHAFT", infl: "INFLATION" };
+  const ui = { mode: store.get("mapMode") || "esc", scen: store.get("mapScen") || "basis", year: Math.min(2050, NOW), sel: "DEU" };
+  if (!MODES[ui.mode]) ui.mode = "esc"; if (!SCEN[ui.scen]) ui.scen = "basis";
+  const value = iso => {
+    if (ui.mode === "esc") return (W.escalation[iso] || {}).stufe ?? 0;
+    const a = proj(ui.mode === "gdp" ? "NGDP_RPCH" : "PCPIPCH", iso, ui.scen);
+    return a ? a[YRS.indexOf(ui.year)] : null;
+  };
+  const color = iso => ui.mode === "esc" ? ESC[value(iso)] : ui.mode === "gdp" ? growthColor(value(iso)) : inflColor(value(iso));
+  const fmtV = (iso, v = value(iso)) => v == null ? "keine Daten" : ui.mode === "esc" ? `Stufe ${v} – ${ESC_TXT[v]}` : `${v > 0 && ui.mode === "gdp" ? "+" : ""}${nf(v, 1)} %`;
+
+  // ---- Karte
+  const feats = topojson.feature(WORLD_TOPO, WORLD_TOPO.objects.countries).features.filter(f => f.id !== "010");
+  feats.forEach(f => f.iso = (window.ISO_NUM[f.id] || [])[0] || ({ "N. Cyprus": "CYP", Kosovo: "XKX", Somaliland: "SOM" })[f.properties.name] || "");
+  const svg = d3.select(box).insert("svg", ":first-child").attr("viewBox", "0 0 960 470").attr("role", "img").attr("aria-label", "Weltkarte");
+  const projection = d3.geoNaturalEarth1().fitExtent([[4, 4], [956, 466]], { type: "FeatureCollection", features: feats });
+  const path = d3.geoPath(projection);
+  svg.append("path").attr("class", "grat").attr("d", path(d3.geoGraticule10()));
+  const tip = document.getElementById("mapTip");
+  const paths = svg.append("g").selectAll("path").data(feats).join("path").attr("class", "cty").attr("d", path)
+    .on("mousemove", (ev, f) => {
+      const r = box.getBoundingClientRect();
+      tip.innerHTML = `<div class="d">${esc(nameOf(f.iso) || f.properties.name)}</div><div>${esc(fmtV(f.iso))}</div>` +
+        (ui.mode === "esc" && W.escalation[f.iso] ? `<div class="muted">${esc(W.escalation[f.iso].grund).slice(0, 140)}</div>` : "");
+      tip.style.display = "block";
+      const x = ev.clientX - r.left, w = tip.offsetWidth;
+      tip.style.left = (x + 14 + w > r.width ? x - w - 14 : x + 14) + "px"; tip.style.top = (ev.clientY - r.top + 12) + "px";
+    })
+    .on("mouseleave", () => tip.style.display = "none")
+    .on("click", (ev, f) => { if (f.iso) { ui.sel = f.iso; render(); } });
+
+  // ---- Bedienelemente
+  const seg = (el, items, key) => { el.innerHTML = ""; Object.entries(items).forEach(([k, l]) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = l.toUpperCase(); b.dataset.k = k;
+    b.addEventListener("click", () => { ui[key] = k; store.set(key === "mode" ? "mapMode" : "mapScen", k); render(); }); el.appendChild(b); }); };
+  seg(document.getElementById("mapMode"), MODES, "mode");
+  seg(document.getElementById("mapScen"), SCEN, "scen");
+  const yr = document.getElementById("year"); yr.value = ui.year;
+  yr.addEventListener("input", () => { ui.year = +yr.value; render(); });
+  let timer = null; const playBtn = document.getElementById("yearPlay");
+  playBtn.addEventListener("click", () => {
+    if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; return; }
+    if (ui.mode === "esc") { ui.mode = "gdp"; }
+    if (ui.year >= 2050) ui.year = 2000;
+    playBtn.textContent = "❚❚";
+    timer = setInterval(() => { ui.year++; yr.value = ui.year; render(); if (ui.year >= 2050) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; } }, 220);
+  });
+
+  // ---- Balken: wichtigste Volkswirtschaften
+  function bars() {
+    const keys = W.key, H = 230, top = 22, bot = 56, w = 420, bw = (w - 20) / keys.length;
+    const BAR = { USA: "USA", CHN: "China", DEU: "Deutschl.", JPN: "Japan", IND: "Indien", GBR: "UK", FRA: "Frankr.", ITA: "Italien", BRA: "Brasilien", CAN: "Kanada", RUS: "Russland", KOR: "Südkorea" };
+    const vals = keys.map(k => value(k));
+    const nums = vals.filter(v => v != null);
+    const max = ui.mode === "esc" ? 4 : Math.max(1, ...nums.map(Math.abs));
+    const hasNeg = ui.mode !== "esc" && nums.some(v => v < 0);
+    const zero = hasNeg ? top + (H - top - bot) / 2 : H - bot;
+    const scale = (hasNeg ? (H - top - bot) / 2 : H - top - bot) / max;
+    let g = `<line x1="10" x2="${w - 10}" y1="${zero}" y2="${zero}" stroke="rgba(201,247,211,.35)"/>`;
+    keys.forEach((k, i) => {
+      const v = vals[i], x = 10 + i * bw + 3, bwid = bw - 6;
+      if (v != null) {
+        const h = Math.max(2, Math.abs(v) * scale), y = v >= 0 ? zero - h : zero;
+        g += `<rect x="${x}" y="${y}" width="${bwid}" height="${h}" rx="3" fill="${color(k)}" stroke="${ui.sel === k ? "#fff" : "none"}" stroke-width="1.5" data-iso="${k}"><title>${esc(nameOf(k))}: ${esc(fmtV(k, v))}</title></rect>`;
+        g += `<text class="v" x="${x + bwid / 2}" y="${v >= 0 ? y - 4 : y + h + 12}" text-anchor="middle">${ui.mode === "esc" ? v : nf(v, 1)}</text>`;
+      }
+      g += `<text x="${x + bwid / 2 + 4}" y="${H - bot + 12}" text-anchor="end" transform="rotate(-45 ${x + bwid / 2 + 4} ${H - bot + 12})">${esc(BAR[k] || nameOf(k).slice(0, 9))}</text>`;
+    });
+    const title = ui.mode === "esc" ? "Eskalationsstufe (0–4), aktuell" : `${ui.mode === "gdp" ? "BIP-Wachstum" : "Inflation"} ${ui.year} in %${ui.year > lastImfYear ? " · Szenario " + SCEN[ui.scen] : ui.year > NOW ? " · IMF-Prognose" : ""}`;
+    document.getElementById("bars").innerHTML = `<div class="muted" style="font-size:12px">${esc(title)}</div><svg viewBox="0 0 ${w} ${H}" aria-label="${esc(title)}">${g}</svg>`;
+    document.querySelectorAll("#bars rect").forEach(r => r.addEventListener("click", () => { ui.sel = r.dataset.iso; render(); }));
+  }
+
+  // ---- Länderdetail mit Kaufkraft und BIP-Verlauf bis 2050
+  function detail() {
+    const iso = ui.sel, e = W.escalation[iso] || { stufe: 0, grund: "Keine besonderen Meldungen.", quelle: "" };
+    const inf = latestReal("PCPIPCH", iso), ppp = latestReal("PPPPC", iso), gdp = latestReal("NGDP_RPCH", iso);
+    const lur = latestReal("LUR", iso), debt = latestReal("GGXWDG_NGDP", iso), size = latestReal("NGDPD", iso);
+    const infl = ind("PCPIPCH", iso); let pp = null;
+    if (infl) { pp = 100; for (let y = 2021; y <= Math.min(NOW, W.years[W.years.length - 1]); y++) { const v = infl[W.years.indexOf(y)]; if (v != null) pp /= 1 + v / 100; } }
+    const series = Object.keys(SCEN).map(sc => gdpIndex(iso, sc));
+    let chart = "";
+    if (series[0]) {
+      const w = 420, h = 130, l = 34, r = 8, t = 8, b = 18;
+      const all = series.flat().filter(v => v != null), mn = Math.min(...all), mx = Math.max(...all);
+      const X = i => l + i / (YRS.length - 1) * (w - l - r), Y = v => t + (1 - (v - mn) / (mx - mn || 1)) * (h - t - b);
+      const cols = [css("--s1"), css("--s2"), css("--s8")];
+      const fc = X(YRS.indexOf(lastImfYear));
+      chart = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;margin-top:8px" aria-label="BIP-Index bis 2050">
+        <rect x="${fc}" y="${t}" width="${w - r - fc}" height="${h - t - b}" fill="rgba(250,178,25,.06)"/>
+        <text x="${fc + 4}" y="${t + 10}" fill="#fab219" font-size="10" font-family="Share Tech Mono">SZENARIO</text>
+        ${[mn, (mn + mx) / 2, mx].map(v => `<text x="2" y="${Y(v) + 3}" fill="${css("--muted")}" font-size="10" font-family="Share Tech Mono">${nf(v, 0)}</text>`).join("")}
+        ${[2000, 2025, 2050].map(y => `<text x="${X(YRS.indexOf(y))}" y="${h - 4}" fill="${css("--muted")}" font-size="10" text-anchor="middle" font-family="Share Tech Mono">${y}</text>`).join("")}
+        ${series.map((s, k) => `<polyline fill="none" stroke="${cols[k]}" stroke-width="2" points="${s.map((v, i) => v == null || YRS[i] < NOW ? "" : `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>`).join("")}
+        <polyline fill="none" stroke="${css("--text")}" stroke-width="2" points="${series[0].map((v, i) => v == null || YRS[i] > NOW ? "" : `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>
+        <line x1="${X(YRS.indexOf(ui.year))}" x2="${X(YRS.indexOf(ui.year))}" y1="${t}" y2="${h - b}" stroke="#00ff41" stroke-dasharray="3 3"/>
+      </svg><div class="maplegend"><span><i style="background:${css("--text")}"></i>Ist</span>${Object.values(SCEN).map((n, k) => `<span><i style="background:${cols[k]}"></i>${n}: ${nf(series[k][YRS.length - 1], 0)} (2050)</span>`).join("")}</div>`;
+    }
+    const nowInf = W.inflation_now[iso];
+    document.getElementById("detail").innerHTML = `<h3>${esc(nameOf(iso))}</h3>
+      <div><span class="esc" style="background:${ESC[e.stufe]};color:${e.stufe >= 3 ? "#000" : "#fff"}">Stufe ${e.stufe} · ${ESC_TXT[e.stufe]}</span>
+        <span class="muted">${esc(e.quelle || "")}</span></div>
+      <p class="muted" style="margin:6px 0">${esc(e.grund)}</p>
+      <div class="kv">
+        <span>Inflation aktuell</span><span>${nowInf ? esc(nowInf) : inf ? `${nf(inf.v, 1)} % (IMF ${inf.y})` : "–"}</span>
+        <span>Kaufkraft von 100 Einheiten seit 2021</span><span class="${pp == null ? "" : pp < 90 ? "down" : "muted"}">${pp == null ? "–" : `noch ${nf(pp, 1)} (${nf(pp - 100, 1)} %)`}</span>
+        <span>BIP pro Kopf (Kaufkraftparität)</span><span>${ppp ? nf(ppp.v, 0) + " int. $ (" + ppp.y + ")" : "–"}</span>
+        <span>BIP-Wachstum</span><span class="${cls(gdp && gdp.v)}">${gdp ? (gdp.v > 0 ? "+" : "") + nf(gdp.v, 1) + " % (" + gdp.y + ")" : "–"}</span>
+        <span>Arbeitslosenquote</span><span>${lur ? nf(lur.v, 1) + " % (" + lur.y + ")" : "–"}</span>
+        <span>Staatsschulden</span><span>${debt ? nf(debt.v, 0) + " % des BIP" : "–"}</span>
+        <span>Wirtschaftsleistung</span><span>${size ? nf(size.v / 1000, 2) + " Bio. USD" : "–"}</span>
+      </div>
+      <div class="muted" style="margin-top:8px;font-size:12px">Reales BIP (2025 = 100) – bis ${lastImfYear} IMF, danach Szenarien:</div>${chart}`;
+  }
+
+  function legend() {
+    const items = ui.mode === "esc" ? ESC.map((c, i) => [c, `${i} ${ESC_TXT[i]}`])
+      : ui.mode === "gdp" ? [["#e66767", "≤ −3 %"], ["#a34a4a", "−3 bis −1"], ["#383835", "−1 bis +1"], ["#1c5cab", "+1 bis +3"], ["#3987e5", "≥ +3 %"]]
+      : [["#184f95", "< 2 %"], ["#2a78d6", "2–4 %"], ["#5598e7", "4–8 %"], ["#86b6ef", "≥ 8 %"]];
+    document.getElementById("mapLegend").innerHTML = items.map(([c, l]) => `<span><i style="background:${c}"></i>${esc(l)}</span>`).join("") + `<span><i style="background:${NODATA};outline:1px solid var(--line)"></i>keine Daten</span>`;
+    const src = ui.mode === "esc" ? (W.analysis_time ? "Eskalation: KI-Analyse + Nachrichtenlage" : "Eskalation: Zählung von Konflikt-Schlagzeilen (KI-Analyse noch nicht aktiv)")
+      : `Quelle: ${esc(Object.values(W.source)[0] || "IMF")} · Stand ${new Date(W.generated).toLocaleDateString("de-DE")}`;
+    document.getElementById("mapLegend").insertAdjacentHTML("beforeend", `<span>· ${src}</span>`);
+  }
+
+  function outlook() {
+    const ki = W.ausblick_2050 || {};
+    const model = `Bis ${lastImfYear}: IMF-Prognose. Danach Modell (keine Vorhersage): <b>Basis</b> = Wachstum nähert sich dem langfristigen Potenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = Schulden-/Konfliktkrise 2033, Klimaschock 2041, dauerhaft −2 Prozentpunkte und Inflationsschub.`;
+    const txt = ui.scen === "dystopie" ? ki.dystopie : ui.scen === "basis" ? ki.basis : null;
+    document.getElementById("outlook").innerHTML = (txt ? `<div><b>Ausblick 2050 · ${SCEN[ui.scen]}</b> (KI): ${esc(txt)}</div>` : "") + `<div class="muted">${model}</div>`;
+  }
+
+  function render() {
+    ["mapMode", "mapScen"].forEach(id => document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute("aria-pressed", b.dataset.k === (id === "mapMode" ? ui.mode : ui.scen))));
+    document.getElementById("yearBox").style.opacity = ui.mode === "esc" ? .4 : 1;
+    document.getElementById("yearVal").textContent = ui.mode === "esc" ? "JETZT" : ui.year;
+    document.getElementById("yearTag").hidden = ui.mode === "esc" || ui.year <= lastImfYear;
+    yr.disabled = ui.mode === "esc";
+    paths.attr("fill", f => color(f.iso)).classed("sel", f => f.iso === ui.sel)
+      .classed("hot", f => ui.mode === "esc" && !reduced && (W.escalation[f.iso] || {}).stufe >= 3);
+    bars(); detail(); legend(); outlook();
+  }
+  render();
 })();
 
 /* ================= Start ================= */
