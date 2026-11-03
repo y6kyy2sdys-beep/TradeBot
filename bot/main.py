@@ -21,7 +21,7 @@ import pandas as pd
 import requests
 import yfinance as yf
 
-from . import analyst, dashboard, macro, world
+from . import analyst, dashboard, macro, profiles, world
 from .wkn import search_url, wkn
 from .strategies import STRATEGIES, add_indicators, backtest, simulate_trade
 from .watchlist import MACRO, UNIVERSE
@@ -655,6 +655,13 @@ def main() -> None:
     except Exception as e:
         print("Welt-Export fehlgeschlagen:", repr(e), file=sys.stderr)
         SEND_FAILURES.append("world")
+    try:
+        calls = {x["ticker"]: {k: x.get(k) for k in ("these", "horizon", "target", "stop", "ev_pct")}
+                 for x in state["open"] if x.get("strategy") == "ki"}
+        profiles.export(FEE_PCT, calls)
+    except Exception as e:
+        print("Steckbrief-Export fehlgeschlagen:", repr(e), file=sys.stderr)
+        SEND_FAILURES.append("profiles")
     print(f"Fertig: {sent} neue Signale, {len(state['open'])} offen")
     if SEND_FAILURES:
         sys.exit(f"Fehler beim Senden/Analysieren: {SEND_FAILURES}")

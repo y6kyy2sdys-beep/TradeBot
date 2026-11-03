@@ -77,7 +77,7 @@ header.top { display: flex; flex-wrap: wrap; align-items: center; justify-conten
 .ticker span.item { margin-right: 28px; }
 @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-section.panel { background: var(--panel); border: 1px solid var(--line); margin-top: 16px; padding: 14px 16px 16px; position: relative;
+section.panel { scroll-margin-top: 90px; background: var(--panel); border: 1px solid var(--line); margin-top: 16px; padding: 14px 16px 16px; position: relative;
   backdrop-filter: blur(2px); }
 section.panel::before { content: ""; position: absolute; top: -1px; left: -1px; width: 14px; height: 14px; border-top: 2px solid var(--matrix); border-left: 2px solid var(--matrix); }
 section.panel::after { content: ""; position: absolute; bottom: -1px; right: -1px; width: 14px; height: 14px; border-bottom: 2px solid var(--matrix); border-right: 2px solid var(--matrix); }
@@ -108,6 +108,9 @@ h2 .sub { color: var(--muted); letter-spacing: .05em; text-transform: none; font
 .presets button, .seg button { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 5px 10px; cursor: pointer; font-size: calc(13px * var(--fs)); }
 .presets button:hover, .seg button:hover { color: var(--matrix); border-color: var(--line-strong); }
 .presets button[aria-pressed="true"], .seg button[aria-pressed="true"] { color: #001a06; background: var(--matrix); border-color: var(--matrix); box-shadow: 0 0 12px rgba(0,255,65,.5); }
+.link { display: inline-flex; align-items: center; gap: 6px; font-size: calc(13px * var(--fs)); color: var(--muted); cursor: pointer; }
+.link input { accent-color: #00ff41; width: 16px; height: 16px; }
+.rangebox[aria-disabled="true"] { opacity: .35; pointer-events: none; }
 .dates { display: flex; align-items: center; gap: 6px; font-size: calc(13px * var(--fs)); color: var(--muted); }
 .dates input { background: #000; color: var(--text); border: 1px solid var(--line); padding: 4px 6px; color-scheme: dark; }
 .slider { position: relative; height: 34px; margin: 2px 4px 6px; }
@@ -142,7 +145,7 @@ table.data th { color: var(--muted); font-weight: normal; }
 
 /* ---------- Karten ---------- */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-top: 12px; }
-.card { border: 1px solid var(--line); padding: 9px 10px 6px; cursor: pointer; background: rgba(0,0,0,.35); transition: border-color .15s, box-shadow .15s; position: relative; }
+.card { text-align: left; color: var(--text); font-family: var(--font); border: 1px solid var(--line); padding: 9px 10px 6px; cursor: pointer; background: rgba(0,0,0,.35); transition: border-color .15s, box-shadow .15s; position: relative; }
 .card:hover, .card.focus { border-color: var(--matrix); box-shadow: 0 0 14px rgba(0,255,65,.18); }
 .card .n { font-size: calc(13px * var(--fs)); display: flex; align-items: center; gap: 6px; }
 .card .n i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
@@ -225,6 +228,54 @@ table.data th { color: var(--muted); font-weight: normal; }
 .scen { display: flex; height: 8px; margin: 6px 0 2px; gap: 2px; }
 .scen span { display: block; height: 100%; }
 
+/* ---------- Suche ---------- */
+.search { position: sticky; top: 0; z-index: 30; padding: 10px 0; background: linear-gradient(#000300 75%, transparent); }
+.search input { width: 100%; background: #000; color: var(--text); border: 1px solid var(--line-strong); padding: 11px 14px;
+  font-size: calc(16px * var(--fs)); font-family: var(--font); box-shadow: 0 0 14px rgba(0,255,65,.12); outline: none; }
+.search input:focus { border-color: var(--matrix); box-shadow: 0 0 20px rgba(0,255,65,.35); }
+.qres { position: absolute; left: 0; right: 0; top: calc(100% - 8px); background: #010804; box-shadow: 0 12px 30px rgba(0,0,0,.8); border: 1px solid var(--line-strong); max-height: 70vh; overflow: auto; display: none; }
+.qres.open { display: block; }
+.qres button { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; width: 100%; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line);
+  color: var(--text); padding: 9px 14px; cursor: pointer; font-size: calc(14px * var(--fs)); }
+.qres button:hover, .qres button.act { background: rgba(0,255,65,.1); }
+.qres small { color: var(--muted); font-size: calc(12px * var(--fs)); }
+.qres .vb { text-align: right; }
+.vtag { font-size: calc(11px * var(--fs)); padding: 0 6px; border: 1px solid; margin-left: 4px; white-space: nowrap; }
+.vtag.g { color: var(--up); } .vtag.n { color: var(--warn); } .vtag.b { color: var(--down); }
+.qres .none { padding: 12px 14px; color: var(--muted); font-size: calc(14px * var(--fs)); }
+
+/* ---------- Steckbrief ---------- */
+#modal { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.78); display: none; align-items: flex-start; justify-content: center; overflow: auto; padding: 4vh 12px; }
+#modal.open { display: flex; }
+body.modal-open { overflow: hidden; }
+.sheet:focus { outline: none; }
+.sheet { width: min(1100px, 100%); background: #020b05; border: 1px solid var(--matrix); box-shadow: 0 0 40px rgba(0,255,65,.25); padding: 18px 20px 22px; position: relative; }
+.sheet .x { position: absolute; top: 10px; right: 12px; background: transparent; color: var(--matrix); border: 1px solid var(--line-strong); font-size: calc(18px * var(--fs)); padding: 2px 10px; cursor: pointer; }
+.sheet h3 { margin: 0; color: var(--matrix); font-weight: normal; font-size: calc(24px * var(--fs)); letter-spacing: .06em; padding-right: 50px; }
+.sheet .meta { color: var(--muted); font-size: calc(13px * var(--fs)); margin: 4px 0 12px; }
+.sheet .meta b { color: var(--text); font-weight: normal; }
+.px { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin-bottom: 8px; }
+.px .big { font-size: calc(30px * var(--fs)); color: var(--text); }
+.perfrow { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: calc(13px * var(--fs)); margin: 6px 0 12px; }
+.perfrow span b { font-weight: normal; color: var(--muted); margin-right: 4px; }
+.verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+@media (max-width: 760px) { .verdicts { grid-template-columns: 1fr; } }
+.vbox { border: 1px solid var(--line); padding: 10px 12px; background: rgba(0,0,0,.4); }
+.vbox h4 { margin: 0 0 6px; font-weight: normal; letter-spacing: .12em; color: var(--muted); font-size: calc(13px * var(--fs)); }
+.vbox .lab { font-size: calc(20px * var(--fs)); margin-bottom: 6px; }
+.meter { height: 8px; background: rgba(255,255,255,.08); position: relative; margin-bottom: 8px; }
+.meter i { position: absolute; left: 0; top: 0; bottom: 0; }
+.vbox ul { margin: 0; padding: 0; list-style: none; font-size: calc(13px * var(--fs)); }
+.vbox li { padding: 2px 0; }
+.kgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 4px 18px; font-size: calc(13px * var(--fs)); margin: 10px 0; }
+.kgrid div { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--line); padding: 3px 0; }
+.kgrid span:first-child { color: var(--muted); }
+.desc { font-size: calc(13px * var(--fs)); color: var(--muted); border-left: 2px solid var(--line-strong); padding: 4px 10px; margin: 10px 0; }
+.links { display: flex; flex-wrap: wrap; gap: 10px; font-size: calc(13px * var(--fs)); }
+.note { font-size: calc(12px * var(--fs)); color: var(--muted); margin-top: 10px; }
+#pchart { width: 100%; position: relative; }
+.pick[data-open] { cursor: pointer; }
+
 footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -259,6 +310,10 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <button class="tbtn" id="rainBtn" type="button" aria-pressed="true">RAIN: AN</button>
     </div>
   </header>
+  <div class="search" role="search">
+    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="🔎  Aktie, WKN oder Symbol suchen …  (Taste /)" aria-label="Aktie suchen" aria-controls="qres">
+    <div class="qres" id="qres" role="listbox"></div>
+  </div>
   <div class="ticker" aria-label="Tagesveränderungen"><div class="track" id="ticker"></div></div>
 
   <section class="panel" aria-labelledby="h-news">
@@ -269,18 +324,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 
   <section class="panel" aria-labelledby="h-main">
     <h2 id="h-main">// Weltindizes<span class="sub" id="mainSub"></span></h2>
-    <div class="controls">
-      <div class="presets" id="presets" role="group" aria-label="Zeitraum"></div>
-      <div class="dates">
-        <label for="dFrom">VON</label><input type="date" id="dFrom">
-        <label for="dTo">BIS</label><input type="date" id="dTo">
-      </div>
-    </div>
-    <div class="slider" id="slider">
-      <div class="rail"></div><div class="sel" id="sliderSel"></div>
-      <input type="range" id="r0" aria-label="Startdatum">
-      <input type="range" id="r1" aria-label="Enddatum">
-    </div>
+    <div id="mainRange"></div>
     <div class="chart" id="mainChart"><div class="tip" id="mainTip"></div></div>
     <div class="legend" id="mainLegend"></div>
     <div class="toolbar">
@@ -292,6 +336,19 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     </div>
     <div id="mainTable" hidden></div>
     <div class="cards" id="indexCards"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-com">
+    <h2 id="h-com">// Rohstoffe, Öl, Gas &amp; Währungen<span class="sub" id="comSub"></span></h2>
+    <div class="controls">
+      <div class="presets" id="comTabs" role="group" aria-label="Gruppe"></div>
+      <label class="link"><input type="checkbox" id="comLink"> Zeitraum an Indizes koppeln</label>
+    </div>
+    <div id="comRange"></div>
+    <div class="chart" id="comChart"><div class="tip" id="comTip"></div></div>
+    <div class="legend" id="comLegend"></div>
+    <div class="toolbar"><span>Veränderung in % seit Beginn des Zeitraums · Legende = ein/aus · Karte = Einzelansicht in Preisen · im Chart ziehen = zoomen</span></div>
+    <div class="cards" id="comCards"></div>
   </section>
 
   <section class="panel" aria-labelledby="h-picks">
@@ -332,14 +389,6 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     <div class="sectors" id="sectors"></div>
   </section>
 
-  <section class="panel" aria-labelledby="h-com">
-    <h2 id="h-com">// Rohstoffe, Öl &amp; Gas<span class="sub">gleicher Zeitraum wie oben</span></h2>
-    <div class="controls"><div class="presets" id="comTabs" role="group" aria-label="Gruppe"></div></div>
-    <div class="chart" id="comChart"><div class="tip" id="comTip"></div></div>
-    <div class="legend" id="comLegend"></div>
-    <div class="cards" id="comCards"></div>
-  </section>
-
   <section class="panel" aria-labelledby="h-log">
     <h2 id="h-log">// Signal-Protokoll<span class="sub" id="record"></span></h2>
     <div class="log" id="log"></div>
@@ -348,6 +397,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
   <footer>Daten: Yahoo Finance, Google News · Aktualisierung mehrmals täglich durch den TradeBot · Keine Anlageberatung. Vergangene Entwicklung ist keine Garantie.</footer>
 </div>
 
+<div id="modal" role="dialog" aria-modal="true" aria-label="Aktien-Steckbrief"><div class="sheet" id="sheet"></div></div>
 <script src="vendor/uPlot.iife.min.js"></script>
 <script src="vendor/d3.min.js"></script>
 <script src="vendor/topojson-client.min.js"></script>
@@ -513,48 +563,49 @@ document.getElementById("ticker").innerHTML = tickHtml + tickHtml;
   document.getElementById("news").innerHTML = cards.join("") || '<div class="empty">Aktuell keine marktbewegenden Schlagzeilen.</div>';
 })();
 
-/* ================= Zeitraum-Steuerung ================= */
-const range = { i0: 0, i1: N - 1 };
+/* ================= Zeitraum-Steuerung (je Chart) ================= */
 const PRESETS = [["1W", 7], ["1M", 30], ["3M", 91], ["6M", 182], ["YTD", "ytd"], ["1J", 365], ["3J", 1095], ["5J", 1826], ["10J", 3652], ["MAX", "max"]];
-const presetBox = document.getElementById("presets");
-const r0 = document.getElementById("r0"), r1 = document.getElementById("r1");
-const dFrom = document.getElementById("dFrom"), dTo = document.getElementById("dTo");
-[r0, r1].forEach(r => { r.min = 0; r.max = N - 1; r.step = 1; });
-dFrom.min = dTo.min = dstr(0); dFrom.max = dTo.max = dstr(N - 1);
-PRESETS.forEach(([label, days]) => {
-  const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.p = label;
-  b.addEventListener("click", () => applyPreset(label, days)); presetBox.appendChild(b);
-});
-function applyPreset(label, days) {
+function presetStart(days) {
   const end = xs[N - 1];
-  let i0 = 0;
-  if (days === "ytd") i0 = idxForDate(Date.UTC(new Date(end * 1000).getUTCFullYear(), 0, 1) / 1000);
-  else if (days !== "max") i0 = idxForDate(end - days * DAY);
-  setRange(i0, N - 1, label);
+  if (days === "ytd") return idxForDate(Date.UTC(new Date(end * 1000).getUTCFullYear(), 0, 1) / 1000);
+  return days === "max" ? 0 : idxForDate(end - days * DAY);
 }
-function setRange(i0, i1, preset = null) {
-  i0 = Math.max(0, Math.min(i0, N - 2)); i1 = Math.max(i0 + 1, Math.min(i1, N - 1));
-  range.i0 = i0; range.i1 = i1;
-  r0.value = i0; r1.value = i1; dFrom.value = dstr(i0); dTo.value = dstr(i1);
-  const sel = document.getElementById("sliderSel");
-  sel.style.left = (i0 / (N - 1) * 100) + "%"; sel.style.width = ((i1 - i0) / (N - 1) * 100) + "%";
-  presetBox.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === preset));
-  if (preset) store.set("preset", preset);
-  renderAll();
+function rangeControl(box, key, onChange) {
+  box.className = "rangebox";
+  box.innerHTML = `<div class="controls"><div class="presets" role="group" aria-label="Zeitraum"></div>
+    <div class="dates"><label>VON <input type="date" data-r="from"></label><label>BIS <input type="date" data-r="to"></label></div></div>
+    <div class="slider"><div class="rail"></div><div class="sel"></div>
+      <input type="range" data-r="r0" aria-label="Startdatum"><input type="range" data-r="r1" aria-label="Enddatum"></div>`;
+  const q = sel => box.querySelector(sel);
+  const presetBox = q(".presets"), r0 = q('[data-r="r0"]'), r1 = q('[data-r="r1"]'), dFrom = q('[data-r="from"]'), dTo = q('[data-r="to"]'), bar = q(".sel");
+  [r0, r1].forEach(r => { r.min = 0; r.max = N - 1; r.step = 1; });
+  dFrom.min = dTo.min = dstr(0); dFrom.max = dTo.max = dstr(N - 1);
+  const rng = { i0: 0, i1: N - 1, preset: null,
+    set(i0, i1, preset = null, silent = false) {
+      i0 = Math.max(0, Math.min(i0, N - 2)); i1 = Math.max(i0 + 1, Math.min(i1, N - 1));
+      rng.i0 = i0; rng.i1 = i1; rng.preset = preset;
+      r0.value = i0; r1.value = i1; dFrom.value = dstr(i0); dTo.value = dstr(i1);
+      bar.style.left = (i0 / (N - 1) * 100) + "%"; bar.style.width = ((i1 - i0) / (N - 1) * 100) + "%";
+      presetBox.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === preset));
+      if (preset) store.set(key, preset);
+      if (!silent) onChange(rng);
+    },
+    preset_(label) { const p = PRESETS.find(([l]) => l === label) || PRESETS[5]; rng.set(presetStart(p[1]), N - 1, p[0]); },
+    step(dir) { const i = PRESETS.findIndex(([l]) => l === rng.preset); const j = i + dir; if (j >= 0 && j < PRESETS.length) rng.preset_(PRESETS[j][0]); },
+  };
+  PRESETS.forEach(([label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.p = label;
+    b.addEventListener("click", () => rng.preset_(label)); presetBox.appendChild(b);
+  });
+  r0.addEventListener("input", () => rng.set(Math.min(+r0.value, +r1.value - 1), rng.i1));
+  r1.addEventListener("input", () => rng.set(rng.i0, Math.max(+r1.value, +r0.value + 1)));
+  dFrom.addEventListener("change", () => dFrom.value && rng.set(idxForDate(Date.parse(dFrom.value) / 1000), rng.i1));
+  dTo.addEventListener("change", () => dTo.value && rng.set(rng.i0, idxForDate(Date.parse(dTo.value) / 1000, false)));
+  return rng;
 }
-r0.addEventListener("input", () => setRange(Math.min(+r0.value, +r1.value - 1), range.i1));
-r1.addEventListener("input", () => setRange(range.i0, Math.max(+r1.value, +r0.value + 1)));
-dFrom.addEventListener("change", () => dFrom.value && setRange(idxForDate(Date.parse(dFrom.value) / 1000), range.i1));
-dTo.addEventListener("change", () => dTo.value && setRange(range.i0, idxForDate(Date.parse(dTo.value) / 1000, false)));
-addEventListener("keydown", e => {
-  if (e.target.tagName === "INPUT") return;
-  const i = PRESETS.findIndex(([l]) => l === store.get("preset"));
-  if (e.key === "ArrowRight" && i < PRESETS.length - 1) applyPreset(...PRESETS[i + 1]);
-  if (e.key === "ArrowLeft" && i > 0) applyPreset(...PRESETS[i - 1]);
-});
 
 /* ================= Chart-Fabrik ================= */
-function makeChart(el, tipEl, legendEl, getSyms) {
+function makeChart(el, tipEl, legendEl, getSyms, range) {
   const state = { syms: [], hidden: new Set(), focus: null, u: null };
   function build() {
     const syms = getSyms();
@@ -568,7 +619,7 @@ function makeChart(el, tipEl, legendEl, getSyms) {
     }
     const colorOf = t => COLORS[Math.max(0, syms.indexOf(t))] || css("--matrix");
     const opts = {
-      width: el.clientWidth, height: el.dataset.h === "s" ? Math.max(240, Math.min(360, innerHeight * 0.38)) : Math.max(300, Math.min(560, innerHeight * 0.55)),
+      width: el.clientWidth, height: el.dataset.h === "s" ? Math.max(260, Math.min(440, innerHeight * 0.45)) : Math.max(300, Math.min(560, innerHeight * 0.55)),
       legend: { show: false },
       cursor: { sync: { key: "tb" }, points: { size: 8, width: 2, stroke: css("--surface-1") }, drag: { x: true, y: false } },
       scales: { x: { time: true } },
@@ -584,7 +635,7 @@ function makeChart(el, tipEl, legendEl, getSyms) {
           if (u.select.width < 8) return;
           const a = u.posToIdx(u.select.left), b = u.posToIdx(u.select.left + u.select.width);
           u.setSelect({ width: 0, height: 0 }, false);
-          setTimeout(() => setRange(range.i0 + a, range.i0 + b));
+          setTimeout(() => range.set(range.i0 + a, range.i0 + b));
         }],
       },
     };
@@ -639,7 +690,7 @@ function makeChart(el, tipEl, legendEl, getSyms) {
 }
 
 /* ================= Karten ================= */
-function spark(t, color) {
+function spark(t, color, range) {
   const v = S[t].v, pts = [], { i0, i1 } = range, step = Math.max(1, Math.floor((i1 - i0) / 120));
   for (let j = i0; j <= i1; j += step) if (v[j] != null) pts.push(v[j]);
   if (pts.length < 2) return "";
@@ -647,7 +698,7 @@ function spark(t, color) {
   const d = pts.map((p, k) => `${(k / (pts.length - 1) * 100).toFixed(2)},${(28 - (p - mn) / sp * 26).toFixed(2)}`).join(" ");
   return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="${d}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
 }
-function cards(box, syms, colorOf, onClick, focused) {
+function cards(box, syms, colorOf, onClick, focused, range) {
   const { i0, i1 } = range;
   box.innerHTML = "";
   syms.forEach((t, k) => {
@@ -658,7 +709,7 @@ function cards(box, syms, colorOf, onClick, focused) {
     el.innerHTML = `<div class="n">${sc ? `<i style="background:${sc}"></i>` : ""}${esc(S[t].name)}</div>
       <div class="v">${j >= 0 ? nf(v[j], v[j] >= 1000 ? 0 : 2) : "–"}</div>
       <div class="c"><span class="${cls(c)}" title="Zeitraum">${pct(c)}</span><span class="${cls(dc)}" title="Tag">${dc == null ? "" : "1T " + (dc > 0 ? "+" : "") + nf(dc * 100, 1) + "%"}</span></div>
-      ${spark(t, color)}`;
+      ${spark(t, color, range)}`;
     el.addEventListener("click", () => onClick(t));
     box.appendChild(el);
   });
@@ -666,7 +717,8 @@ function cards(box, syms, colorOf, onClick, focused) {
 
 /* ================= Hauptchart: Indizes ================= */
 const mainEl = document.getElementById("mainChart");
-const main = makeChart(mainEl, document.getElementById("mainTip"), document.getElementById("mainLegend"), () => D.groups["Indizes"]);
+const mainRange = rangeControl(document.getElementById("mainRange"), "preset", () => { main.build(); if (comLinked()) comRange.set(mainRange.i0, mainRange.i1, mainRange.preset); });
+const main = makeChart(mainEl, document.getElementById("mainTip"), document.getElementById("mainLegend"), () => D.groups["Indizes"], mainRange);
 const indexCards = document.getElementById("indexCards");
 main.onBuild = () => renderMainExtras();
 function focusIndex(t) {
@@ -678,9 +730,10 @@ function renderMainExtras() {
   const f = main.state.focus;
   document.getElementById("modeInfo").textContent = f ? `Einzelansicht ${S[f].name} in Indexpunkten · Klick auf „Alle zeigen“ = zurück`
     : "Veränderung in % seit Beginn des Zeitraums · Legende = ein/aus · Karte = Einzelansicht · im Chart ziehen = zoomen";
+  const range = mainRange;
   document.getElementById("mainSub").textContent = `${dlabel(range.i0)} – ${dlabel(range.i1)}`;
   const all = [...D.groups["Indizes"], ...D.groups["Weitere Indizes"]];
-  cards(indexCards, all, t => COLORS[D.groups["Indizes"].indexOf(t)] || null, focusIndex, f);
+  cards(indexCards, all, t => COLORS[D.groups["Indizes"].indexOf(t)] || null, focusIndex, f, range);
   const { i0, i1 } = range;
   document.getElementById("mainTable").innerHTML = `<table class="data"><thead><tr><th>Index</th><th>${dlabel(i0)}</th><th>${dlabel(i1)}</th><th>Veränderung</th></tr></thead><tbody>` +
     all.map(t => { const v = S[t].v, a = firstIdx(v, i0, i1), b = lastIdx(v, i0, i1), c = change(t, i0, i1);
@@ -702,7 +755,18 @@ const comTabs = document.getElementById("comTabs");
 comGroups.forEach(g => { const b = document.createElement("button"); b.type = "button"; b.textContent = g.toUpperCase(); b.dataset.g = g;
   b.addEventListener("click", () => { comGroup = g; store.set("comGroup", g); com.state.focus = null; com.state.hidden.clear(); renderCom(); }); comTabs.appendChild(b); });
 const comEl = document.getElementById("comChart"); comEl.dataset.h = "s";
-const com = makeChart(comEl, document.getElementById("comTip"), document.getElementById("comLegend"), () => D.groups[comGroup]);
+const comLink = document.getElementById("comLink");
+function comLinked() { return comLink.checked; }
+const comRangeBox = document.getElementById("comRange");
+const comRange = rangeControl(comRangeBox, "comPreset", () => com.build());
+comLink.checked = store.get("comLink") === "1";
+comLink.addEventListener("change", () => {
+  store.set("comLink", comLink.checked ? "1" : "0");
+  comRangeBox.setAttribute("aria-disabled", comLink.checked);
+  if (comLink.checked) comRange.set(mainRange.i0, mainRange.i1, mainRange.preset);
+});
+comRangeBox.setAttribute("aria-disabled", comLink.checked);
+const com = makeChart(comEl, document.getElementById("comTip"), document.getElementById("comLegend"), () => D.groups[comGroup], comRange);
 com.onBuild = () => renderComCards();
 function renderCom() {
   comTabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.g === comGroup));
@@ -710,13 +774,14 @@ function renderCom() {
 }
 function renderComCards() {
   const g = D.groups[comGroup];
-  cards(document.getElementById("comCards"), g, t => COLORS[g.indexOf(t)], t => com.focus(t), com.state.focus);
+  cards(document.getElementById("comCards"), g, t => COLORS[g.indexOf(t)], t => com.focus(t), com.state.focus, comRange);
+  document.getElementById("comSub").textContent = `${dlabel(comRange.i0)} – ${dlabel(comRange.i1)}${comLinked() ? " · gekoppelt an Indizes" : ""}`;
 }
 
 /* ================= Hot-Picks ================= */
 (function picks() {
   const P = D.picks;
-  const row = (rank, p, right, why, extra = "", badge = "") => `<div class="pick"><div class="rk">${rank}</div>
+  const row = (rank, p, right, why, extra = "", badge = "") => `<div class="pick" ${p.wkn !== undefined && !P.sectors.includes(p) ? `data-open="${esc(p.ticker)}" title="Steckbrief öffnen"` : ""}><div class="rk">${rank}</div>
     <div class="nm">${esc(p.name || p.ticker)}${(p.name || p.ticker) !== p.ticker ? `<small>${esc(p.ticker)}</small>` : ""}${badge}</div><div class="rt">${right}</div>
     <div class="wkn">${extra}</div><div class="why">${esc(why)}</div></div>`;
   const perf = p => `<span class="${cls(p.m3)}">3M ${p.m3 > 0 ? "+" : ""}${nf(p.m3 * 100, 0)}%</span><br><span class="${cls(p.m6)}">6M ${p.m6 > 0 ? "+" : ""}${nf(p.m6 * 100, 0)}%</span>`;
@@ -1001,10 +1066,147 @@ function renderComCards() {
   render();
 })();
 
+/* ================= Suche & Steckbrief ================= */
+(function search() {
+  const q = document.getElementById("q"), box = document.getElementById("qres"), modal = document.getElementById("modal"), sheet = document.getElementById("sheet");
+  let P = null, loading = null, act = -1, hits = [], pchart = null;
+  const norm = t => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  function load() {
+    if (P) return Promise.resolve(P);
+    if (!loading) loading = new Promise(res => {
+      const sc = document.createElement("script"); sc.src = "profiles.js?v=" + (D.generated || "");
+      sc.onload = () => { P = (window.PROFILES || []).map(p => ({ ...p, _n: norm(p.n), _t: norm(p.t), _w: norm(p.w), _s: norm((p.sec || "") + " " + (p.ind || "")) })); res(P); };
+      sc.onerror = () => { P = []; res(P); };
+      document.head.appendChild(sc);
+    });
+    return loading;
+  }
+  const vcls = l => l.startsWith("interessant") ? "g" : l.startsWith("neutral") ? "n" : "b";
+  function find(term) {
+    const t = norm(term).trim(); if (!t) return [];
+    return P.map(p => {
+      let sc = 0;
+      if (p._t === t || p._w === t) sc = 100;
+      else if (p._t.startsWith(t) || p._w.startsWith(t)) sc = 85;
+      else if (p._n.startsWith(t)) sc = 80;
+      else if (p._n.split(/[\s.\-()]+/).some(w => w.startsWith(t))) sc = 70;
+      else if (p._n.includes(t)) sc = 55;
+      else if (t.length > 3 && p._s.includes(t)) sc = 25;
+      return [sc, p];
+    }).filter(([sc]) => sc > 0).sort((a, b) => b[0] - a[0] || (b[1].mcap || 0) - (a[1].mcap || 0)).slice(0, 10).map(([, p]) => p);
+  }
+  function render() {
+    if (!P) { box.innerHTML = '<div class="none">Lade Aktiendaten …</div>'; box.classList.add("open"); return; }
+    hits = find(q.value); act = hits.length ? 0 : -1;
+    if (!q.value.trim()) { box.classList.remove("open"); return; }
+    box.innerHTML = hits.map((p, i) => `<button type="button" role="option" data-i="${i}" class="${i === act ? "act" : ""}">
+        <span>${esc(p.n)} <small>${esc(p.t)}${p.w ? " · WKN " + esc(p.w) : ""} · ${esc(p.k)}${p.sec ? " · " + esc(p.sec) : ""}</small></span>
+        <span class="vb"><span class="${cls(p.tech.d1)}">${pct(p.tech.d1)}</span><br>
+          <span class="vtag ${vcls(p.v.kurz.label)}">kurz: ${esc(p.v.kurz.label)}</span><span class="vtag ${vcls(p.v.mittel.label)}">mittel: ${esc(p.v.mittel.label)}</span></span>
+      </button>`).join("") || `<div class="none">„${esc(q.value)}“ ist nicht in der Datenbank (${P.length} Werte). <a href="https://www.finanzen.net/suchergebnis.asp?_search=${encodeURIComponent(q.value)}" target="_blank" rel="noopener noreferrer">Bei finanzen.net suchen ↗</a></div>`;
+    box.classList.add("open");
+    box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => open(hits[+b.dataset.i])));
+  }
+  function highlight() { box.querySelectorAll("button").forEach((b, i) => b.classList.toggle("act", i === act)); const a = box.querySelector(".act"); if (a) a.scrollIntoView({ block: "nearest" }); }
+  q.addEventListener("focus", () => load().then(() => q.value && render()));
+  q.addEventListener("input", () => { render(); load().then(render); });
+  q.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" && hits.length) { act = (act + 1) % hits.length; highlight(); e.preventDefault(); }
+    else if (e.key === "ArrowUp" && hits.length) { act = (act - 1 + hits.length) % hits.length; highlight(); e.preventDefault(); }
+    else if (e.key === "Enter" && act >= 0) { e.preventDefault(); open(hits[act]); }
+    else if (e.key === "Escape") { q.value = ""; box.classList.remove("open"); q.blur(); }
+  });
+  document.addEventListener("click", e => { if (!e.target.closest(".search")) box.classList.remove("open"); });
+  addEventListener("keydown", e => { if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(e.target.tagName)) { e.preventDefault(); q.focus(); } });
+  document.addEventListener("click", e => { const el = e.target.closest("[data-open]"); if (el && !e.target.closest("a")) openTicker(el.dataset.open); });
+
+  function openTicker(t) { load().then(() => { const p = P.find(x => x.t === t); if (p) open(p); }); }
+  const fmtBig = v => v == null ? "–" : v >= 1e12 ? nf(v / 1e12, 2) + " Bio." : v >= 1e9 ? nf(v / 1e9, 1) + " Mrd." : v >= 1e6 ? nf(v / 1e6, 0) + " Mio." : nf(v, 0);
+  const pctv = (v, d = 1) => v == null ? "–" : nf(v * 100, d) + " %";
+  function verdictBox(title, v) {
+    const c = vcls(v.label), col = c === "g" ? "var(--up)" : c === "n" ? "var(--warn)" : "var(--down)";
+    return `<div class="vbox"><h4>${title}</h4><div class="lab" style="color:${col}">${esc(v.label.toUpperCase())} <span class="muted" style="font-size:.7em">${v.score}/100</span></div>
+      <div class="meter" role="img" aria-label="Score ${v.score} von 100"><i style="width:${v.score}%;background:${col}"></i></div>
+      <ul>${v.pro.map(x => `<li class="up">▲ ${esc(x)}</li>`).join("")}${v.contra.map(x => `<li class="down">▼ ${esc(x)}</li>`).join("")}</ul></div>`;
+  }
+  function open(p) {
+    box.classList.remove("open"); q.blur();
+    const T = p.tech, F = p.fund, A = p.an;
+    const perf = [["1T", T.d1], ["1W", T.w1], ["1M", T.m1], ["3M", T.m3], ["6M", T.m6], ["1J", T.y1], ["YTD", T.ytd]]
+      .map(([l, v]) => `<span><b>${l}</b><span class="${cls(v)}">${pct(v)}</span></span>`).join("");
+    const k = [["Marktkapitalisierung", p.mcap ? fmtBig(p.mcap) + " " + (p.cur || "") : "–"], ["KGV", F.trailingPE ? nf(F.trailingPE, 1) : "–"],
+      ["KGV erwartet", F.forwardPE ? nf(F.forwardPE, 1) : "–"], ["PEG", F.trailingPegRatio ? nf(F.trailingPegRatio, 2) : "–"],
+      ["Kurs/Umsatz", F.priceToSalesTrailing12Months ? nf(F.priceToSalesTrailing12Months, 1) : "–"], ["Kurs/Buchwert", F.priceToBook ? nf(F.priceToBook, 1) : "–"],
+      ["Dividendenrendite", pctv(F.trailingAnnualDividendYield)], ["Gewinnmarge", pctv(F.profitMargins)],
+      ["Umsatzwachstum", pctv(F.revenueGrowth)], ["Gewinnwachstum", pctv(F.earningsGrowth)], ["Eigenkapitalrendite", pctv(F.returnOnEquity)],
+      ["Verschuldung/EK", F.debtToEquity != null ? nf(F.debtToEquity, 0) + " %" : "–"], ["Beta", F.beta != null ? nf(F.beta, 2) : "–"],
+      ["Volatilität p. a.", pctv(T.vol, 0)], ["Max. Verlust 1J", pctv(T.maxdd, 0)], ["52W Hoch / Tief", `${nf(T.high52)} / ${nf(T.low52)}`],
+      ["RSI (14)", nf(T.rsi, 0)], ["200-Tage-Linie", T.sma200 ? `${nf(T.sma200)} (${T.last / T.sma200 - 1 > 0 ? "+" : ""}${nf((T.last / T.sma200 - 1) * 100, 1)} %)` : "–"],
+      ["Analysten", A.rec ? `${esc(A.rec)}${F.numberOfAnalystOpinions ? " (" + nf(F.numberOfAnalystOpinions, 0) + ")" : ""}` : "–"],
+      ["Ø Kursziel", A.tgt ? `${nf(A.tgt)} (${A.up > 0 ? "+" : ""}${nf(A.up * 100, 0)} %)` : "–"]];
+    const call = p.call ? `<div class="vbox" style="border-color:var(--matrix);margin-bottom:12px"><h4>AKTIVER KI-CALL</h4>
+      <div>${esc(p.call.these || "")}</div><div class="note">Horizont ${esc(p.call.horizon || "")} · Ziel ${nf(p.call.target)} · Stop ${nf(p.call.stop)}${p.call.ev_pct != null ? " · Erwartungswert " + nf(p.call.ev_pct, 1) + " %" : ""}</div></div>` : "";
+    sheet.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button>
+      <h3>${esc(p.n)}</h3>
+      <div class="meta"><b>${esc(p.t)}</b>${p.w ? ` · WKN <b>${esc(p.w)}</b>` : ` · <a href="${esc(p.s)}" target="_blank" rel="noopener noreferrer">WKN suchen ↗</a>`} · ${esc(p.k)}${p.sec ? " · " + esc(p.sec) : ""}${p.ind ? " / " + esc(p.ind) : ""}${p.land ? " · " + esc(p.land) : ""}${p.ex ? " · Börse " + esc(p.ex) : ""}</div>
+      <div class="px"><span class="big">${nf(T.last)} ${esc(p.cur || "")}</span><span class="${cls(T.d1)}">${pct(T.d1)} heute</span></div>
+      <div class="perfrow">${perf}</div>
+      <div class="presets" id="prange" role="group" aria-label="Chart-Zeitraum"></div>
+      <div id="pchart"></div>
+      <div class="maplegend"><span><i style="background:var(--s1)"></i>Kurs</span><span><i style="background:var(--s4)"></i>200-Tage-Linie</span><span><i style="background:var(--s3)"></i>50-Tage-Linie</span></div>
+      <div class="verdicts">${verdictBox("KURZFRISTIG · WOCHEN", p.v.kurz)}${verdictBox("MITTELFRISTIG · MONATE", p.v.mittel)}</div>
+      ${call}
+      <div class="kgrid">${k.map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("")}</div>
+      ${p.desc ? `<div class="desc"><b>Unternehmen</b> (Yahoo Finance, Englisch): ${esc(p.desc)}${p.desc.length >= 600 ? " …" : ""}</div>` : ""}
+      <div class="links"><a href="https://www.finanzen.net/suchergebnis.asp?_search=${encodeURIComponent(p.w || p.n)}" target="_blank" rel="noopener noreferrer">finanzen.net ↗</a>
+        <a href="https://finance.yahoo.com/quote/${encodeURIComponent(p.t)}" target="_blank" rel="noopener noreferrer">Yahoo Finance ↗</a>
+        ${p.web ? `<a href="${esc(p.web)}" target="_blank" rel="noopener noreferrer">Website ↗</a>` : ""}</div>
+      <div class="note">Einschätzung = Regelwerk aus Trend, Momentum, Bewertung, Bilanz und Analystenmeinung – keine Garantie, keine Anlageberatung.
+        Bei 100 € und 1 € Ordergebühr muss der Kurs rund 2 % steigen, nur um die Kosten zu decken. Daten: Yahoo Finance, Stand ${new Date(D.generated).toLocaleDateString("de-DE")}.</div>`;
+    sheet.querySelector(".x").addEventListener("click", close);
+    modal.classList.add("open"); document.body.classList.add("modal-open");
+    history.replaceState(null, "", "#aktie=" + encodeURIComponent(p.t));
+    // Kursverlauf
+    const days = [p.d0]; for (const ch of p.g) days.push(days[days.length - 1] + +ch);
+    const xsP = days.map(d => d * DAY);
+    const sma = n => p.px.map((_, i) => { if (i < n - 1) return null; let s = 0; for (let j = i - n + 1; j <= i; j++) s += p.px[j]; return s / n; });
+    const s200 = sma(200), s50 = sma(50);
+    const pr = sheet.querySelector("#prange"), el = sheet.querySelector("#pchart");
+    const R = [["1M", 21], ["3M", 63], ["6M", 126], ["1J", 252], ["2J", 9999]];
+    function draw(n) {
+      pr.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.n == n));
+      const a = Math.max(0, p.px.length - n);
+      if (pchart) pchart.destroy();
+      pchart = new uPlot({
+        width: el.clientWidth || 600, height: Math.max(220, Math.min(340, innerHeight * 0.35)), legend: { show: false },
+        cursor: { points: { size: 7 } }, scales: { x: { time: true } },
+        axes: [{ stroke: css("--muted"), grid: { stroke: css("--grid") }, ticks: { stroke: css("--grid") }, font: `${Math.round(12 * FS())}px Share Tech Mono` },
+               { stroke: css("--muted"), grid: { stroke: css("--grid") }, ticks: { stroke: css("--grid") }, font: `${Math.round(12 * FS())}px Share Tech Mono`, size: Math.round(64 * FS()), values: (u, v) => v.map(x => nf(x, x >= 100 ? 0 : 2)) }],
+        series: [{}, { stroke: css("--s1"), width: 2 }, { stroke: css("--s4"), width: 1.5, dash: [5, 4] }, { stroke: css("--s3"), width: 1.5, dash: [2, 3] }],
+      }, [xsP.slice(a), p.px.slice(a), s200.slice(a), s50.slice(a)], el);
+    }
+    R.forEach(([l, n]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = l; b.dataset.n = n; b.addEventListener("click", () => draw(n)); pr.appendChild(b); });
+    draw(252);
+    sheet.tabIndex = -1; sheet.focus({ preventScroll: true });
+  }
+  function close() { modal.classList.remove("open"); document.body.classList.remove("modal-open"); if (pchart) { pchart.destroy(); pchart = null; } history.replaceState(null, "", location.pathname + location.search); }
+  modal.addEventListener("click", e => { if (e.target === modal) close(); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("open")) close(); });
+  const m = location.hash.match(/^#aktie=(.+)$/); if (m) openTicker(decodeURIComponent(m[1]));
+})();
+
 /* ================= Start ================= */
 function renderAll() { main.build(); renderCom(); }
+addEventListener("keydown", e => {
+  if (["INPUT", "TEXTAREA"].includes(e.target.tagName) || document.body.classList.contains("modal-open")) return;
+  if (e.key === "ArrowRight") mainRange.step(1);
+  if (e.key === "ArrowLeft") mainRange.step(-1);
+});
 const saved = PRESETS.find(([l]) => l === store.get("preset")) || PRESETS[5];
-applyPreset(...saved);
+comRange.set(presetStart((PRESETS.find(([l]) => l === store.get("comPreset")) || PRESETS[5])[1]), N - 1, (PRESETS.find(([l]) => l === store.get("comPreset")) || PRESETS[5])[0], true);
+mainRange.preset_(saved[0]);
+if (comLinked()) comRange.set(mainRange.i0, mainRange.i1, mainRange.preset, true);
+renderCom();
 })();
 </script>
 </body>

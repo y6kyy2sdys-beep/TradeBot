@@ -66,7 +66,8 @@ Läufe: werktags nach Börsenschluss Asien, Europa und USA, am Wochenende für K
 `docs/index.html` ist ein Dashboard im Matrix-Look: marktbewegende News, die größten Weltindizes
 mit Zeitregler (1W bis 10 Jahre, Datumsauswahl, Zoom per Ziehen), Hot-Picks mit WKN, KI-Calls mit
 Szenarien, eine Weltkarte (Eskalationsstufen, BIP-Wachstum, Inflation, Kaufkraft je Land, Szenarien
-bis 2050), Branchen-Barometer mit News, Rohstoffe/Öl/Gas und das Signal-Protokoll.
+bis 2050), Branchen-Barometer mit News, Rohstoffe/Öl/Gas mit eigenem Zeitregler, eine Suche über
+rund 240 Aktien/ETFs mit Steckbrief (Kennzahlen, Chart, Einschätzung kurz-/mittelfristig) und das Signal-Protokoll.
 Der Bot schreibt die Daten bei jedem Lauf nach `docs/data.js` und `docs/world.js`.
 
 Länderdaten: IMF World Economic Outlook (Ist-Werte und IMF-Prognosen bis ca. 2030, Aktualisierung
