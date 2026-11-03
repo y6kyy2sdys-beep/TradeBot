@@ -83,12 +83,27 @@ GOLD_PRODUCTION = {
 }
 
 
+# Feste Wikidata-Kennungen der wichtigsten Länder – Ausweichweg, falls dort der ISO-Code fehlt
+COUNTRY_QIDS = {"USA": "Q30", "MEX": "Q96", "CHN": "Q148", "DEU": "Q183", "JPN": "Q17", "IND": "Q668", "GBR": "Q145",
+                "FRA": "Q142", "ITA": "Q38", "BRA": "Q155", "CAN": "Q16", "RUS": "Q159", "KOR": "Q884", "UKR": "Q212",
+                "ISR": "Q801", "IRN": "Q794", "TUR": "Q43", "SAU": "Q851", "AUS": "Q408", "ZAF": "Q258"}
+
+
 def fetch_leaders() -> dict[str, list[dict]]:
     """Aktuelles Staatsoberhaupt und Regierungschef je Land (Wikidata, mit Foto von Wikimedia Commons)."""
-    query = """
-SELECT ?iso ?role ?person ?personLabel ?img WHERE {
+    out = _leaders_query("""
   VALUES ?type { wd:Q3624078 wd:Q6256 }
-  ?c wdt:P31 ?type; wdt:P298 ?iso.
+  ?c wdt:P31 ?type; wdt:P298 ?iso.""")
+    missing = {iso: q for iso, q in COUNTRY_QIDS.items() if iso not in out}
+    if missing:
+        values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
+        out.update(_leaders_query(f"\n  VALUES (?c ?iso) {{ {values} }}"))
+    return out
+
+
+def _leaders_query(country_filter: str) -> dict[str, list[dict]]:
+    query = """
+SELECT ?iso ?role ?person ?personLabel ?img WHERE {""" + country_filter + """
   { ?c wdt:P35 ?person. BIND("Staatsoberhaupt" AS ?role) } UNION { ?c wdt:P6 ?person. BIND("Regierungschef" AS ?role) }
   OPTIONAL { ?person wdt:P18 ?img. }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
