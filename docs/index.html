@@ -388,6 +388,46 @@ details.secret code { display: block; background: #000; border: 1px solid var(--
 .mapcard.wide { width: min(480px, calc(100% - 16px)); max-height: calc(100% - 16px); overflow: auto; }
 .emerg { background: #ff3b3b; color: #000; padding: 2px 8px; display: inline-block; margin-bottom: 6px; letter-spacing: .1em; }
 
+/* ---------- Reiter ---------- */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 10px 0 10px; flex-wrap: wrap; }
+.tabs button { background: transparent; border: 1px solid var(--line); border-bottom: 0; color: var(--muted); padding: 6px 14px; cursor: pointer; font-family: var(--font); font-size: calc(13px * var(--fs)); letter-spacing: .1em; }
+.tabs button[aria-selected="true"] { color: #001a06; background: var(--matrix); border-color: var(--matrix); }
+.tabpane[hidden] { display: none; }
+.prose { font-size: calc(14px * var(--fs)); line-height: 1.6; color: var(--text); margin: 6px 0; }
+table.det { width: 100%; border-collapse: collapse; font-size: calc(13px * var(--fs)); }
+table.det td { padding: 4px 6px; border-bottom: 1px dotted var(--line); }
+table.det td:first-child { color: var(--muted); }
+table.det td:last-child { text-align: right; }
+/* ---------- Favoriten & News ---------- */
+.star { background: transparent; border: 1px solid var(--line-strong); color: var(--warn); cursor: pointer; font-size: calc(18px * var(--fs)); padding: 0 10px; margin-left: 8px; vertical-align: 4px; }
+.favs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin: 8px 0 14px; }
+.fav { border: 1px solid var(--line); padding: 8px 10px; background: rgba(0,0,0,.35); cursor: pointer; font-size: calc(13px * var(--fs)); }
+.fav:hover { border-color: var(--matrix); }
+.fav b { display: block; font-weight: normal; color: var(--text); font-size: calc(15px * var(--fs)); }
+.newsbox { border: 1px solid var(--line); padding: 8px 12px; margin-bottom: 8px; background: rgba(0,0,0,.35); font-size: calc(13px * var(--fs)); }
+.newsbox h4 { margin: 0 0 6px; font-weight: normal; color: var(--matrix); letter-spacing: .08em; cursor: pointer; }
+.newsbox li { margin: 6px 0; list-style: none; }
+.newsbox ul { margin: 0; padding: 0; }
+.newsbox a { color: var(--text); text-decoration: none; }
+.newsbox a:hover { color: var(--matrix); }
+.tone { display: inline-block; font-size: calc(11px * var(--fs)); padding: 0 6px; margin-top: 2px; border: 1px solid; }
+.tone.p { color: var(--up); } .tone.n { color: var(--down); } .tone.z { color: var(--muted); }
+/* ---------- App-Modus (Handy) ---------- */
+.appnav { display: none; }
+body.app .wrap { padding-bottom: 86px; }
+body.app section.panel:not(.active) { display: none; }
+body.app header.top .brand small { display: none; }
+body.app .appnav { display: grid; grid-template-columns: repeat(7, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  background: rgba(0,6,2,.97); border-top: 1px solid var(--line-strong); padding: 4px 2px calc(4px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(0,0,0,.7); }
+.appnav button { background: transparent; border: 0; color: var(--muted); font-family: var(--font); font-size: 10px; padding: 6px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.appnav button span { font-size: 20px; line-height: 1; }
+.appnav button[aria-selected="true"] { color: var(--matrix); text-shadow: 0 0 8px rgba(0,255,65,.7); }
+body.app section.panel.active { animation: cardin .25s ease-out; }
+body.app .seg { flex-wrap: wrap; }
+body.app .mapcard { position: static; width: auto; max-height: none; margin-top: 10px; }
+body.app .mapbtn { top: 4px; right: 4px; }
+body.app .presets button { padding: 6px 8px; }
+
 footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -419,6 +459,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <span>DATEN <b id="gen">–</b></span>
       <span class="pill" id="regime">–</span>
       <span class="seg" role="group" aria-label="Schriftgröße"><button class="tbtn" id="fsDown" type="button" aria-label="Schrift kleiner">A−</button><button class="tbtn" id="fsUp" type="button" aria-label="Schrift größer">A+</button></span>
+      <button class="tbtn" id="appBtn" type="button" title="Zwischen App-Ansicht (Handy) und Desktop umschalten">📱 APP</button>
       <button class="tbtn" id="rainBtn" type="button" aria-pressed="true">RAIN: AN</button>
     </div>
   </header>
@@ -487,6 +528,10 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <div class="ticks"><span>1 Woche</span><span>3 Monate</span><span>1 Jahr</span><span>3 Jahre</span><span>10 Jahre</span></div>
     </div>
     <div id="dList2"></div>
+    <h2 style="margin-top:18px">// Favoriten<span class="sub">☆ im Aktien-Steckbrief setzen</span></h2>
+    <div class="favs" id="dFavs"></div>
+    <h2 style="margin-top:18px">// News zu deinen Werten<span class="sub">Depot + Favoriten · Tonalität per Stichwort-Auswertung</span></h2>
+    <div id="dNews"></div>
     <details class="secret" id="dSecret" hidden>
       <summary>📲 Telegram-Wächter für dieses Depot einrichten</summary>
       <p>Der Bot meldet dir dann starke Tagesverluste, Bruch der 200-Tage-Linie, Verlust über 10 % und Gewinn über 20 % deiner Positionen.
@@ -547,6 +592,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
   <footer>Daten: Yahoo Finance, Google News · Aktualisierung mehrmals täglich durch den TradeBot · Keine Anlageberatung. Vergangene Entwicklung ist keine Garantie.</footer>
 </div>
 
+<nav class="appnav" id="appnav" aria-label="Bereiche"></nav>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Aktien-Steckbrief"><div class="sheet" id="sheet"></div></div>
 <script src="vendor/uPlot.iife.min.js"></script>
 <script src="vendor/d3.min.js"></script>
@@ -556,6 +602,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 <script src="world.js"></script>
 <script src="doomsday.js"></script>
 <script src="aircraft.js"></script>
+<script src="news.js"></script>
 <script>
 (() => {
 "use strict";
@@ -564,6 +611,31 @@ const COLORS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"].map(v =
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+const FAV = { list() { try { return JSON.parse(store.get("favs") || "[]"); } catch { return []; } },
+  has(t) { return this.list().includes(t); },
+  toggle(t) { const l = this.list(), i = l.indexOf(t); i >= 0 ? l.splice(i, 1) : l.push(t); store.set("favs", JSON.stringify(l)); (window.TB_onFav || (() => {}))(); return i < 0; } };
+function tabsHtml(items) {  // items: [[key, label, html]]
+  return `<div class="tabs" role="tablist">${items.map(([k, l], i) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${i === 0}">${l}</button>`).join("")}</div>` +
+    items.map(([k, , h], i) => `<div class="tabpane" data-pane="${k}"${i ? " hidden" : ""}>${h}</div>`).join("");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".tabs button[data-tab]"); if (!b) return;
+  const root = b.closest(".tabs").parentElement;
+  root.querySelectorAll(":scope > .tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  root.querySelectorAll(":scope > .tabpane").forEach(p => p.hidden = p.dataset.pane !== b.dataset.tab);
+  setTimeout(() => dispatchEvent(new Event("resize")), 30);
+});
+function toneTag(sc, name) {
+  return sc > 0 ? `<span class="tone p">▲ eher positiv für ${esc(name)}</span>` : sc < 0 ? `<span class="tone n">▼ eher negativ für ${esc(name)}</span>` : `<span class="tone z">■ neutral</span>`;
+}
+function newsHtml(t, name, n = 4) {
+  const N = ((window.NEWS || {}).news || {})[t] || [];
+  if (!N.length) return '<div class="muted">Keine aktuellen Meldungen gefunden.</div>';
+  const sum = N.reduce((a, x) => a + Math.sign(x.s), 0);
+  return `<div style="margin-bottom:4px">Gesamtbild der letzten Tage: ${toneTag(sum, name)}</div><ul>${N.slice(0, n).map(x => `<li><a href="${esc(x.link)}" target="_blank" rel="noopener noreferrer">${esc(x.title)}</a>
+    <div><span class="muted">${esc(x.source)} · ${esc(relTimeG(x.time))}</span> ${toneTag(x.s, name)}</div></li>`).join("")}</ul>`;
+}
+const relTimeG = iso => { if (!iso) return ""; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 60 ? `vor ${m} Min.` : m < 1440 ? `vor ${Math.round(m / 60)} Std.` : `vor ${Math.round(m / 1440)} T.`; };
 const savedFs = parseFloat(store.get("fs"));
 if (savedFs >= 0.9 && savedFs <= 1.8) document.documentElement.style.setProperty("--fs", savedFs);
 const FS = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fs")) || 1.2;
@@ -1359,7 +1431,12 @@ function renderComCards() {
   // Zeitraffer: 30 schnelle Sequenzen über die Brennpunkte, abwechselnd Matrix-Grün und Schwarz-Weiß
   // Zeitraffer: echte Konfliktfotos (Wikimedia Commons), abstrahiert in Schwarz-Weiß/Matrix-Grün, ~10 s schnell hintereinander
   function doomIntro(done) {
-    const list = (DOOM.images || []).slice().sort(() => Math.random() - 0.5);
+    const LEAD_ISO = ["USA", "RUS", "CHN", "PRK", "ISR", "TUR", "DEU", "IRN", "UKR", "IND", "FRA", "GBR", "SAU", "BLR", "VEN", "PAK", "HUN", "BRA"];
+    const leaders = LEAD_ISO.flatMap(iso => ((window.WORLD || {}).leaders || {})[iso] || []).filter(l => l.img)
+      .filter((l, i, a) => a.findIndex(x => x.name === l.name) === i)
+      .map(l => ({ src: l.img.replace(/\?width=\d+/, "?width=900"), title: l.name + " · " + l.role, license: "Wikimedia Commons", leader: true }));
+    const photos = (DOOM.images || []).slice().sort(() => Math.random() - 0.5), list = [];
+    for (let i = 0; i < Math.max(leaders.length, photos.length); i++) { if (leaders[i]) list.push(leaders[i]); if (photos[i]) list.push(photos[i]); }
     if (list.length < 5) return doomGlobeIntro(done);
     const ov = document.createElement("div"); ov.id = "doomFx";
     ov.innerHTML = `<canvas></canvas><div class="tc"></div><div class="dtxt g"><div class="h">INITIALISIERE FRÜHWARNSYSTEM …</div><div class="s" id="fxCap"></div></div><button class="skip" type="button">ÜBERSPRINGEN ✕</button>`;
@@ -1389,9 +1466,10 @@ function renderComCards() {
           last = i; const { x, im } = ok[i % ok.length], green = i % 3 !== 1;
           const sc = Math.max(W2 / im.naturalWidth, H2 / im.naturalHeight) * (1.05 + Math.random() * 0.15);
           const w = im.naturalWidth * sc, h = im.naturalHeight * sc;
-          ctx.save(); ctx.filter = "grayscale(1) contrast(1.9) brightness(0.85)";
+          ctx.save(); ctx.filter = x.leader ? "grayscale(1) contrast(2.3) brightness(0.75)" : "grayscale(1) contrast(1.9) brightness(0.85)";
           ctx.drawImage(im, (W2 - w) / 2 + (Math.random() - 0.5) * 40 * dpr, (H2 - h) / 2 + (Math.random() - 0.5) * 30 * dpr, w, h); ctx.restore();
-          if (green) { ctx.globalCompositeOperation = "multiply"; ctx.fillStyle = "#00ff41"; ctx.fillRect(0, 0, W2, H2); ctx.globalCompositeOperation = "source-over"; }
+          if (green || x.leader) { ctx.globalCompositeOperation = "multiply"; ctx.fillStyle = x.leader && !green ? "#ff3b3b" : "#00ff41"; ctx.fillRect(0, 0, W2, H2); ctx.globalCompositeOperation = "source-over"; }
+          if (x.leader) { const gr = ctx.createRadialGradient(W2 / 2, H2 / 2, H2 * 0.2, W2 / 2, H2 / 2, H2 * 0.8); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.85)"); ctx.fillStyle = gr; ctx.fillRect(0, 0, W2, H2); }
           for (let g = 0; g < 7; g++) if (Math.random() < 0.6) { const y = Math.random() * H2, hh = (3 + Math.random() * 18) * dpr; ctx.drawImage(cv, 0, y, W2, hh, (Math.random() - 0.5) * 90 * dpr, y, W2, hh); }
           ctx.fillStyle = "rgba(0,0,0,.18)"; for (let y = 0; y < H2; y += 4 * dpr) ctx.fillRect(0, y, W2, dpr);
           ov.querySelector(".dtxt").className = "dtxt " + (green ? "g" : "w");
@@ -1540,8 +1618,42 @@ function renderComCards() {
         <b>${esc(l.name)}</b><small>${esc(l.role)}</small></div>`).join("")}</div>
       <div class="muted" style="font-size:calc(11px * var(--fs))">Quelle: Wikidata, Fotos: Wikimedia Commons (Lizenzen dort) · Matrix-Filter</div>`;
   }
+  function prose(iso) {
+    const at = (code, y) => { const a = proj(code, iso, "basis"); return a ? a[YRS.indexOf(y)] : null; };
+    const g = at("NGDP_RPCH", NOW), inf = at("PCPIPCH", NOW), lur = latestReal("LUR", iso), debt = latestReal("GGXWDG_NGDP", iso);
+    const fut = [1, 2, 3, 4].map(d => at("NGDP_RPCH", NOW + d)).filter(v => v != null), avg = fut.length ? fut.reduce((a, b) => a + b, 0) / fut.length : null;
+    const e = (W.escalation[iso] || {}).stufe || 0, n = nameOf(iso), sm = summary(iso), lage = sm.label.toLowerCase();
+    if (g == null && inf == null) return `Für ${n} liegen kaum Wirtschaftsdaten vor.`;
+    const s1 = `${n} steht insgesamt ${lage === "gut" ? "solide da" : lage === "gemischt" ? "gemischt da" : lage === "angespannt" ? "angespannt da" : "unter starkem Druck"}: Die Wirtschaft ${g >= 3 ? "wächst kräftig" : g >= 1 ? "wächst moderat" : g >= 0 ? "stagniert" : "schrumpft"} (${g > 0 ? "+" : ""}${nf(g, 1)} %), die Inflation liegt bei ${nf(inf, 1)} %.`;
+    const ch = [];
+    if (inf >= 5) ch.push("die hohe Teuerung, die die Kaufkraft der Bevölkerung frisst");
+    if (lur && lur.v > 8) ch.push(`eine hohe Arbeitslosigkeit von ${nf(lur.v, 1)} %`);
+    if (debt && debt.v > 100) ch.push(`eine Staatsverschuldung von ${nf(debt.v, 0)} % der Wirtschaftsleistung`);
+    if (e >= 2) ch.push(`die Sicherheitslage (${ESC_TXT[e]})`);
+    if (g != null && g < 1) ch.push("die schwache Konjunktur");
+    const s2 = ch.length ? `Die größten Herausforderungen sind ${ch.slice(0, -1).join(", ")}${ch.length > 1 ? " und " : ""}${ch[ch.length - 1]}.` : "Größere strukturelle Probleme zeigen die Daten derzeit nicht.";
+    const s3 = avg == null ? "" : `Für die kommenden Jahre erwartet der IMF ${avg >= 2.5 ? "ein dynamisches" : avg >= 1 ? "ein moderates" : avg >= 0 ? "nur ein schwaches" : "ein negatives"} Wachstum von durchschnittlich ${avg > 0 ? "+" : ""}${nf(avg, 1)} % pro Jahr${g != null ? (avg > g + 0.5 ? " – die Lage dürfte sich also verbessern" : avg < g - 0.5 ? " – die Dynamik lässt also nach" : " – die Entwicklung bleibt etwa stabil") : ""}.`;
+    return [s1, s2, s3].filter(Boolean).join(" ");
+  }
+  function detailTable(iso) {
+    const L = (code, f) => { const v = latestReal(code, iso); return v ? f(v) : "–"; };
+    const e = W.escalation[iso] || { stufe: 0 };
+    const rows = [["Wirtschaftsleistung (BIP)", L("NGDPD", v => nf(v.v / 1000, 2) + " Bio. USD (" + v.y + ")")], ["BIP pro Kopf (Kaufkraft)", L("PPPPC", v => nf(v.v, 0) + " int. $ (" + v.y + ")")],
+      ["BIP-Wachstum", L("NGDP_RPCH", v => (v.v > 0 ? "+" : "") + nf(v.v, 1) + " % (" + v.y + ")")], ["Inflation", W.inflation_now[iso] ? esc(W.inflation_now[iso]) : L("PCPIPCH", v => nf(v.v, 1) + " % (" + v.y + ")")],
+      ["Arbeitslosenquote", L("LUR", v => nf(v.v, 1) + " % (" + v.y + ")")], ["Staatsschulden", L("GGXWDG_NGDP", v => nf(v.v, 0) + " % des BIP")],
+      ["Goldreserven", GOLD.reserven[iso] ? nf(GOLD.reserven[iso], 0) + " t (Platz " + rankOf(GOLD.reserven, iso) + ")" : "–"],
+      ["Goldförderung", GOLD.foerderung[iso] ? nf(GOLD.foerderung[iso], 0) + " t/Jahr" : "–"], ["Sicherheitslage", `Stufe ${e.stufe} – ${ESC_TXT[e.stufe]}`]];
+    const yrs = [NOW - 2, NOW - 1, NOW, NOW + 2, NOW + 4].filter(y => W.years.includes(y));
+    const series = [["BIP-Wachstum %", "NGDP_RPCH"], ["Inflation %", "PCPIPCH"], ["Arbeitslosigkeit %", "LUR"]];
+    return `<table class="det">${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>
+      <table class="det" style="margin-top:10px"><tr><td>IMF-Daten</td>${yrs.map(y => `<td>${y}${y > NOW ? "*" : ""}</td>`).join("")}</tr>
+      ${series.map(([l, c]) => `<tr><td>${l}</td>${yrs.map(y => { const v = (ind(c, iso) || [])[W.years.indexOf(y)]; return `<td>${v == null ? "–" : nf(v, 1)}</td>`; }).join("")}</tr>`).join("")}</table>
+      <div class="muted" style="font-size:calc(11px * var(--fs))">* IMF-Prognose · Quelle: IMF World Economic Outlook</div>`;
+  }
   function showCard(iso) {
-    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4>${esc(nameOf(iso))}</h4>${leadersHtml(iso)}${sumHtml(summary(iso), 5)}`;
+    card.classList.remove("wide");
+    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4>${esc(nameOf(iso))}</h4>${leadersHtml(iso)}
+      ${tabsHtml([["ov", "ÜBERBLICK", `<div class="prose">${esc(prose(iso))}</div>${sumHtml(summary(iso), 0)}`], ["det", "DETAILS", detailTable(iso)]])}`;
     card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
     card.classList.add("open");
   }
@@ -1574,6 +1686,7 @@ function renderComCards() {
     const nowInf = W.inflation_now[iso];
     document.getElementById("detail").innerHTML = `<h3>${esc(nameOf(iso))}</h3>
       ${leadersHtml(iso)}
+      <div class="prose">${esc(prose(iso))}</div>
       <div style="margin:8px 0">${sumHtml(summary(iso))}</div>
       <div><span class="esc" style="background:${ESC[e.stufe]};color:${e.stufe >= 3 ? "#000" : "#fff"}">Stufe ${e.stufe} · ${ESC_TXT[e.stufe]}</span>
         <span class="muted">${esc(e.quelle || "")}</span></div>
@@ -1764,17 +1877,17 @@ function renderComCards() {
     const call = p.call ? `<div class="vbox" style="border-color:var(--matrix);margin-bottom:12px"><h4>AKTIVER KI-CALL</h4>
       <div>${esc(p.call.these || "")}</div><div class="note">Horizont ${esc(p.call.horizon || "")} · Ziel ${nf(p.call.target)} · Stop ${nf(p.call.stop)}${p.call.ev_pct != null ? " · Erwartungswert " + nf(p.call.ev_pct, 1) + " %" : ""}</div></div>` : "";
     sheet.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button>
-      <h3>${esc(p.n)}</h3>
+      <h3>${esc(p.n)}<button type="button" class="star" id="favBtn" title="Favorit">${FAV.has(p.t) ? "★" : "☆"}</button></h3>
       <div class="meta"><b>${esc(p.t)}</b>${p.w ? ` · WKN <b>${esc(p.w)}</b>` : ` · <a href="${esc(p.s)}" target="_blank" rel="noopener noreferrer">WKN suchen ↗</a>`} · ${esc(p.k)}${p.sec ? " · " + esc(p.sec) : ""}${p.ind ? " / " + esc(p.ind) : ""}${p.land ? " · " + esc(p.land) : ""}${p.ex ? " · Börse " + esc(p.ex) : ""}</div>
       <div class="px"><span class="big">${nf(T.last)} ${esc(p.cur || "")}</span><span class="${cls(T.d1)}">${pct(T.d1)} heute</span></div>
       <div class="perfrow">${perf}</div>
-      <div class="presets" id="prange" role="group" aria-label="Chart-Zeitraum"></div>
-      <div id="pchart"></div>
-      <div class="maplegend"><span><i style="background:var(--s1)"></i>Kurs</span><span><i style="background:var(--s4)"></i>200-Tage-Linie</span><span><i style="background:var(--s3)"></i>50-Tage-Linie</span></div>
-      <div class="verdicts">${verdictBox("KURZFRISTIG · WOCHEN", p.v.kurz)}${verdictBox("MITTELFRISTIG · MONATE", p.v.mittel)}</div>
-      ${call}
-      <div class="kgrid">${k.map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("")}</div>
-      ${p.desc ? `<div class="desc"><b>Unternehmen</b> (Yahoo Finance, Englisch): ${esc(p.desc)}${p.desc.length >= 600 ? " …" : ""}</div>` : ""}
+      ${tabsHtml([
+        ["ov", "ÜBERBLICK", `<div class="presets" id="prange" role="group" aria-label="Chart-Zeitraum"></div><div id="pchart"></div>
+          <div class="maplegend"><span><i style="background:var(--s1)"></i>Kurs</span><span><i style="background:var(--s4)"></i>200-Tage-Linie</span><span><i style="background:var(--s3)"></i>50-Tage-Linie</span></div>
+          <div class="verdicts">${verdictBox("KURZFRISTIG · WOCHEN", p.v.kurz)}${verdictBox("MITTELFRISTIG · MONATE", p.v.mittel)}</div>${call}`],
+        ["kz", "KENNZAHLEN", `<div class="kgrid">${k.map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("")}</div>
+          ${p.desc ? `<div class="desc"><b>Unternehmen</b> (Yahoo Finance, Englisch): ${esc(p.desc)}${p.desc.length >= 600 ? " …" : ""}</div>` : ""}`],
+        ["nw", "NEWS", `<div class="newsbox">${newsHtml(p.t, p.n, 5)}</div>`]])}
       <div class="links"><button type="button" class="dbtn" id="toDepot">+ ZU MEINEM DEPOT</button>
         <a href="https://www.finanzen.net/suchergebnis.asp?_search=${encodeURIComponent(p.w || p.n)}" target="_blank" rel="noopener noreferrer">finanzen.net ↗</a>
         <a href="https://finance.yahoo.com/quote/${encodeURIComponent(p.t)}" target="_blank" rel="noopener noreferrer">Yahoo Finance ↗</a>
@@ -1782,6 +1895,7 @@ function renderComCards() {
       <div class="note">Einschätzung = Regelwerk aus Trend, Momentum, Bewertung, Bilanz und Analystenmeinung – keine Garantie, keine Anlageberatung.
         Bei 100 € und 1 € Ordergebühr muss der Kurs rund 2 % steigen, nur um die Kosten zu decken. Daten: Yahoo Finance, Stand ${new Date(D.generated).toLocaleDateString("de-DE")}.</div>`;
     sheet.querySelector(".x").addEventListener("click", close);
+    sheet.querySelector("#favBtn").addEventListener("click", e => { e.currentTarget.textContent = FAV.toggle(p.t) ? "★" : "☆"; });
     sheet.querySelector("#toDepot").addEventListener("click", () => { close(); window.TB_depotPrefill && window.TB_depotPrefill(p); });
     modal.classList.add("open"); document.body.classList.add("modal-open");
     history.replaceState(null, "", "#aktie=" + encodeURIComponent(p.t));
@@ -1871,7 +1985,22 @@ function renderComCards() {
     }
     return out;
   }
+  function favNews() {
+    const fb = document.getElementById("dFavs"), nb = document.getElementById("dNews"), favs = FAV.list();
+    if (!P) { fb.innerHTML = favs.length ? '<div class="muted">Lade …</div>' : '<div class="empty">Noch keine Favoriten. Öffne eine Aktie über die Suche und tippe auf ☆.</div>'; return; }
+    const vt = l => l.startsWith("interessant") ? "g" : l.startsWith("neutral") ? "n" : "b";
+    fb.innerHTML = favs.map(t => byT[t]).filter(Boolean).map(p => `<div class="fav" data-t="${esc(p.t)}"><b>${esc(p.n)}</b>
+        <span class="muted">${esc(p.t)}${p.w ? " · WKN " + esc(p.w) : ""}</span><br>${nf(toEur(p.tech.last, p.cur) || p.tech.last)} ${toEur(p.tech.last, p.cur) ? "€" : esc(p.cur || "")} <span class="${cls(p.tech.d1)}">${pct(p.tech.d1)}</span><br>
+        <span class="vtag ${vt(p.v.kurz.label)}">kurz: ${esc(p.v.kurz.label)}</span> <span class="vtag ${vt(p.v.mittel.label)}">mittel: ${esc(p.v.mittel.label)}</span></div>`).join("")
+      || '<div class="empty">Noch keine Favoriten. Öffne eine Aktie über die Suche und tippe auf ☆.</div>';
+    const ts = [...new Set([...read().map(x => x.t), ...favs])].filter(t => byT[t]);
+    nb.innerHTML = ts.map(t => `<div class="newsbox"><h4 data-t="${esc(t)}">${esc(byT[t].n)} <span class="muted">${esc(t)}</span></h4>${newsHtml(t, byT[t].n, 3)}</div>`).join("")
+      || '<div class="empty">Füge Aktien zum Depot oder zu den Favoriten hinzu – dann erscheinen hier die passenden Meldungen.</div>';
+    [...fb.querySelectorAll("[data-t]"), ...nb.querySelectorAll("h4[data-t]")].forEach(el => el.addEventListener("click", () => TB.openTicker(el.dataset.t)));
+  }
+  window.TB_onFav = () => { if (P) favNews(); else ready(); };
   function render() {
+    favNews();
     const list = read(), H = HOLD[+hr.value];
     document.getElementById("hVal").textContent = H[0];
     document.getElementById("dHold").hidden = !list.length;
@@ -1997,13 +2126,35 @@ function renderComCards() {
   if (hm) { try { const l = dec(hm[1]); if (valid(l) && confirm(`Depot aus dem Link übernehmen (${l.length} Position(en))? Das Depot in diesem Browser wird ersetzt.`)) write(l); } catch {}
     history.replaceState(null, "", location.pathname + location.search); }
   render();
-  const start = () => { if (read().length) ready(); else nameInp.addEventListener("focus", ready, { once: true }); };
+  const start = () => { if (read().length || FAV.list().length) ready(); else nameInp.addEventListener("focus", ready, { once: true }); };
   if (!read().length) idb("readonly", os => os.get(KEY)).then(v => { try { const l = JSON.parse(v || "[]"); if (valid(l) && l.length) { store.set(KEY, JSON.stringify(l)); render(); } } catch {} start(); });
   else { idb("readwrite", os => os.put(JSON.stringify(read()), KEY)); start(); }
 })();
 
 /* ================= Start ================= */
 function renderAll() { main.build(); renderCom(); }
+// App-Ansicht (Handy): Bereiche als Fächer mit Leiste unten
+(function appMode() {
+  const T = [["h-news", "📰", "Lage"], ["h-main", "📈", "Märkte"], ["h-depot", "💼", "Depot"], ["h-picks", "🔥", "Picks"], ["h-world", "🌍", "Welt"], ["h-sec", "🏭", "Branchen"], ["h-log", "📜", "Log"]];
+  const nav = document.getElementById("appnav"), btn = document.getElementById("appBtn");
+  const sec = id => document.getElementById(id) && document.getElementById(id).closest("section");
+  nav.innerHTML = T.map(([id, ic, l]) => `<button type="button" data-s="${id}" aria-selected="false"><span>${ic}</span>${l}</button>`).join("");
+  function show(id) {
+    document.querySelectorAll("section.panel").forEach(s => s.classList.remove("active"));
+    const want = [sec(id)]; if (id === "h-main") want.push(sec("h-com"));
+    want.forEach(s => s && s.classList.add("active"));
+    nav.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", b.dataset.s === id));
+    store.set("appTab", id); scrollTo(0, 0); setTimeout(() => { dispatchEvent(new Event("resize")); renderAll(); }, 40);
+  }
+  nav.addEventListener("click", e => { const b = e.target.closest("button[data-s]"); if (b) show(b.dataset.s); });
+  function set(on) {
+    document.body.classList.toggle("app", on); btn.textContent = on ? "🖥 DESKTOP" : "📱 APP"; store.set("appMode", on ? "1" : "0");
+    if (on) show(store.get("appTab") || "h-news"); else { document.querySelectorAll("section.panel").forEach(s => s.classList.remove("active")); setTimeout(() => { dispatchEvent(new Event("resize")); renderAll(); }, 40); }
+  }
+  btn.addEventListener("click", () => set(!document.body.classList.contains("app")));
+  const saved = store.get("appMode");
+  set(saved ? saved === "1" : innerWidth < 760);
+})();
 addEventListener("keydown", e => {
   if (["INPUT", "TEXTAREA"].includes(e.target.tagName) || document.body.classList.contains("modal-open")) return;
   if (e.key === "ArrowRight") mainRange.step(1);

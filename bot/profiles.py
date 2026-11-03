@@ -217,4 +217,9 @@ def export(fee_pct: float, calls: dict[str, dict]) -> None:
             "px": [_r(x, 4) for x in c.tolist()],
         })
     OUT.write_text("window.PROFILES = " + json.dumps(profiles, ensure_ascii=False, separators=(",", ":")) + ";\n")
+    try:
+        from . import stocknews
+        stocknews.export([(x["t"], x["n"]) for x in profiles if x["k"] == "Aktie"])
+    except Exception as e:
+        print("Unternehmens-News fehlgeschlagen:", repr(e))
     print(f"Steckbriefe: {len(profiles)} Werte, {OUT.stat().st_size // 1024} KB")
