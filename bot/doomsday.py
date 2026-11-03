@@ -118,14 +118,114 @@ def hotspots() -> list[dict]:
     return out
 
 
+# Konfliktbilder für den Zeitraffer: frei lizenzierte Fotos von Wikimedia Commons (Zerstörung, Militärtechnik,
+# Rauch) – bewusst ohne Opfer-Bilder.
+IMAGE_QUERIES = [
+    "destroyed tank Ukraine 2022", "Russian invasion of Ukraine destroyed building", "artillery Ukraine 2023",
+    "Sudan war 2023 Khartoum", "Gaza Strip destruction 2023", "Syrian civil war destroyed",
+    "Yemen civil war destroyed", "Mariupol destroyed 2022", "Bakhmut 2023", "military convoy war",
+]
+IMAGE_EXCLUDE = ("dead", "body", "bodies", "corpse", "killed", "victim", "funeral", "grave", "blood", "wounded", "injured", "child")
+
+
+def conflict_images(per_query: int = 5) -> list[dict]:
+    out, seen = [], set()
+    for q in IMAGE_QUERIES:
+        try:
+            r = requests.get("https://commons.wikimedia.org/w/api.php", headers=UA, timeout=25, params={
+                "action": "query", "format": "json", "generator": "search", "gsrsearch": q, "gsrnamespace": 6, "gsrlimit": 15,
+                "prop": "imageinfo", "iiprop": "url|mime|extmetadata|size", "iiurlwidth": 720})
+            pages = (r.json().get("query") or {}).get("pages") or {}
+        except Exception:
+            continue
+        n = 0
+        for pg in sorted(pages.values(), key=lambda x: x.get("index", 0)):
+            ii = (pg.get("imageinfo") or [{}])[0]
+            title = pg.get("title", "")
+            if ii.get("mime") != "image/jpeg" or ii.get("width", 0) < 600 or title in seen:
+                continue
+            meta = ii.get("extmetadata") or {}
+            text = (title + " " + str((meta.get("ImageDescription") or {}).get("value", ""))).lower()
+            if any(w in text for w in IMAGE_EXCLUDE):
+                continue
+            seen.add(title)
+            out.append({"src": ii.get("thumburl") or ii.get("url"), "page": ii.get("descriptionurl", ""),
+                        "title": title.replace("File:", "").rsplit(".", 1)[0][:80],
+                        "license": (meta.get("LicenseShortName") or {}).get("value", "")})
+            n += 1
+            if n >= per_query:
+                break
+    return out
+
+
+def frontlines() -> dict:
+    """Frontverlauf Ukraine von DeepStateMap (öffentliches GeoJSON), vereinfacht auf ~1 km Genauigkeit."""
+    try:
+        r = requests.get("https://deepstatemap.live/api/history/last", headers=UA, timeout=40)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print("DeepStateMap fehlgeschlagen:", repr(e))
+        return {"ok": False, "features": []}
+
+    def find_fc(x):
+        if isinstance(x, dict):
+            if x.get("type") == "FeatureCollection":
+                return x
+            for v in x.values():
+                fc = find_fc(v)
+                if fc:
+                    return fc
+        elif isinstance(x, list):
+            for v in x:
+                fc = find_fc(v)
+                if fc:
+                    return fc
+        return None
+
+    def simplify(ring):
+        pts, last = [], None
+        for c in ring:
+            q = (round(c[0], 2), round(c[1], 2))
+            if q != last:
+                pts.append(list(q))
+                last = q
+        return pts if len(pts) >= 4 else None
+
+    fc = find_fc(data) or {"features": []}
+    feats = []
+    for f in fc.get("features", []):
+        g = f.get("geometry") or {}
+        if g.get("type") not in ("Polygon", "MultiPolygon"):
+            continue
+        props = f.get("properties") or {}
+        label = " ".join(str(v) for v in props.values() if isinstance(v, str)).lower()
+        kind = "occupied" if any(w in label for w in ("окуп", "occup", "оккуп", "росі", "russia", "ордло", "крим", "crimea")) else \
+               "contested" if any(w in label for w in ("сір", "grey", "gray", "contested", "невідом")) else \
+               "liberated" if any(w in label for w in ("звільн", "liberat")) else "other"
+        polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+        for poly in polys:
+            rings = [r for r in (simplify(ring) for ring in poly) if r]
+            if rings:
+                feats.append({"type": "Feature", "properties": {"k": kind},
+                              "geometry": {"type": "Polygon", "coordinates": rings}})
+    date = data.get("datetime") or data.get("createdAt") or data.get("updatedAt") if isinstance(data, dict) else None
+    print(f"DeepStateMap: {len(feats)} Flächen")
+    return {"ok": bool(feats), "date": date, "features": feats}
+
+
 def export() -> None:
     payload = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "aircraft": military_aircraft(),
         "hotspots": hotspots(),
+        "images": conflict_images(),
+        "front": frontlines(),
         "sources": {
             "aircraft": "ADS-B Exchange-Community-Daten via api.adsb.lol (ODbL) – nur Maschinen mit eingeschaltetem Transponder",
             "hotspots": "Google News, letzte 48 Stunden – Meldungslage, keine Positionsdaten",
+            "images": "Wikimedia Commons (freie Lizenzen, Urheber auf der jeweiligen Bildseite)",
+            "front": "DeepStateMap (deepstatemap.live) – Frontverlauf Ukraine",
         },
     }
     OUT.write_text("window.DOOM = " + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n")

@@ -219,6 +219,10 @@ table.data th { color: var(--muted); font-weight: normal; }
 @keyframes doompulse { 50% { box-shadow: 0 0 26px rgba(255,59,59,.7); } }
 #worldMap.doom .cty { stroke: rgba(0,255,65,.35); }
 #worldMap.doom .grat { stroke: rgba(0,255,65,.12); }
+.front .fr { stroke-width: .8; vector-effect: non-scaling-stroke; }
+.front .occupied { fill: rgba(255,59,59,.38); stroke: #ff3b3b; }
+.front .contested { fill: rgba(250,178,25,.28); stroke: #fab219; stroke-dasharray: 3 2; }
+.front .liberated, .front .other { fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.3); }
 .doomlayer .ac { fill: #ff3b3b; stroke: #000; stroke-width: .6; cursor: pointer; }
 .doomlayer .ring { fill: rgba(255,59,59,.12); stroke: #ff3b3b; stroke-width: 1.4; }
 .doomlayer .ring.p { fill: none; animation: ringp 2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -234,7 +238,7 @@ table.data th { color: var(--muted); font-weight: normal; }
 #doomFx canvas { width: 100%; height: 100%; display: block; }
 #doomFx::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.35) 0 2px, transparent 2px 4px); }
 #doomFx .dtxt { position: absolute; left: 5%; right: 5%; bottom: 7%; z-index: 2; font-family: var(--font); }
-#doomFx .dtxt .h { font-size: clamp(22px, 4.2vw, 54px); letter-spacing: .08em; }
+#doomFx .dtxt .h { font-size: clamp(18px, 3.2vw, 44px); letter-spacing: .08em; }
 #doomFx .dtxt .s { font-size: clamp(13px, 1.6vw, 20px); margin-top: 6px; opacity: .9; }
 #doomFx .dtxt .n { font-size: clamp(14px, 1.9vw, 24px); margin-top: 10px; max-width: 1100px; }
 #doomFx .dtxt.g { color: #00ff41; text-shadow: 0 0 12px rgba(0,255,65,.8); }
@@ -1179,6 +1183,7 @@ function renderComCards() {
   const sphereEl = zg.append("path").attr("class", "sphere").attr("display", "none");
   const grat = zg.append("path").attr("class", "grat").attr("d", path(d3.geoGraticule10()));
   const pathsG = zg.append("g");
+  const frontG = zg.append("g").attr("class", "front").attr("display", "none");
   const mk = zg.append("g").attr("class", "doomlayer").attr("display", "none");
   const tip = document.getElementById("mapTip");
   const resetBtn = document.getElementById("mapReset"), card = document.getElementById("mapCard"), flatBtn = document.getElementById("mapFlat");
@@ -1190,10 +1195,21 @@ function renderComCards() {
     .on("zoom", ev => {
       if (globe) return;
       zg.attr("transform", ev.transform); curK = ev.transform.k;
+      if (curK > 2.2) loadDetail();
       resetBtn.hidden = Math.abs(ev.transform.k - 1) < 0.02 && Math.abs(ev.transform.x) < 2;
       if (ev.transform.k < 0.85 && ev.sourceEvent) enterGlobe(); else drawMarkers();
     });
   svg.call(zoom).on("dblclick.zoom", null);
+  // Detailliertere Ländergrenzen (1:50 Mio.) werden erst beim Hineinzoomen nachgeladen
+  let hi = null, hiLoading = false;
+  const flatD = f => path((hi && hi.get(f.id)) || f);
+  function loadDetail() {
+    if (hi || hiLoading) return; hiLoading = true;
+    const sc = document.createElement("script"); sc.src = "vendor/world-geo-50m.js";
+    sc.onload = () => { const T = window.WORLD_TOPO_50; hi = new Map(topojson.feature(T, T.objects.countries).features.map(f => [f.id, f]));
+      if (!globe) paths.attr("d", flatD); };
+    document.head.appendChild(sc);
+  }
   function drawGlobe() {
     sphereEl.attr("d", gpath({ type: "Sphere" })); grat.attr("d", gpath(d3.geoGraticule10()));
     paths.attr("d", gpath); drawMarkers();
@@ -1219,7 +1235,7 @@ function renderComCards() {
   function exitGlobe() {
     if (!globe) return; globe = false; if (spin) { spin.stop(); spin = null; }
     svg.on(".drag", null).on("wheel.globe", null);
-    sphereEl.attr("display", "none"); grat.attr("d", path(d3.geoGraticule10())); paths.attr("d", path);
+    sphereEl.attr("display", "none"); grat.attr("d", path(d3.geoGraticule10())); paths.attr("d", flatD);
     flatBtn.hidden = true;
     svg.call(zoom).on("dblclick.zoom", null); svg.call(zoom.transform, d3.zoomIdentity);
     drawMarkers();
@@ -1304,7 +1320,18 @@ function renderComCards() {
     const x = ev.clientX - r.left, w = tip.offsetWidth;
     tip.style.left = (x + 14 + w > r.width ? x - w - 14 : x + 14) + "px"; tip.style.top = (ev.clientY - r.top + 12) + "px";
   }
+  // GeoJSON (RFC 7946) zeichnet Außenringe gegen den Uhrzeigersinn, d3 erwartet das Gegenteil -> bei Bedarf umdrehen
+  if (DOOM && DOOM.front && DOOM.front.features) DOOM.front.features.forEach(f => {
+    if (d3.geoArea(f) > 2 * Math.PI) f.geometry.coordinates.forEach(r => r.reverse());
+  });
+  function drawFront() {
+    const F = DOOM && DOOM.front;
+    if (!doom || !F || !F.ok) { frontG.attr("display", "none"); return; }
+    frontG.attr("display", null);
+    frontG.selectAll("path").data(F.features).join("path").attr("class", f => "fr " + f.properties.k).attr("d", globe ? gpath : path);
+  }
   function drawMarkers() {
+    drawFront();
     if (!doom || !acSel || !hsSel) { mk.attr("display", doom ? null : "none"); if (!doom || !hsSel) return; }
     mk.attr("display", null);
     const P = globe ? ortho : projection, s = 1 / curK, rot = ortho.rotate(), center = [-rot[0], -rot[1]];
@@ -1396,7 +1423,56 @@ function renderComCards() {
     doomIntro(() => { setDoom(true); document.getElementById("h-world").scrollIntoView({ behavior: "smooth" }); });
   });
   // Zeitraffer: 30 schnelle Sequenzen über die Brennpunkte, abwechselnd Matrix-Grün und Schwarz-Weiß
+  // Zeitraffer: echte Konfliktfotos (Wikimedia Commons), abstrahiert in Schwarz-Weiß/Matrix-Grün, ~10 s schnell hintereinander
   function doomIntro(done) {
+    const list = (DOOM.images || []).slice().sort(() => Math.random() - 0.5);
+    if (list.length < 5) return doomGlobeIntro(done);
+    const ov = document.createElement("div"); ov.id = "doomFx";
+    ov.innerHTML = `<canvas></canvas><div class="tc"></div><div class="dtxt g"><div class="h">INITIALISIERE FRÜHWARNSYSTEM …</div><div class="s" id="fxCap"></div></div><button class="skip" type="button">ÜBERSPRINGEN ✕</button>`;
+    document.body.appendChild(ov);
+    const cv = ov.querySelector("canvas"), ctx = cv.getContext("2d"), tc = ov.querySelector(".tc"), cap = ov.querySelector("#fxCap"), head = ov.querySelector(".h");
+    const dpr = devicePixelRatio || 1, W2 = cv.width = innerWidth * dpr, H2 = cv.height = innerHeight * dpr;
+    let stop = false;
+    const end = () => { if (stop) return; stop = true; removeEventListener("keydown", onKey); ov.classList.add("out"); setTimeout(() => { ov.remove(); done(); }, 420); };
+    const onKey = e => { if (e.key === "Escape") end(); };
+    addEventListener("keydown", onKey); ov.querySelector(".skip").addEventListener("click", end);
+    // Bilder vorladen (max. 3 s), dann nur die geladenen zeigen
+    const imgs = list.slice(0, 40).map(x => { const im = new Image(); im.decoding = "async"; im.referrerPolicy = "no-referrer"; im.src = x.src; return { x, im }; });
+    const t0 = performance.now();
+    (function wait() {
+      if (stop) return;
+      const ok = imgs.filter(o => o.im.complete && o.im.naturalWidth);
+      if (ok.length >= Math.min(12, imgs.length) || performance.now() - t0 > 3000) return ok.length >= 4 ? run(ok) : (ov.remove(), doomGlobeIntro(done));
+      head.textContent = `LADE LAGEBILDER … ${ok.length}/${imgs.length}`; requestAnimationFrame(wait);
+    })();
+    function run(ok) {
+      const FRAMES = 32, start = performance.now(); let last = -1;
+      function frame(now) {
+        if (stop) return;
+        const t = now - start, i = Math.floor(t / 310);              // ~310 ms je Bild -> ~10 s
+        if (i >= FRAMES) return end();
+        if (i !== last) {
+          last = i; const { x, im } = ok[i % ok.length], green = i % 3 !== 1;
+          const sc = Math.max(W2 / im.naturalWidth, H2 / im.naturalHeight) * (1.05 + Math.random() * 0.15);
+          const w = im.naturalWidth * sc, h = im.naturalHeight * sc;
+          ctx.save(); ctx.filter = "grayscale(1) contrast(1.9) brightness(0.85)";
+          ctx.drawImage(im, (W2 - w) / 2 + (Math.random() - 0.5) * 40 * dpr, (H2 - h) / 2 + (Math.random() - 0.5) * 30 * dpr, w, h); ctx.restore();
+          if (green) { ctx.globalCompositeOperation = "multiply"; ctx.fillStyle = "#00ff41"; ctx.fillRect(0, 0, W2, H2); ctx.globalCompositeOperation = "source-over"; }
+          for (let g = 0; g < 7; g++) if (Math.random() < 0.6) { const y = Math.random() * H2, hh = (3 + Math.random() * 18) * dpr; ctx.drawImage(cv, 0, y, W2, hh, (Math.random() - 0.5) * 90 * dpr, y, W2, hh); }
+          ctx.fillStyle = "rgba(0,0,0,.18)"; for (let y = 0; y < H2; y += 4 * dpr) ctx.fillRect(0, y, W2, dpr);
+          ov.querySelector(".dtxt").className = "dtxt " + (green ? "g" : "w");
+          head.textContent = `▓ ${String(i + 1).padStart(2, "0")}/${FRAMES} · ${x.title.toUpperCase()}`;
+          cap.textContent = `Wikimedia Commons · ${x.license || "freie Lizenz"}`;
+          tc.textContent = "T-" + String(FRAMES - i).padStart(2, "0");
+        } else if (Math.random() < 0.35) {               // Flackern zwischen den Bildwechseln
+          ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.25})`; ctx.fillRect(0, 0, W2, H2);
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+  }
+  function doomGlobeIntro(done) {
     const hs = DOOM.hotspots.slice().sort((a, b) => b.level - a.level || b.news.length - a.news.length);
     const frames = Array.from({ length: 30 }, (_, i) => { const h = hs[i % hs.length]; return { h, n: h.news[Math.floor(i / hs.length) % Math.max(1, h.news.length)] }; });
     const ov = document.createElement("div"); ov.id = "doomFx";
@@ -1592,6 +1668,10 @@ function renderComCards() {
         <label>Aktualisieren alle <select id="acInt" style="background:#000;color:var(--text);border:1px solid var(--line);font-family:var(--font)">${AC_INT.map(([v, l]) => `<option value="${v}"${+(store.get("acInt") || 60) === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
         ${Object.values(CAT).map(([ic, l]) => `<span><svg viewBox="-10 -10 20 20"><use href="#${ic}" x="-10" y="-10" width="20" height="20" fill="#ff3b3b"/></svg>${esc(l)}</span>`).join("")}
         <span><svg viewBox="-10 -10 20 20"><circle r="8" fill="rgba(255,59,59,.15)" stroke="#ff3b3b"/></svg>Brennpunkt (Größe = Meldungsdichte)</span>
+        ${DOOM.front && DOOM.front.ok ? `<span><svg viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" fill="rgba(255,59,59,.38)" stroke="#ff3b3b"/></svg>Besetzte Gebiete Ukraine (DeepStateMap${DOOM.front.date ? ", " + esc(String(DOOM.front.date).slice(0, 10)) : ""})</span>
+          <span><svg viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" fill="rgba(250,178,25,.28)" stroke="#fab219" stroke-dasharray="3 2"/></svg>Umkämpft / Grauzone</span>
+          <a class="dbtn" style="text-decoration:none" href="https://deepstatemap.live/" target="_blank" rel="noopener noreferrer">🗺 DEEPSTATEMAP</a>` : ""}
+        <a class="dbtn" style="text-decoration:none" href="https://liveuamap.com/" target="_blank" rel="noopener noreferrer">🗺 LIVEUAMAP</a>
         <a class="dbtn" style="text-decoration:none" href="https://www.flightradar24.com/" target="_blank" rel="noopener noreferrer">✈ FLIGHTRADAR24 LIVE</a>
         <a class="dbtn" style="text-decoration:none" href="https://globe.adsbexchange.com/?mil=1" target="_blank" rel="noopener noreferrer">📡 ADS-B EXCHANGE · NUR MILITÄR</a></div>
         <div class="doomnote">Stand ${new Date(DOOM.generated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })} · ${esc(DOOM.sources.aircraft)} · ${esc(DOOM.sources.hotspots)}.
