@@ -186,7 +186,7 @@ def export(fee_pct: float, calls: dict[str, dict]) -> None:
         info = infos.get(t, {})
         tech = technicals(c)
         kind = "Krypto" if t in CRYPTO else "ETF" if t in ETFS or info.get("quoteType") == "ETF" else "Aktie"
-        name = NAMES.get(t) or info.get("shortName") or info.get("longName") or t
+        name = " ".join(str(NAMES.get(t) or info.get("longName") or info.get("shortName") or t).split())
         tgt = info.get("targetMeanPrice")
         profiles.append({
             "t": t, "n": name, "k": kind, "w": wkn(t), "s": search_url(name),
