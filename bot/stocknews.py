@@ -18,11 +18,13 @@ OUT = Path(__file__).resolve().parent.parent / "docs" / "news.js"
 POS = ("beat", "beats", "surge", "soar", "jump", "jumps", "rise", "rises", "rally", "upgrade", "upgraded", "raises", "record",
        "strong", "growth", "profit", "outperform", "wins", "win", "contract", "deal", "approval", "approved", "bullish", "buyback",
        "dividend", "partnership", "expands", "gewinn", "steigt", "steigen", "hebt", "rekord", "kaufempfehlung", "übertrifft",
-       "stark", "auftrag", "zulassung", "kursziel erhöht", "hochgestuft", "plus", "wachstum", "rückkauf", "erhöht")
+       "stark", "auftrag", "zulassung", "kursziel erhöht", "hochgestuft", "plus", "wachstum", "rückkauf", "erhöht",
+       "legt zu", "gewinnt", "klettert", "springt", "zieht an", "erholt", "aufwärts", "rally", "kaufen")
 NEG = ("miss", "misses", "falls", "fall", "drop", "drops", "plunge", "plunges", "slump", "downgrade", "downgraded", "cuts", "cut",
        "lawsuit", "probe", "investigation", "recall", "loss", "losses", "weak", "warning", "warns", "layoffs", "bearish", "fine",
        "fined", "strike", "tariff", "verlust", "fällt", "fallen", "senkt", "warnung", "warnt", "klage", "abgestuft", "abstufung",
-       "stellenabbau", "einbruch", "bricht ein", "schwach", "minus", "kursziel gesenkt", "ermittlung", "rückruf", "streik", "zölle")
+       "stellenabbau", "einbruch", "bricht ein", "schwach", "minus", "kursziel gesenkt", "ermittlung", "rückruf", "streik", "zölle",
+       "verliert", "verlieren", "gibt nach", "sinkt", "sinken", "rutscht", "absturz", "abwärts", "verkaufen", "crash", "verluste")
 
 
 def tone(title: str) -> int:
