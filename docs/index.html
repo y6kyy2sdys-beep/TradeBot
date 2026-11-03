@@ -539,6 +539,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 <script src="data.js"></script>
 <script src="world.js"></script>
 <script src="doomsday.js"></script>
+<script src="aircraft.js"></script>
 <script>
 (() => {
 "use strict";
@@ -1161,17 +1162,44 @@ function renderComCards() {
 
   // ---- Frühwarnsystem (Doomsday): Militärflugzeuge (ADS-B) + Konflikt-Meldungslage
   const DOOM = window.DOOM;
-  let doom = false, acSel = null, hsSel = null;
+  let doom = false, acSel = null, hsSel = null, acG = null, acTimer = null;
+  const acState = { src: null, time: null, n: 0, err: null };
+  const AC_INT = [[30, "30 s"], [60, "1 min"], [300, "5 min"], [1800, "30 min"]];
+  function setAircraft(items, src, time) {
+    acState.src = src; acState.time = time; acState.n = items.length;
+    acSel = acG.selectAll("use").data(items, d => d.hex || d.cs + d.lat).join(enter => enter.append("use").attr("href", "#ic-plane").attr("class", "ac")
+      .attr("width", 20).attr("height", 20).attr("x", -10).attr("y", -10)
+      .on("mousemove", (ev, d) => doomTip(ev, `<div class="d">✈ ${esc(d.cs || d.reg || "ohne Rufzeichen")}</div><div>${esc(d.typ || "Typ unbekannt")}${d.reg ? " · " + esc(d.reg) : ""}</div>
+        <div class="muted">${d.alt != null ? nf(d.alt, 0) + " ft" : "Höhe ?"}${d.gs != null ? " · " + nf(d.gs * 1.852, 0) + " km/h" : ""} · Kurs ${d.trk}° · Klick = Details</div>`))
+      .on("mouseleave", () => tip.style.display = "none")
+      .on("click", (ev, d) => showAircraft(d)));
+    drawMarkers(); if (doom) legend();
+  }
+  // Live-Abruf direkt im Browser (api.adsb.lol); bei Blockade bleibt der 30-Minuten-Stand des Bots
+  async function liveAircraft() {
+    try {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
+      const r = await fetch("https://api.adsb.lol/v2/mil", { signal: ctl.signal, cache: "no-store" }); clearTimeout(to);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const j = await r.json();
+      const items = (j.ac || []).filter(a => a.lat != null && a.lon != null).map(a => ({
+        lat: a.lat, lon: a.lon, trk: Math.round(a.track || 0), cs: (a.flight || "").trim(), typ: a.t || "", reg: a.r || "", hex: a.hex || "",
+        alt: typeof a.alt_baro === "number" ? a.alt_baro : a.alt_baro === "ground" ? 0 : null, gs: typeof a.gs === "number" ? Math.round(a.gs) : null }));
+      acState.err = null; setAircraft(items, "live", new Date().toISOString());
+    } catch (e) { acState.err = e.name === "AbortError" ? "Zeitüberschreitung" : "vom Browser blockiert"; if (doom) legend(); }
+  }
+  function startLive() {
+    clearInterval(acTimer); const sec = +(store.get("acInt") || 60);
+    liveAircraft(); acTimer = setInterval(() => { if (!document.hidden) liveAircraft(); }, sec * 1000);
+  }
   const CAT = { luft: ["ic-strike", "Luftangriffe/Drohnen"], marine: ["ic-ship", "Marine/Schiffe"], uboot: ["ic-sub", "U-Boot-Meldungen"],
                 boden: ["ic-tank", "Bodenkämpfe/Truppen"], rakete: ["ic-missile", "Raketen"], nuklear: ["ic-nuke", "Nuklear"] };
   function buildMarkers() {
     if (acSel || !DOOM) return;
-    acSel = mk.append("g").selectAll("use").data(DOOM.aircraft.items || []).join("use").attr("href", "#ic-plane").attr("class", "ac")
-      .attr("width", 20).attr("height", 20).attr("x", -10).attr("y", -10)
-      .on("mousemove", (ev, d) => doomTip(ev, `<div class="d">✈ ${esc(d.cs || d.reg || "ohne Rufzeichen")}</div><div>${esc(d.typ || "Typ unbekannt")}${d.reg ? " · " + esc(d.reg) : ""}</div>
-        <div class="muted">${d.alt != null ? nf(d.alt, 0) + " ft" : "Höhe ?"}${d.gs != null ? " · " + nf(d.gs * 1.852, 0) + " km/h" : ""} · Kurs ${d.trk}°</div>`))
-      .on("mouseleave", () => tip.style.display = "none")
-      .on("click", (ev, d) => showAircraft(d));
+    acG = mk.append("g");
+    const bot = [DOOM.aircraft, window.AIRCRAFT].filter(x => x && x.ok && x.items).map(x => ({ items: x.items, time: x.generated || DOOM.generated }))
+      .sort((x, y) => String(y.time).localeCompare(String(x.time)))[0];
+    if (bot) setAircraft(bot.items, "bot", bot.time);
     hsSel = mk.append("g").selectAll("g").data((DOOM.hotspots || []).filter(h => h.level > 0)).join("g").attr("class", "hs")
       .on("mousemove", (ev, h) => doomTip(ev, `<div class="d">${esc(h.name)}</div><div>Meldungsdichte ${h.level}/5</div>
         <div class="muted">${Object.entries(h.counts).filter(([, n]) => n).map(([c, n]) => CAT[c][1] + ": " + n).join(" · ") || "allgemeine Meldungen"}</div>`))
@@ -1195,7 +1223,7 @@ function renderComCards() {
     tip.style.left = (x + 14 + w > r.width ? x - w - 14 : x + 14) + "px"; tip.style.top = (ev.clientY - r.top + 12) + "px";
   }
   function drawMarkers() {
-    if (!doom || !acSel) { mk.attr("display", "none"); return; }
+    if (!doom || !acSel || !hsSel) { mk.attr("display", doom ? null : "none"); if (!doom || !hsSel) return; }
     mk.attr("display", null);
     const P = globe ? ortho : projection, s = 1 / curK, rot = ortho.rotate(), center = [-rot[0], -rot[1]];
     const pos = (lon, lat) => { if (globe && d3.geoDistance([lon, lat], center) > Math.PI / 2 - 0.03) return null; return P([lon, lat]); };
@@ -1215,7 +1243,7 @@ function renderComCards() {
         <span>Geschwindigkeit</span><span>${d.gs != null ? nf(d.gs * 1.852, 0) + " km/h" : "–"}</span><span>Kurs</span><span>${d.trk}°</span>
         <span>Position</span><span>${d.lat.toFixed(2)}° / ${d.lon.toFixed(2)}°</span></div>
       <div style="margin-top:8px">${linkBtn(fr, "✈ IN FLIGHTRADAR24")}${d.hex ? linkBtn(`https://globe.adsbexchange.com/?icao=${encodeURIComponent(d.hex)}`, "📡 ADS-B EXCHANGE") : ""}</div>
-      <div class="doomnote">Position vom ${new Date(DOOM.generated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })} – das Flugzeug kann inzwischen gelandet sein.
+      <div class="doomnote">${acState.src === "live" ? "Live-Position" : "Position"} vom ${new Date(acState.time).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "medium" })}.
         Flightradar24 blendet viele Militärmaschinen aus; ADS-B Exchange zeigt sie ungefiltert.</div>`;
     card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
     card.classList.add("open");
@@ -1233,7 +1261,7 @@ function renderComCards() {
   function setDoom(on) {
     doom = on && !!DOOM; doomBtn.setAttribute("aria-pressed", doom); doomBtn.textContent = doom ? "✕ DOOMSDAY BEENDEN" : "☢ DOOMSDAY";
     box.classList.toggle("doom", doom); card.classList.remove("open");
-    if (doom) buildMarkers();
+    if (doom) { buildMarkers(); startLive(); } else clearInterval(acTimer);
     render(); drawMarkers();
   }
   doomBtn.addEventListener("click", () => {
@@ -1429,11 +1457,14 @@ function renderComCards() {
       <div class="muted" style="margin-top:8px;font-size:calc(12px * var(--fs))">Reales BIP (2025 = 100) – bis ${lastImfYear} IMF, danach Szenarien:</div>${chart}`;
   }
 
+  document.getElementById("mapLegend").addEventListener("change", e => { if (e.target.id === "acInt") { store.set("acInt", e.target.value); startLive(); } });
   function legend() {
     if (doom) {
       const ac = DOOM.aircraft || {};
       document.getElementById("mapLegend").innerHTML = `<div class="doomleg">
-        <span><svg viewBox="-10 -10 20 20"><use href="#ic-plane" x="-10" y="-10" width="20" height="20" fill="#ff3b3b"/></svg>Militärflugzeug mit Transponder (${nf((ac.items || []).length, 0)}${ac.ok ? "" : " – Abruf fehlgeschlagen"})</span>
+        <span><svg viewBox="-10 -10 20 20"><use href="#ic-plane" x="-10" y="-10" width="20" height="20" fill="#ff3b3b"/></svg>Militärflugzeug mit Transponder (${nf(acState.n, 0)})</span>
+        <span style="color:${acState.src === "live" ? "#7dff9b" : "#fab219"}">${acState.src === "live" ? "● LIVE" : "◐ BOT-STAND"} · ${acState.time ? new Date(acState.time).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: acState.src === "live" ? "2-digit" : undefined }) : "–"}${acState.err ? " · Direktabruf " + esc(acState.err) + " – Bot aktualisiert alle 30 min" : ""}</span>
+        <label>Aktualisieren alle <select id="acInt" style="background:#000;color:var(--text);border:1px solid var(--line);font-family:var(--font)">${AC_INT.map(([v, l]) => `<option value="${v}"${+(store.get("acInt") || 60) === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
         ${Object.values(CAT).map(([ic, l]) => `<span><svg viewBox="-10 -10 20 20"><use href="#${ic}" x="-10" y="-10" width="20" height="20" fill="#ff3b3b"/></svg>${esc(l)}</span>`).join("")}
         <span><svg viewBox="-10 -10 20 20"><circle r="8" fill="rgba(255,59,59,.15)" stroke="#ff3b3b"/></svg>Brennpunkt (Größe = Meldungsdichte)</span>
         <a class="dbtn" style="text-decoration:none" href="https://www.flightradar24.com/" target="_blank" rel="noopener noreferrer">✈ FLIGHTRADAR24 LIVE</a>

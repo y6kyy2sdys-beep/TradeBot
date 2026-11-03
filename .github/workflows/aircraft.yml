@@ -1,0 +1,35 @@
+name: Militärflugzeuge
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # alle 30 Minuten rund um die Uhr
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: signals            # gleiche Gruppe wie der Haupt-Bot, damit sich die Pushes nicht überschneiden
+  cancel-in-progress: false
+
+jobs:
+  aircraft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Flugzeuge abrufen
+        run: python -m bot.aircraft
+      - name: Speichern
+        run: |
+          git config user.name "signal-bot"
+          git config user.email "signal-bot@users.noreply.github.com"
+          git add docs/aircraft.js
+          if ! git diff --cached --quiet; then
+            git commit -m "Militärflugzeuge aktualisiert"
+            for i in 1 2 3; do git pull --rebase -q origin master && git push && break; sleep 5; done
+          fi
