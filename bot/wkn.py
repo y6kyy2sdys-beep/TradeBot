@@ -78,6 +78,7 @@ NAMES = {
     "TTE.PA": "TotalEnergies", "ASML.AS": "ASML", "NOVO-B.CO": "Novo Nordisk", "NESN.SW": "Nestlé",
     "NOVN.SW": "Novartis", "SHEL.L": "Shell", "AZN.L": "AstraZeneca", "ENI.MI": "Eni",
     "7203.T": "Toyota", "6758.T": "Sony", "0700.HK": "Tencent", "9988.HK": "Alibaba (HK)",
+    "DHL.DE": "DHL Group", "EOAN.DE": "E.ON", "TUI1.DE": "TUI", "SAX.DE": "Ströer",
 }
 
 
