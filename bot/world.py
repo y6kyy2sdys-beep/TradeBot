@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
+from urllib.parse import quote
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "world.js"
 YEARS = list(range(2000, 2031))
@@ -102,7 +103,32 @@ def fetch_leaders() -> dict[str, list[dict]]:
     if missing:  # Amtsinhaber ohne Amtsende mit dem jüngsten Amtsantritt
         values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
         out.update(_leaders_query(f"\n  VALUES (?c ?iso) {{ {values} }}", by_statement=True))
+    for iso, people in FIXED_LEADERS.items():  # nur falls Wikidata für dieses Land gar nichts liefert
+        if iso not in out:
+            out[iso] = [{"role": role, "name": name, **_person_image(name)} for name, role in people]
     return out
+
+
+# Fester Ersatz für Länder, deren Wikidata-Einträge die Abfragen nicht treffen (Amtszeiten bis 2029/2030).
+FIXED_LEADERS = {
+    "USA": [("Donald Trump", "Staatsoberhaupt & Regierungschef")],
+    "MEX": [("Claudia Sheinbaum", "Staatsoberhaupt & Regierungschef")],
+}
+
+
+def _person_image(name: str) -> dict:
+    """Foto einer Person über die Wikidata-Suche (P18 → Wikimedia Commons)."""
+    try:
+        hdr = {"User-Agent": "TradeBot-Dashboard/1.0 (GitHub Actions)"}
+        hit = requests.get("https://www.wikidata.org/w/api.php", headers=hdr, timeout=20, params={
+            "action": "wbsearchentities", "search": name, "language": "de", "format": "json", "limit": 1}).json()["search"][0]
+        ent = requests.get(f"https://www.wikidata.org/wiki/Special:EntityData/{hit['id']}.json", headers=hdr, timeout=20).json()
+        claims = ent["entities"][hit["id"]]["claims"].get("P18", [])
+        file = claims[0]["mainsnak"]["datavalue"]["value"] if claims else ""
+        img = f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(file.replace(' ', '_'))}?width=320" if file else ""
+        return {"img": img, "wiki": f"https://www.wikidata.org/wiki/{hit['id']}"}
+    except Exception:
+        return {"img": "", "wiki": ""}
 
 
 def _leaders_query(country_filter: str, by_statement: bool = False) -> dict[str, list[dict]]:
