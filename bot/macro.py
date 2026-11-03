@@ -253,10 +253,11 @@ FEEDS = [
 ]
 
 
-def headline_items(limit: int = 60) -> list[dict]:
-    """Schlagzeilen mit Quelle, Link und Zeit (Google-News-RSS)."""
+def headline_items(limit: int = 120, per_feed: int = 30) -> list[dict]:
+    """Schlagzeilen mit Quelle, Link und Zeit (Google-News-RSS), gleichmäßig aus allen Feeds."""
     seen, out = set(), []
     for q, hl, gl in FEEDS:
+        taken = 0
         url = f"https://news.google.com/rss/search?q={quote(q)}&hl={hl}&gl={gl}&ceid={gl}:{hl}"
         try:
             root = ET.fromstring(requests.get(url, timeout=15).content)
@@ -264,8 +265,9 @@ def headline_items(limit: int = 60) -> list[dict]:
             continue
         for item in root.iter("item"):
             title = (item.findtext("title") or "").strip()
-            if title and title not in seen:
+            if title and title not in seen and taken < per_feed:
                 seen.add(title)
+                taken += 1
                 out.append({
                     "title": title,
                     "link": item.findtext("link") or "",

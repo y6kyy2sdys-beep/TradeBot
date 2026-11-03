@@ -605,7 +605,7 @@ def main() -> None:
 
     mv = macro.moves(data)
     news_items = macro.headline_items()
-    heads = [h["title"] for h in news_items][:40]
+    heads = [h["title"] for h in news_items]
     rule_alerts = macro.risk_warnings(mv) + macro.move_alerts(mv, heads) + macro.scenario_alerts(heads, mv)
     explain_alerts(rule_alerts, state)
     for a in rule_alerts:

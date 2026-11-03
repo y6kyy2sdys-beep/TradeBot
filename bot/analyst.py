@@ -143,7 +143,7 @@ def build_prompt(mv, heads, rule_alerts, open_positions, recent_ideas, rules, ca
         "\n## Makro-Marktdaten (Tagesschluss)\n" + macro_table(mv),
         "\n## Werteliste (nur diese Symbole dürfen Kaufideen sein)\n" + universe_table(mv),
         "\n## Kandidaten mit Fundamentaldaten (vorgefiltert: stärkster Trend und größte Rücksetzer)\n" + candidates_table(cands),
-        "\n## Schlagzeilen der letzten 24h (ungeprüft)\n" + "\n".join(f"- {h}" for h in heads),
+        "\n## Schlagzeilen der letzten 24h (ungeprüft)\n" + "\n".join(f"- {h}" for h in heads[:80]),
     ]
     if rule_alerts:
         parts.append("\n## Bereits automatisch erkannte Auffälligkeiten\n" + "\n".join(f"- {a.title}" for a in rule_alerts))
