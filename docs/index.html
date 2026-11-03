@@ -372,6 +372,30 @@ details.secret { margin-top: 14px; font-size: calc(13px * var(--fs)); color: var
 details.secret summary { cursor: pointer; color: var(--matrix); }
 details.secret code { display: block; background: #000; border: 1px solid var(--line); padding: 8px; margin: 6px 0; color: var(--text); word-break: break-all; }
 
+/* ---------- Passwort ---------- */
+#gate { position: fixed; inset: 0; z-index: 200; background: #000; display: grid; place-items: center; }
+#gate canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .5; }
+#gate form { position: relative; background: rgba(0,0,0,.85); border: 1px solid var(--matrix); box-shadow: 0 0 40px rgba(0,255,65,.3); padding: 26px 28px; text-align: center; min-width: min(380px, 90vw); }
+#gate h1 { margin: 0 0 6px; color: var(--matrix); font-weight: normal; letter-spacing: .2em; font-size: calc(20px * var(--fs)); text-shadow: 0 0 10px var(--matrix); }
+#gate p { color: var(--muted); margin: 0 0 16px; font-size: calc(13px * var(--fs)); }
+#gate input[type=password] { width: 220px; text-align: center; letter-spacing: .8em; font-size: 28px; background: #000; color: var(--matrix); border: 1px solid var(--line-strong); padding: 10px; font-family: var(--font); outline: none; }
+#gate input[type=password]:focus { border-color: var(--matrix); box-shadow: 0 0 16px rgba(0,255,65,.4); }
+#gate .err { color: var(--down); min-height: 1.4em; margin-top: 10px; font-size: calc(13px * var(--fs)); }
+#gate label { display: block; margin-top: 12px; color: var(--muted); font-size: calc(12px * var(--fs)); }
+#gate.shake form { animation: shake .4s; }
+@keyframes shake { 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-4px); } }
+/* ---------- Flugzeug-Steckbrief ---------- */
+.acflag { display: flex; align-items: center; gap: 12px; margin: 4px 0 10px; }
+.acflag img { width: 120px; height: auto; border: 1px solid #333; box-shadow: 0 0 14px rgba(255,59,59,.3); }
+.acflag .fl { font-size: 64px; line-height: 1; }
+.acflag b { display: block; font-size: calc(22px * var(--fs)); color: var(--text); font-weight: normal; }
+.acflag small { color: var(--muted); font-size: calc(11px * var(--fs)); }
+.acphoto { margin: 8px 0; min-height: 40px; }
+.acphoto img { width: 100%; max-height: 220px; object-fit: cover; border: 1px solid #333; display: block; }
+.acphoto small { color: var(--muted); font-size: calc(11px * var(--fs)); }
+.mapcard.wide { width: min(480px, calc(100% - 16px)); max-height: calc(100% - 16px); overflow: auto; }
+.emerg { background: #ff3b3b; color: #000; padding: 2px 8px; display: inline-block; margin-bottom: 6px; letter-spacing: .1em; }
+
 footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -387,6 +411,16 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 </style>
 </head>
 <body>
+<div id="gate" role="dialog" aria-modal="true" aria-label="Passwortabfrage" hidden>
+  <canvas id="gateRain"></canvas>
+  <form id="gateForm" autocomplete="off">
+    <h1>ZUGANG GESPERRT</h1>
+    <p>Bitte den fünfstelligen Code eingeben.</p>
+    <input type="password" id="gatePin" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" aria-label="Code" required>
+    <div class="err" id="gateErr"></div>
+    <label><input type="checkbox" id="gateKeep" checked> auf diesem Gerät 30 Tage angemeldet bleiben</label>
+  </form>
+</div>
 <div id="intro" role="dialog" aria-label="Startanimation – klicken zum Überspringen">
   <canvas id="introRain"></canvas>
   <div class="boot" id="boot"></div>
@@ -540,6 +574,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 <script src="world.js"></script>
 <script src="doomsday.js"></script>
 <script src="aircraft.js"></script>
+<script src="auth.js"></script>
 <script>
 (() => {
 "use strict";
@@ -596,6 +631,7 @@ function endIntro() {
   setTimeout(() => { introRain && introRain.stop(); intro.remove(); }, 900);
 }
 let introRain = null;
+function startIntro() {
 if (reduced) { intro.remove(); }
 else {
   introRain = rain(document.getElementById("introRain"), { size: 18, fps: 30, fade: 0.08, speed: 1 });
@@ -612,6 +648,39 @@ else {
   intro.addEventListener("click", endIntro);
   addEventListener("keydown", endIntro, { once: true });
 }
+}
+// Passwortsperre: PBKDF2-Hash aus auth.js (Passwort nur im GitHub-Secret DASH_PIN)
+(function gate() {
+  const A = window.AUTH, el = document.getElementById("gate");
+  const KEYG = "unlock";
+  const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  const until = +(store.get(KEYG) || 0);
+  if (!A || (until > Date.now() && store.get(KEYG + "h") === A.hash)) { startIntro(); return; }
+  if (!(window.crypto && crypto.subtle)) { startIntro(); return; }
+  intro.style.display = "none"; el.hidden = false;
+  const gr = rain(document.getElementById("gateRain"), { size: 16, fps: 20, fade: 0.1, speed: 0.8 });
+  const pin = document.getElementById("gatePin"), err = document.getElementById("gateErr");
+  setTimeout(() => pin.focus(), 50);
+  let busy = false, fails = 0;
+  async function check() {
+    if (busy || !/^\d{5}$/.test(pin.value)) return;
+    busy = true; err.textContent = "prüfe …";
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin.value), "PBKDF2", false, ["deriveBits"]);
+    const salt = new Uint8Array(A.salt.match(/../g).map(h => parseInt(h, 16)));
+    const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: A.iter }, key, 256);
+    busy = false;
+    if (hex(bits) === A.hash) {
+      if (document.getElementById("gateKeep").checked) { store.set(KEYG, Date.now() + 30 * 864e5); store.set(KEYG + "h", A.hash); }
+      gr.stop(); el.remove(); intro.style.display = ""; startIntro();
+    } else {
+      fails++; pin.value = ""; err.textContent = fails >= 3 ? "Falscher Code – kurze Pause …" : "Falscher Code";
+      el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+      if (fails >= 3) { pin.disabled = true; setTimeout(() => { pin.disabled = false; pin.focus(); err.textContent = ""; }, 3000 * (fails - 2)); }
+    }
+  }
+  pin.addEventListener("input", () => { pin.value = pin.value.replace(/\D/g, "").slice(0, 5); if (pin.value.length === 5) check(); });
+  document.getElementById("gateForm").addEventListener("submit", e => { e.preventDefault(); check(); });
+})();
 
 const bg = reduced ? null : rain(document.getElementById("rain"), { size: 16, fps: 14, fade: 0.12, speed: 0.6 });
 const rainBtn = document.getElementById("rainBtn");
@@ -1184,7 +1253,8 @@ function renderComCards() {
       const j = await r.json();
       const items = (j.ac || []).filter(a => a.lat != null && a.lon != null).map(a => ({
         lat: a.lat, lon: a.lon, trk: Math.round(a.track || 0), cs: (a.flight || "").trim(), typ: a.t || "", reg: a.r || "", hex: a.hex || "",
-        alt: typeof a.alt_baro === "number" ? a.alt_baro : a.alt_baro === "ground" ? 0 : null, gs: typeof a.gs === "number" ? Math.round(a.gs) : null }));
+        alt: typeof a.alt_baro === "number" ? a.alt_baro : a.alt_baro === "ground" ? 0 : null, gs: typeof a.gs === "number" ? Math.round(a.gs) : null,
+        ...Object.fromEntries(AC_EXTRA.filter(k => a[k] != null && a[k] !== "").map(k => [k, a[k]])) }));
       acState.err = null; setAircraft(items, "live", new Date().toISOString());
     } catch (e) { acState.err = e.name === "AbortError" ? "Zeitüberschreitung" : "vom Browser blockiert"; if (doom) legend(); }
   }
@@ -1234,21 +1304,64 @@ function renderComCards() {
   }
   const fr24Area = (lat, lon, z = 6) => `https://www.flightradar24.com/${lat.toFixed(2)},${lon.toFixed(2)}/${z}`;
   const linkBtn = (href, label) => `<a class="dbtn" style="display:inline-block;text-decoration:none;margin:4px 6px 0 0" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  const AC_EXTRA = ["desc", "ownOp", "year", "squawk", "emergency", "category", "alt_geom", "baro_rate", "geom_rate", "ias", "tas", "mach", "nav_altitude_mcp", "nav_heading", "seen_pos", "rssi", "dbFlags"];
+  // Registrierungsland aus der 24-Bit-ICAO-Adresse (ICAO Annex 10, Bereiche je Staat)
+  const ICAO = [["A00000","AFFFFF","us"],["C00000","C3FFFF","ca"],["0D0000","0D7FFF","mx"],["E40000","E7FFFF","br"],["E00000","E3FFFF","ar"],["E80000","E80FFF","cl"],
+    ["0AC000","0ACFFF","co"],["3C0000","3FFFFF","de"],["400000","43FFFF","gb"],["380000","3BFFFF","fr"],["300000","33FFFF","it"],["340000","37FFFF","es"],
+    ["480000","487FFF","nl"],["448000","44FFFF","be"],["4D0000","4D03FF","lu"],["440000","447FFF","at"],["4B0000","4B7FFF","ch"],["488000","48FFFF","pl"],
+    ["498000","49FFFF","cz"],["505C00","505FFF","sk"],["470000","477FFF","hu"],["4A0000","4A7FFF","ro"],["450000","457FFF","bg"],["468000","46FFFF","gr"],
+    ["490000","497FFF","pt"],["4CA000","4CAFFF","ie"],["4A8000","4AFFFF","se"],["478000","47FFFF","no"],["458000","45FFFF","dk"],["460000","467FFF","fi"],
+    ["4CC000","4CCFFF","is"],["511000","5113FF","ee"],["502C00","502FFF","lv"],["503C00","503FFF","lt"],["4C0000","4C7FFF","rs"],["501C00","501FFF","hr"],
+    ["506C00","506FFF","si"],["4C8000","4C83FF","cy"],["4D2000","4D23FF","mt"],["4B8000","4BFFFF","tr"],["508000","50FFFF","ua"],["510000","5103FF","by"],
+    ["100000","1FFFFF","ru"],["683000","6833FF","kz"],["738000","73FFFF","il"],["710000","717FFF","sa"],["896000","896FFF","ae"],["06A000","06A3FF","qa"],
+    ["706000","706FFF","kw"],["70C000","70C3FF","om"],["894000","894FFF","bh"],["740000","747FFF","jo"],["748000","74FFFF","lb"],["778000","77FFFF","sy"],
+    ["728000","72FFFF","iq"],["730000","737FFF","ir"],["010000","017FFF","eg"],["018000","01FFFF","ly"],["020000","027FFF","ma"],["0A0000","0A7FFF","dz"],
+    ["064000","064FFF","ng"],["008000","00FFFF","za"],["760000","767FFF","pk"],["800000","83FFFF","in"],["780000","7BFFFF","cn"],["899000","8993FF","tw"],
+    ["840000","87FFFF","jp"],["718000","71FFFF","kr"],["720000","727FFF","kp"],["880000","887FFF","th"],["888000","88FFFF","vn"],["8A0000","8AFFFF","id"],
+    ["750000","757FFF","my"],["758000","75FFFF","ph"],["768000","76FFFF","sg"],["7C0000","7FFFFF","au"],["C80000","C87FFF","nz"],["700000","700FFF","af"]]
+    .map(([a, b, c]) => [parseInt(a, 16), parseInt(b, 16), c]);
+  const countryOf = hex => { const v = parseInt(hex || "", 16); if (isNaN(v)) return null; const r = ICAO.find(([a, b]) => v >= a && v <= b); return r ? r[2] : null; };
+  const isoName = cc => { try { return new Intl.DisplayNames(["de"], { type: "region" }).of(cc.toUpperCase()); } catch { return cc.toUpperCase(); } };
+  const flagEmoji = cc => cc.toUpperCase().replace(/./g, ch => String.fromCodePoint(127397 + ch.charCodeAt(0)));
+  const CATS = { A1: "leicht", A2: "klein", A3: "groß", A4: "Großraum/hoch", A5: "schwer", A6: "sehr schnell/wendig", A7: "Hubschrauber", B2: "Ballon", B6: "Drohne (UAV)" };
+  const SQUAWK = { "7500": "ENTFÜHRUNG", "7600": "FUNKAUSFALL", "7700": "NOTFALL" };
   function showAircraft(d) {
-    const id = d.cs || d.reg;
+    const id = d.cs || d.reg, cc = countryOf(d.hex);
     const fr = d.cs ? `https://www.flightradar24.com/${encodeURIComponent(d.cs)}` : d.reg ? `https://www.flightradar24.com/data/aircraft/${encodeURIComponent(d.reg.toLowerCase())}` : fr24Area(d.lat, d.lon, 8);
-    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4 style="color:#ff4d4d">✈ ${esc(id || "Militärflugzeug ohne Rufzeichen")}</h4>
-      <div class="kv"><span>Typ</span><span>${esc(d.typ || "unbekannt")}</span><span>Kennzeichen</span><span>${esc(d.reg || "–")}</span>
-        <span>Höhe</span><span>${d.alt != null ? nf(d.alt, 0) + " ft (" + nf(d.alt * 0.3048, 0) + " m)" : "–"}</span>
-        <span>Geschwindigkeit</span><span>${d.gs != null ? nf(d.gs * 1.852, 0) + " km/h" : "–"}</span><span>Kurs</span><span>${d.trk}°</span>
-        <span>Position</span><span>${d.lat.toFixed(2)}° / ${d.lon.toFixed(2)}°</span></div>
+    const row = (k, v) => v == null || v === "" ? "" : `<span>${k}</span><span>${v}</span>`;
+    const em = SQUAWK[d.squawk] || (d.emergency && d.emergency !== "none" ? String(d.emergency).toUpperCase() : "");
+    card.classList.add("wide");
+    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button>
+      ${em ? `<div class="emerg">⚠ ${esc(em)}</div>` : ""}
+      <div class="acflag">${cc ? `<img src="https://flagcdn.com/w320/${cc}.png" alt="Flagge ${esc(isoName(cc))}" onerror="this.outerHTML='<span class=&quot;fl&quot;>${flagEmoji(cc)}</span>'">` : `<span class="fl">🏳</span>`}
+        <div><b>${esc(cc ? isoName(cc) : "Land unbekannt")}</b><small>Registrierungsland laut ICAO-Adresse ${esc((d.hex || "").toUpperCase())}</small></div></div>
+      <h4 style="color:#ff4d4d;margin-top:0">✈ ${esc(id || "ohne Rufzeichen")}</h4>
+      <div class="acphoto" id="acPhoto"><small>Lade Foto …</small></div>
+      <div class="kv">${row("Typ", esc([d.typ, d.desc].filter(Boolean).join(" · ") || "unbekannt"))}${row("Betreiber", esc(d.ownOp || ""))}${row("Baujahr", esc(d.year || ""))}
+        ${row("Kennzeichen", esc(d.reg || ""))}${row("Kategorie", d.category ? esc(d.category + (CATS[d.category] ? " – " + CATS[d.category] : "")) : "")}
+        ${row("Squawk", d.squawk ? esc(d.squawk) + (SQUAWK[d.squawk] ? " ⚠" : "") : "")}
+        ${row("Höhe (barometrisch)", d.alt != null ? nf(d.alt, 0) + " ft · " + nf(d.alt * 0.3048, 0) + " m" : "")}${row("Höhe (GPS)", d.alt_geom != null ? nf(d.alt_geom, 0) + " ft" : "")}
+        ${row("Steig-/Sinkrate", d.baro_rate != null ? (d.baro_rate > 0 ? "+" : "") + nf(d.baro_rate, 0) + " ft/min" : "")}
+        ${row("Geschwindigkeit", d.gs != null ? nf(d.gs * 1.852, 0) + " km/h · " + nf(d.gs, 0) + " kn" : "")}${row("Fahrt (IAS/TAS)", d.ias != null || d.tas != null ? [d.ias, d.tas].map(v => v == null ? "–" : nf(v, 0)).join(" / ") + " kn" : "")}
+        ${row("Mach", d.mach != null ? nf(d.mach, 2) : "")}${row("Kurs", d.trk + "°")}${row("Autopilot-Ziel", d.nav_altitude_mcp != null ? nf(d.nav_altitude_mcp, 0) + " ft" + (d.nav_heading != null ? " · " + nf(d.nav_heading, 0) + "°" : "") : "")}
+        ${row("Position", d.lat.toFixed(3) + "° / " + d.lon.toFixed(3) + "°")}${row("Signal", d.rssi != null ? nf(d.rssi, 1) + " dBFS" : "")}</div>
       <div style="margin-top:8px">${linkBtn(fr, "✈ IN FLIGHTRADAR24")}${d.hex ? linkBtn(`https://globe.adsbexchange.com/?icao=${encodeURIComponent(d.hex)}`, "📡 ADS-B EXCHANGE") : ""}</div>
-      <div class="doomnote">${acState.src === "live" ? "Live-Position" : "Position"} vom ${new Date(acState.time).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "medium" })}.
-        Flightradar24 blendet viele Militärmaschinen aus; ADS-B Exchange zeigt sie ungefiltert.</div>`;
-    card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
+      <div class="doomnote">${acState.src === "live" ? "Live-Position" : "Position"} vom ${new Date(acState.time).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "medium" })} ·
+        Daten: ADS-B (adsb.lol / ADS-B Exchange-Netz) · Flagge: Land der ICAO-Adresse, nicht zwingend der Einsatzstaat.</div>`;
+    card.querySelector(".x").addEventListener("click", () => { card.classList.remove("open", "wide"); });
     card.classList.add("open");
+    // Foto über Planespotters.net (erst Transponder-Kennung, dann Kennzeichen)
+    const ph = card.querySelector("#acPhoto");
+    const tryUrl = u => fetch(u).then(r => r.ok ? r.json() : null).then(j => j && j.photos && j.photos[0]).catch(() => null);
+    (async () => {
+      const pic = (d.hex && await tryUrl(`https://api.planespotters.net/pub/photos/hex/${d.hex}`)) || (d.reg && await tryUrl(`https://api.planespotters.net/pub/photos/reg/${encodeURIComponent(d.reg)}`));
+      if (!ph.isConnected) return;
+      ph.innerHTML = pic ? `<a href="${esc(pic.link)}" target="_blank" rel="noopener noreferrer"><img src="${esc((pic.thumbnail_large || pic.thumbnail).src)}" alt="Foto ${esc(d.reg || d.typ)}"></a>
+        <small>Foto: © ${esc(pic.photographer || "Planespotters.net")} · Planespotters.net</small>` : `<small>Kein Foto für dieses Flugzeug gefunden.</small>`;
+    })();
   }
   function showHotspot(h) {
+    card.classList.remove("wide");
     card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4 style="color:#ff4d4d">☢ ${esc(h.name)}</h4>
       <div>Meldungsdichte <b>${h.level}/5</b> · ${Object.entries(h.counts).filter(([, n]) => n).map(([c, n]) => esc(CAT[c][1]) + " " + n).join(" · ") || "allgemeine Meldungen"}</div>
       <ul class="sumlist">${h.news.map(n => `<li>▸ <a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a> <span class="muted">${esc(n.source)} · ${esc(relTime(n.time))}</span></li>`).join("")}</ul>
@@ -1808,8 +1921,10 @@ function renderComCards() {
     }));
   }
   hr.addEventListener("input", () => { store.set("hold", hr.value); render(); });
-  nameInp.addEventListener("change", () => { const p = lookup(nameInp.value); const b = document.getElementById("dBuy");
-    if (p && !b.value) { const e = toEur(p.tech.last, p.cur); if (e) b.placeholder = "aktuell " + nf(e) + " €"; } });
+  const fillPrice = p => { const b = document.getElementById("dBuy"), e = p && toEur(p.tech.last, p.cur);
+    if (e) { b.value = e.toFixed(2); b.placeholder = "aktuell " + nf(e) + " €"; msg.textContent = `Aktueller Kurs ${nf(e)} € übernommen – bei Bedarf auf deinen tatsächlichen Kaufkurs ändern.`; } };
+  nameInp.addEventListener("input", () => { const p = P && P.find(x => label(x) === nameInp.value); if (p) fillPrice(p); });
+  nameInp.addEventListener("change", () => fillPrice(lookup(nameInp.value)));
   document.getElementById("dForm").addEventListener("submit", ev => {
     ev.preventDefault();
     const p = lookup(nameInp.value);
@@ -1825,7 +1940,7 @@ function renderComCards() {
       () => msg.textContent = "Bitte den Text oben manuell markieren und kopieren.");
   });
   window.TB_depotPrefill = p => {
-    nameInp.value = label(p); const e = toEur(p.tech.last, p.cur); if (e) document.getElementById("dBuy").placeholder = "aktuell " + nf(e) + " €";
+    nameInp.value = label(p); fillPrice(p);
     document.getElementById("depot").scrollIntoView({ behavior: reduced ? "auto" : "smooth" }); document.getElementById("dQty").focus();
   };
   const ready = () => TB.load().then(list => {

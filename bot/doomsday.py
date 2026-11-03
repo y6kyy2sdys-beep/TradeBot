@@ -54,6 +54,11 @@ CATEGORIES = {
 }
 
 
+# Zusätzliche ADS-B-Felder für den Flugzeug-Steckbrief (sofern gesendet)
+EXTRA_FIELDS = ("desc", "ownOp", "year", "squawk", "emergency", "category", "alt_geom", "baro_rate", "geom_rate",
+                "ias", "tas", "mach", "nav_altitude_mcp", "nav_heading", "seen_pos", "rssi", "dbFlags")
+
+
 def military_aircraft(limit: int = 800) -> dict:
     try:
         r = requests.get("https://api.adsb.lol/v2/mil", headers=UA, timeout=30)
@@ -73,6 +78,7 @@ def military_aircraft(limit: int = 800) -> dict:
             "cs": (a.get("flight") or "").strip(), "typ": a.get("t") or "", "reg": a.get("r") or "", "hex": a.get("hex") or "",
             "alt": alt if isinstance(alt, (int, float)) else (0 if alt == "ground" else None),
             "gs": round(a["gs"]) if isinstance(a.get("gs"), (int, float)) else None,
+            **{k: a[k] for k in EXTRA_FIELDS if a.get(k) not in (None, "")},
         })
     return {"ok": True, "items": items[:limit], "total": len(items)}
 
