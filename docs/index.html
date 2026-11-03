@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TradeBot Kommandozentrale</title>
+<meta name="description" content="Weltmärkte, Rohstoffe, marktbewegende News und Hot-Picks im Matrix-Look.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/uPlot.min.css">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #000300;
+  --surface-1: #030a05;          /* Chart-Fläche (Palette dagegen validiert) */
+  --panel: rgba(3, 14, 7, 0.86);
+  --line: rgba(0, 255, 65, 0.22);
+  --line-strong: rgba(0, 255, 65, 0.5);
+  --matrix: #00ff41;
+  --matrix-dim: #00b32d;
+  --text: #c9f7d3;
+  --muted: #6fa77b;
+  --up: #2bd45a;
+  --down: #ff5c5c;
+  --warn: #fab219;
+  --grid: rgba(0, 255, 65, 0.07);
+  /* Kategoriale Reihenfolge – fest, Farbe folgt dem Instrument */
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --font: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+body { min-height: 100vh; overflow-x: hidden; font-size: 15px; line-height: 1.45; }
+a { color: var(--matrix); }
+button, input, select { font-family: var(--font); }
+
+/* ---------- Hintergrund: Regen + Scanlines ---------- */
+#rain { position: fixed; inset: 0; z-index: 0; opacity: 0.16; pointer-events: none; }
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+/* ---------- Intro ---------- */
+#intro { position: fixed; inset: 0; z-index: 100; background: #000; display: grid; place-items: center; cursor: pointer;
+  transition: opacity .8s ease; }
+#intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#intro .boot { position: relative; padding: 22px 26px; background: rgba(0,0,0,.78); border: 1px solid var(--line-strong);
+  box-shadow: 0 0 40px rgba(0,255,65,.25); min-width: min(560px, 88vw); }
+#intro .boot p { margin: 4px 0; color: var(--matrix); text-shadow: 0 0 8px var(--matrix); font-size: clamp(14px, 2.4vw, 19px); white-space: pre-wrap; }
+#intro .skip { position: absolute; bottom: 18px; right: 22px; color: var(--muted); font-size: 12px; letter-spacing: .1em; }
+#intro.gone { opacity: 0; pointer-events: none; }
+.cursor::after { content: "█"; animation: blink 1s steps(1) infinite; margin-left: 2px; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ---------- Layout ---------- */
+.wrap { position: relative; z-index: 1; max-width: 1480px; margin: 0 auto; padding: 0 16px 40px; }
+header.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px;
+  padding: 14px 0 10px; border-bottom: 1px solid var(--line); }
+.brand { font-size: clamp(18px, 3vw, 26px); color: var(--matrix); letter-spacing: .12em; text-shadow: 0 0 10px rgba(0,255,65,.7); }
+.brand small { display: block; font-size: 11px; color: var(--muted); letter-spacing: .3em; text-shadow: none; }
+.brand:hover { animation: glitch .35s steps(2) 2; }
+@keyframes glitch { 0% { text-shadow: 2px 0 #00ff41, -2px 0 #0a5; transform: translateX(1px); } 50% { text-shadow: -2px 0 #00ff41, 2px 0 #0a5; transform: translateX(-1px); } 100% { transform: none; } }
+.status { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--muted); align-items: center; }
+.status b { color: var(--text); font-weight: normal; }
+.pill { border: 1px solid var(--line-strong); padding: 3px 9px; border-radius: 999px; color: var(--text); }
+.tbtn { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 4px 9px; cursor: pointer; border-radius: 4px; }
+.tbtn:hover { color: var(--matrix); border-color: var(--line-strong); }
+
+.ticker { overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--line); padding: 7px 0; font-size: 13px; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+.ticker .track { display: inline-block; animation: scroll 80s linear infinite; }
+.ticker:hover .track { animation-play-state: paused; }
+.ticker span.item { margin-right: 28px; }
+@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+section.panel { background: var(--panel); border: 1px solid var(--line); margin-top: 16px; padding: 14px 16px 16px; position: relative;
+  backdrop-filter: blur(2px); }
+section.panel::before { content: ""; position: absolute; top: -1px; left: -1px; width: 14px; height: 14px; border-top: 2px solid var(--matrix); border-left: 2px solid var(--matrix); }
+section.panel::after { content: ""; position: absolute; bottom: -1px; right: -1px; width: 14px; height: 14px; border-bottom: 2px solid var(--matrix); border-right: 2px solid var(--matrix); }
+h2 { margin: 0 0 10px; font-size: 15px; font-weight: normal; letter-spacing: .22em; color: var(--matrix); text-transform: uppercase; }
+h2 .sub { color: var(--muted); letter-spacing: .05em; text-transform: none; font-size: 12px; margin-left: 8px; }
+.muted { color: var(--muted); }
+.up { color: var(--up); }
+.down { color: var(--down); }
+
+/* ---------- News ---------- */
+.lage { border-left: 2px solid var(--matrix); padding: 6px 12px; margin-bottom: 12px; color: var(--text); }
+.lage .meta { font-size: 12px; color: var(--muted); }
+.news { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; }
+.ncard { border: 1px solid var(--line); padding: 10px 12px; background: rgba(0,20,8,.55); transition: border-color .15s, transform .15s; }
+.ncard:hover { border-color: var(--matrix); transform: translateY(-2px); box-shadow: 0 0 18px rgba(0,255,65,.15); }
+.ncard a { color: var(--text); text-decoration: none; }
+.ncard a:hover { color: var(--matrix); }
+.tag { display: inline-block; font-size: 11px; letter-spacing: .08em; padding: 1px 7px; border: 1px solid var(--line-strong); color: var(--matrix); margin-bottom: 6px; }
+.impact { float: right; letter-spacing: 1px; color: var(--matrix); font-size: 12px; }
+.impact i { color: rgba(0,255,65,.2); font-style: normal; }
+.ncard .src { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.chain { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.chain b { color: var(--text); font-weight: normal; }
+
+/* ---------- Steuerung ---------- */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+.presets { display: flex; flex-wrap: wrap; gap: 4px; }
+.presets button, .seg button { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 5px 10px; cursor: pointer; font-size: 13px; }
+.presets button:hover, .seg button:hover { color: var(--matrix); border-color: var(--line-strong); }
+.presets button[aria-pressed="true"], .seg button[aria-pressed="true"] { color: #001a06; background: var(--matrix); border-color: var(--matrix); box-shadow: 0 0 12px rgba(0,255,65,.5); }
+.dates { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.dates input { background: #000; color: var(--text); border: 1px solid var(--line); padding: 4px 6px; color-scheme: dark; }
+.slider { position: relative; height: 34px; margin: 2px 4px 6px; }
+.slider .rail { position: absolute; left: 0; right: 0; top: 15px; height: 4px; background: rgba(0,255,65,.12); }
+.slider .sel { position: absolute; top: 15px; height: 4px; background: var(--matrix); box-shadow: 0 0 10px var(--matrix); }
+.slider input { position: absolute; left: 0; width: 100%; top: 6px; margin: 0; pointer-events: none; -webkit-appearance: none; appearance: none; background: transparent; height: 22px; }
+.slider input::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 16px; height: 22px; background: #000; border: 2px solid var(--matrix); cursor: ew-resize; box-shadow: 0 0 8px var(--matrix); }
+.slider input::-moz-range-thumb { pointer-events: auto; width: 14px; height: 20px; background: #000; border: 2px solid var(--matrix); cursor: ew-resize; border-radius: 0; }
+.slider input::-moz-range-track { background: transparent; }
+
+/* ---------- Charts ---------- */
+.chart { width: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 8px 0 0; }
+.chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); padding: 4px 9px; cursor: pointer; font-size: 13px; background: rgba(0,0,0,.4); user-select: none; }
+.chip:hover { border-color: var(--line-strong); }
+.chip .sw { width: 14px; height: 3px; border-radius: 2px; }
+.chip .val { color: var(--muted); }
+.chip.off { opacity: .38; }
+.chip.off .sw { background: transparent !important; outline: 1px dashed var(--muted); }
+.tip { position: absolute; pointer-events: none; z-index: 5; background: rgba(0,8,3,.95); border: 1px solid var(--line-strong); padding: 8px 10px; font-size: 12px; min-width: 190px; display: none; box-shadow: 0 0 16px rgba(0,255,65,.2); }
+.tip .d { color: var(--matrix); margin-bottom: 4px; }
+.tip .r { display: flex; justify-content: space-between; gap: 12px; }
+.tip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.tip .r i { width: 10px; height: 3px; display: inline-block; border-radius: 2px; }
+.u-axis { color: var(--muted); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.seg { display: inline-flex; }
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+table.data th, table.data td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+table.data th:first-child, table.data td:first-child { text-align: left; }
+table.data th { color: var(--muted); font-weight: normal; }
+
+/* ---------- Karten ---------- */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-top: 12px; }
+.card { border: 1px solid var(--line); padding: 9px 10px 6px; cursor: pointer; background: rgba(0,0,0,.35); transition: border-color .15s, box-shadow .15s; position: relative; }
+.card:hover, .card.focus { border-color: var(--matrix); box-shadow: 0 0 14px rgba(0,255,65,.18); }
+.card .n { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.card .n i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
+.card .v { font-size: 19px; color: var(--text); margin: 2px 0; }
+.card .c { font-size: 13px; display: flex; justify-content: space-between; }
+.card svg { width: 100%; height: 30px; display: block; margin-top: 3px; }
+
+/* ---------- Hot Picks ---------- */
+.picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.picks h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .18em; color: var(--muted); font-weight: normal; }
+.pick { display: grid; grid-template-columns: 30px 1fr auto; gap: 4px 10px; border: 1px solid var(--line); padding: 8px 10px; margin-bottom: 6px; background: rgba(0,0,0,.35); }
+.pick:hover { border-color: var(--line-strong); }
+.pick .rk { color: var(--matrix); font-size: 20px; text-shadow: 0 0 8px rgba(0,255,65,.6); }
+.pick .nm { color: var(--text); }
+.pick .nm small { color: var(--muted); margin-left: 6px; }
+.pick .rt { text-align: right; font-size: 13px; }
+.pick .why { grid-column: 2 / 4; font-size: 12px; color: var(--muted); }
+.badge { font-size: 11px; border: 1px solid var(--line-strong); padding: 0 6px; color: var(--matrix); margin-left: 6px; }
+.empty { color: var(--muted); font-size: 13px; border: 1px dashed var(--line); padding: 10px; }
+
+/* ---------- Log ---------- */
+.log { font-size: 13px; max-height: 260px; overflow: auto; }
+.log div { padding: 4px 0; border-bottom: 1px dotted var(--line); }
+.log time { color: var(--muted); margin-right: 10px; }
+
+footer { margin-top: 22px; font-size: 12px; color: var(--muted); text-align: center; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  .ticker { font-size: 12px; }
+  .dates { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker .track { animation: none; }
+  #rain { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="intro" role="dialog" aria-label="Startanimation – klicken zum Überspringen">
+  <canvas id="introRain"></canvas>
+  <div class="boot" id="boot"></div>
+  <div class="skip">[ KLICK / TASTE = ÜBERSPRINGEN ]</div>
+</div>
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">TRADEBOT // KOMMANDOZENTRALE<small>GLOBAL MARKET SURVEILLANCE</small></div>
+    <div class="status">
+      <span>UTC <b id="clockUtc">--:--:--</b></span>
+      <span>BERLIN <b id="clockBer">--:--:--</b></span>
+      <span>DATEN <b id="gen">–</b></span>
+      <span class="pill" id="regime">–</span>
+      <button class="tbtn" id="rainBtn" type="button" aria-pressed="true">RAIN: AN</button>
+    </div>
+  </header>
+  <div class="ticker" aria-label="Tagesveränderungen"><div class="track" id="ticker"></div></div>
+
+  <section class="panel" aria-labelledby="h-news">
+    <h2 id="h-news">// Kritische Lage<span class="sub">News mit dem größten Einfluss auf die Kurse</span></h2>
+    <div id="lage"></div>
+    <div class="news" id="news"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-main">
+    <h2 id="h-main">// Weltindizes<span class="sub" id="mainSub"></span></h2>
+    <div class="controls">
+      <div class="presets" id="presets" role="group" aria-label="Zeitraum"></div>
+      <div class="dates">
+        <label for="dFrom">VON</label><input type="date" id="dFrom">
+        <label for="dTo">BIS</label><input type="date" id="dTo">
+      </div>
+    </div>
+    <div class="slider" id="slider">
+      <div class="rail"></div><div class="sel" id="sliderSel"></div>
+      <input type="range" id="r0" aria-label="Startdatum">
+      <input type="range" id="r1" aria-label="Enddatum">
+    </div>
+    <div class="chart" id="mainChart"><div class="tip" id="mainTip"></div></div>
+    <div class="legend" id="mainLegend"></div>
+    <div class="toolbar">
+      <span id="modeInfo">Veränderung in % seit Beginn des Zeitraums · Klick auf Legende = ein/aus · Klick auf Karte = Einzelansicht</span>
+      <span class="seg" role="group" aria-label="Ansicht">
+        <button type="button" id="btnChart" aria-pressed="true">CHART</button>
+        <button type="button" id="btnTable" aria-pressed="false">TABELLE</button>
+      </span>
+    </div>
+    <div id="mainTable" hidden></div>
+    <div class="cards" id="indexCards"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-picks">
+    <h2 id="h-picks">// Hot-Picks<span class="sub">Stärkster Trend + KI-Ideen · keine Garantie, keine Anlageberatung</span></h2>
+    <div class="picks">
+      <div><h3>BRANCHEN</h3><div id="pSectors"></div></div>
+      <div><h3>UNTERNEHMEN</h3><div id="pStocks"></div></div>
+      <div><h3>AKTIVE SIGNALE &amp; KI-IDEEN</h3><div id="pPositions"></div></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-com">
+    <h2 id="h-com">// Rohstoffe, Öl &amp; Gas<span class="sub">gleicher Zeitraum wie oben</span></h2>
+    <div class="controls"><div class="presets" id="comTabs" role="group" aria-label="Gruppe"></div></div>
+    <div class="chart" id="comChart"><div class="tip" id="comTip"></div></div>
+    <div class="legend" id="comLegend"></div>
+    <div class="cards" id="comCards"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-log">
+    <h2 id="h-log">// Signal-Protokoll<span class="sub" id="record"></span></h2>
+    <div class="log" id="log"></div>
+  </section>
+
+  <footer>Daten: Yahoo Finance, Google News · Aktualisierung mehrmals täglich durch den TradeBot · Keine Anlageberatung. Vergangene Entwicklung ist keine Garantie.</footer>
+</div>
+
+<script src="vendor/uPlot.iife.min.js"></script>
+<script src="data.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.DASH;
+const COLORS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"].map(v => getComputedStyle(document.documentElement).getPropertyValue(v).trim());
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+/* ================= Matrix-Regen ================= */
+function rain(canvas, opts) {
+  const ctx = canvas.getContext("2d");
+  let cols = [], size = opts.size, w = 0, h = 0, raf = 0, last = 0, running = true;
+  function resize() {
+    w = canvas.width = canvas.clientWidth || innerWidth;
+    h = canvas.height = canvas.clientHeight || innerHeight;
+    cols = Array.from({ length: Math.ceil(w / size) }, () => Math.random() * -h / size);
+  }
+  function frame(t) {
+    raf = requestAnimationFrame(frame);
+    if (!running || t - last < 1000 / opts.fps) return;
+    last = t;
+    ctx.fillStyle = "rgba(0,0,0," + opts.fade + ")";
+    ctx.fillRect(0, 0, w, h);
+    ctx.font = size + "px 'Share Tech Mono', monospace";
+    for (let i = 0; i < cols.length; i++) {
+      const y = cols[i] * size;
+      const ch = Math.random() < 0.5 ? "0" : "1";
+      ctx.fillStyle = Math.random() < 0.06 ? "#d8ffe0" : "#00ff41";
+      ctx.fillText(ch, i * size, y);
+      if (y > h && Math.random() > 0.975) cols[i] = 0;
+      cols[i] += opts.speed;
+    }
+  }
+  resize(); addEventListener("resize", resize);
+  raf = requestAnimationFrame(frame);
+  return { stop() { cancelAnimationFrame(raf); }, pause(p) { running = !p; if (p) ctx.clearRect(0, 0, w, h); } };
+}
+
+const intro = document.getElementById("intro");
+function endIntro() {
+  if (intro.classList.contains("gone")) return;
+  intro.classList.add("gone");
+  setTimeout(() => { introRain && introRain.stop(); intro.remove(); }, 900);
+}
+let introRain = null;
+if (reduced) { intro.remove(); }
+else {
+  introRain = rain(document.getElementById("introRain"), { size: 18, fps: 30, fade: 0.08, speed: 1 });
+  const lines = ["> INITIALISIERE KOMMANDOZENTRALE ...", "> LADE " + (D ? D.dates.length.toLocaleString("de-DE") : "0") + " HANDELSTAGE MARKTDATEN ...",
+                 "> SCANNE WELTLAGE ...", "> VERBINDUNG HERGESTELLT"];
+  const boot = document.getElementById("boot");
+  let li = 0, ci = 0, p = null;
+  (function type() {
+    if (li >= lines.length) { p.classList.add("cursor"); setTimeout(endIntro, 700); return; }
+    if (ci === 0) { if (p) p.classList.remove("cursor"); p = document.createElement("p"); p.className = "cursor"; boot.appendChild(p); }
+    p.textContent = lines[li].slice(0, ++ci);
+    if (ci >= lines[li].length) { li++; ci = 0; setTimeout(type, 260); } else setTimeout(type, 22);
+  })();
+  intro.addEventListener("click", endIntro);
+  addEventListener("keydown", endIntro, { once: true });
+}
+
+const bg = reduced ? null : rain(document.getElementById("rain"), { size: 16, fps: 14, fade: 0.12, speed: 0.6 });
+const rainBtn = document.getElementById("rainBtn");
+function setRain(on) {
+  rainBtn.textContent = "RAIN: " + (on ? "AN" : "AUS"); rainBtn.setAttribute("aria-pressed", on);
+  if (bg) bg.pause(!on); store.set("rain", on ? "1" : "0");
+}
+rainBtn.addEventListener("click", () => setRain(rainBtn.getAttribute("aria-pressed") !== "true"));
+setRain(store.get("rain") !== "0");
+
+/* ================= Uhr ================= */
+const fmtTime = tz => new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: tz });
+const fU = fmtTime("UTC"), fB = fmtTime("Europe/Berlin");
+const cU = document.getElementById("clockUtc"), cB = document.getElementById("clockBer");
+const tick = () => { const n = new Date(); cU.textContent = fU.format(n); cB.textContent = fB.format(n); };
+tick(); setInterval(tick, 1000);
+
+if (!D) {
+  document.getElementById("news").innerHTML = '<div class="empty">Noch keine Daten. Der TradeBot schreibt sie beim nächsten Lauf (Actions → Trading-Signale → Run workflow).</div>';
+  return;
+}
+
+/* ================= Helfer ================= */
+const DAY = 86400;
+const N = D.dates.length;
+const xs = D.dates.map(d => d * DAY);
+const S = D.series;
+const nf = (v, d = 2) => v == null ? "–" : v.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = v => v == null ? "–" : (v > 0 ? "▲ +" : v < 0 ? "▼ " : "■ ") + nf(v * 100, 1) + " %";
+const cls = v => v == null ? "muted" : v > 0 ? "up" : v < 0 ? "down" : "muted";
+const dstr = i => new Date(xs[i] * 1000).toISOString().slice(0, 10);
+const dlabel = i => new Date(xs[i] * 1000).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function firstIdx(v, a, b) { for (let j = a; j <= b; j++) if (v[j] != null) return j; return -1; }
+function lastIdx(v, a, b) { for (let j = b; j >= a; j--) if (v[j] != null) return j; return -1; }
+function change(t, a, b) {
+  const v = S[t].v, i = firstIdx(v, a, b), j = lastIdx(v, a, b);
+  return i < 0 || j <= i ? null : v[j] / v[i] - 1;
+}
+function dayChange(t, b) {
+  const v = S[t].v, j = lastIdx(v, 0, b), i = j > 0 ? lastIdx(v, 0, j - 1) : -1;
+  return i < 0 ? null : v[j] / v[i] - 1;
+}
+function idxForDate(ts, after = true) {
+  let lo = 0, hi = N - 1;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (xs[m] < ts) lo = m + 1; else hi = m; }
+  return after ? lo : (xs[lo] > ts && lo > 0 ? lo - 1 : lo);
+}
+const relTime = iso => {
+  if (!iso) return "";
+  const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  return m < 60 ? `vor ${m} Min.` : m < 1440 ? `vor ${Math.round(m / 60)} Std.` : `vor ${Math.round(m / 1440)} T.`;
+};
+
+/* ================= Kopf, Ticker ================= */
+document.getElementById("gen").textContent = new Date(D.generated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+document.getElementById("regime").textContent = D.regime || "–";
+const tickSyms = [...D.groups["Indizes"], ...D.groups["Weitere Indizes"], ...Object.entries(D.groups).filter(([g]) => !g.includes("Indizes")).flatMap(([, l]) => l)];
+const tickHtml = tickSyms.map(t => { const c = dayChange(t, N - 1); return `<span class="item">${esc(S[t].name)} <span class="${cls(c)}">${pct(c)}</span></span>`; }).join("");
+document.getElementById("ticker").innerHTML = tickHtml + tickHtml;
+
+/* ================= News ================= */
+(function news() {
+  const ki = D.ki;
+  let lage = "";
+  if (ki && ki.lagebild) {
+    lage = `<div class="lage"><div class="meta">KI-LAGEBILD · ${esc(relTime(ki.time))}</div>${esc(ki.lagebild)}</div>`;
+  }
+  document.getElementById("lage").innerHTML = lage;
+  const cards = [];
+  for (const m of (ki && ki.makro_signale) || []) {
+    cards.push(`<article class="ncard"><span class="tag">KI-SZENARIO · ${esc(m.wahrscheinlichkeit)}</span>
+      <div>${esc(m.titel)}</div><div class="chain">${esc(m.ausloeser)}</div>
+      <div class="chain"><b>${esc(m.wirkungskette.join(" → "))}</b></div>
+      <div class="chain"><span class="up">▲ ${esc(m.gewinner.join(", "))}</span><br><span class="down">▼ ${esc(m.verlierer.join(", "))}</span></div>
+      <div class="src">⏱ ${esc(m.zeithorizont)}</div></article>`);
+  }
+  for (const n of D.news) {
+    const lvl = Math.min(5, Math.max(1, Math.round(n.score / 2)));
+    cards.push(`<article class="ncard"><span class="tag">${esc(n.tag)}</span>
+      <span class="impact" title="Einfluss-Score ${n.score}">${"▮".repeat(lvl)}<i>${"▮".repeat(5 - lvl)}</i></span>
+      <div><a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a></div>
+      <div class="src">${esc(n.source)} · ${esc(relTime(n.time))}</div></article>`);
+  }
+  document.getElementById("news").innerHTML = cards.join("") || '<div class="empty">Aktuell keine marktbewegenden Schlagzeilen.</div>';
+})();
+
+/* ================= Zeitraum-Steuerung ================= */
+const range = { i0: 0, i1: N - 1 };
+const PRESETS = [["1W", 7], ["1M", 30], ["3M", 91], ["6M", 182], ["YTD", "ytd"], ["1J", 365], ["3J", 1095], ["5J", 1826], ["10J", 3652], ["MAX", "max"]];
+const presetBox = document.getElementById("presets");
+const r0 = document.getElementById("r0"), r1 = document.getElementById("r1");
+const dFrom = document.getElementById("dFrom"), dTo = document.getElementById("dTo");
+[r0, r1].forEach(r => { r.min = 0; r.max = N - 1; r.step = 1; });
+dFrom.min = dTo.min = dstr(0); dFrom.max = dTo.max = dstr(N - 1);
+PRESETS.forEach(([label, days]) => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.p = label;
+  b.addEventListener("click", () => applyPreset(label, days)); presetBox.appendChild(b);
+});
+function applyPreset(label, days) {
+  const end = xs[N - 1];
+  let i0 = 0;
+  if (days === "ytd") i0 = idxForDate(Date.UTC(new Date(end * 1000).getUTCFullYear(), 0, 1) / 1000);
+  else if (days !== "max") i0 = idxForDate(end - days * DAY);
+  setRange(i0, N - 1, label);
+}
+function setRange(i0, i1, preset = null) {
+  i0 = Math.max(0, Math.min(i0, N - 2)); i1 = Math.max(i0 + 1, Math.min(i1, N - 1));
+  range.i0 = i0; range.i1 = i1;
+  r0.value = i0; r1.value = i1; dFrom.value = dstr(i0); dTo.value = dstr(i1);
+  const sel = document.getElementById("sliderSel");
+  sel.style.left = (i0 / (N - 1) * 100) + "%"; sel.style.width = ((i1 - i0) / (N - 1) * 100) + "%";
+  presetBox.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === preset));
+  if (preset) store.set("preset", preset);
+  renderAll();
+}
+r0.addEventListener("input", () => setRange(Math.min(+r0.value, +r1.value - 1), range.i1));
+r1.addEventListener("input", () => setRange(range.i0, Math.max(+r1.value, +r0.value + 1)));
+dFrom.addEventListener("change", () => dFrom.value && setRange(idxForDate(Date.parse(dFrom.value) / 1000), range.i1));
+dTo.addEventListener("change", () => dTo.value && setRange(range.i0, idxForDate(Date.parse(dTo.value) / 1000, false)));
+addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  const i = PRESETS.findIndex(([l]) => l === store.get("preset"));
+  if (e.key === "ArrowRight" && i < PRESETS.length - 1) applyPreset(...PRESETS[i + 1]);
+  if (e.key === "ArrowLeft" && i > 0) applyPreset(...PRESETS[i - 1]);
+});
+
+/* ================= Chart-Fabrik ================= */
+function makeChart(el, tipEl, legendEl, getSyms) {
+  const state = { syms: [], hidden: new Set(), focus: null, u: null };
+  function build() {
+    const syms = getSyms();
+    const absolute = state.focus != null;
+    const shown = absolute ? [state.focus] : syms;
+    const { i0, i1 } = range;
+    const data = [xs.slice(i0, i1 + 1)];
+    for (const t of shown) {
+      const v = S[t].v, b = firstIdx(v, i0, i1), base = b >= 0 ? v[b] : null;
+      data.push(v.slice(i0, i1 + 1).map(x => x == null || base == null ? null : absolute ? x : (x / base - 1) * 100));
+    }
+    const colorOf = t => COLORS[Math.max(0, syms.indexOf(t))] || css("--matrix");
+    const opts = {
+      width: el.clientWidth, height: el.dataset.h === "s" ? Math.max(240, Math.min(360, innerHeight * 0.38)) : Math.max(300, Math.min(560, innerHeight * 0.55)),
+      legend: { show: false },
+      cursor: { sync: { key: "tb" }, points: { size: 8, width: 2, stroke: css("--surface-1") }, drag: { x: true, y: false } },
+      scales: { x: { time: true } },
+      axes: [
+        { stroke: css("--muted"), grid: { stroke: css("--grid"), width: 1 }, ticks: { stroke: css("--grid") }, font: "12px Share Tech Mono" },
+        { stroke: css("--muted"), grid: { stroke: css("--grid"), width: 1 }, ticks: { stroke: css("--grid") }, font: "12px Share Tech Mono", size: 64,
+          values: (u, vals) => vals.map(v => absolute ? nf(v, v >= 100 ? 0 : 2) : (v > 0 ? "+" : "") + nf(v, 0) + "%") },
+      ],
+      series: [{}, ...shown.map(t => ({ label: S[t].name, stroke: colorOf(t), width: 2, spanGaps: true, show: !state.hidden.has(t), points: { show: false } }))],
+      hooks: {
+        setCursor: [u => tooltip(u, shown, absolute, colorOf)],
+        setSelect: [u => { // Ziehen im Chart = Zeitraum zoomen
+          if (u.select.width < 8) return;
+          const a = u.posToIdx(u.select.left), b = u.posToIdx(u.select.left + u.select.width);
+          u.setSelect({ width: 0, height: 0 }, false);
+          setTimeout(() => setRange(range.i0 + a, range.i0 + b));
+        }],
+      },
+    };
+    if (!absolute) opts.hooks.draw = [u => { // Nulllinie
+      const y = u.valToPos(0, "y", true); const c = u.ctx;
+      c.save(); c.strokeStyle = "rgba(201,247,211,.35)"; c.setLineDash([4, 4]); c.beginPath();
+      c.moveTo(u.bbox.left, y); c.lineTo(u.bbox.left + u.bbox.width, y); c.stroke(); c.restore();
+    }];
+    if (state.u) state.u.destroy();
+    state.u = new uPlot(opts, data, el);
+    el.appendChild(tipEl);
+    state.syms = shown;
+    legend(shown, absolute, colorOf);
+    if (api.onBuild) api.onBuild();
+  }
+  function legend(shown, absolute, colorOf) {
+    const { i0, i1 } = range;
+    legendEl.innerHTML = "";
+    shown.forEach((t, k) => {
+      const c = change(t, i0, i1);
+      const chip = document.createElement("button");
+      chip.type = "button"; chip.className = "chip" + (state.hidden.has(t) ? " off" : "");
+      chip.setAttribute("aria-pressed", !state.hidden.has(t));
+      chip.innerHTML = `<span class="sw" style="background:${colorOf(t)}"></span>${esc(S[t].name)} <span class="val ${cls(c)}">${pct(c)}</span>`;
+      chip.addEventListener("click", () => {
+        if (absolute) { state.focus = null; build(); return; }
+        state.hidden.has(t) ? state.hidden.delete(t) : state.hidden.add(t);
+        state.u.setSeries(k + 1, { show: !state.hidden.has(t) });
+        chip.classList.toggle("off"); chip.setAttribute("aria-pressed", !state.hidden.has(t));
+      });
+      legendEl.appendChild(chip);
+    });
+    if (absolute) {
+      const back = document.createElement("button"); back.type = "button"; back.className = "chip"; back.textContent = "◀ ALLE ZEIGEN";
+      back.addEventListener("click", () => { state.focus = null; build(); }); legendEl.appendChild(back);
+    }
+  }
+  function tooltip(u, shown, absolute, colorOf) {
+    const i = u.cursor.idx;
+    if (i == null || u.cursor.left < 0) { tipEl.style.display = "none"; return; }
+    const rows = shown.map((t, k) => ({ t, k, v: u.data[k + 1][i] })).filter(r => r.v != null && !state.hidden.has(r.t)).sort((a, b) => b.v - a.v);
+    tipEl.innerHTML = `<div class="d">${dlabel(range.i0 + i)}</div>` + rows.map(r =>
+      `<div class="r"><span><i style="background:${colorOf(r.t)}"></i>${esc(S[r.t].name)}</span><span class="${absolute ? "" : cls(r.v)}">${absolute ? nf(r.v) : (r.v > 0 ? "+" : "") + nf(r.v, 1) + " %"}</span></div>`).join("");
+    tipEl.style.display = "block";
+    const left = u.cursor.left + u.over.offsetLeft, w = tipEl.offsetWidth;
+    tipEl.style.left = Math.max(0, left + 16 + w > el.clientWidth ? left - w - 16 : left + 16) + "px";
+    tipEl.style.top = Math.max(0, u.cursor.top + u.over.offsetTop - 10) + "px";
+  }
+  new ResizeObserver(() => state.u && state.u.setSize({ width: el.clientWidth, height: state.u.height })).observe(el);
+  const api = { state, build, onBuild: null, focus(t) { state.focus = state.focus === t ? null : t; build(); } };
+  return api;
+}
+
+/* ================= Karten ================= */
+function spark(t, color) {
+  const v = S[t].v, pts = [], { i0, i1 } = range, step = Math.max(1, Math.floor((i1 - i0) / 120));
+  for (let j = i0; j <= i1; j += step) if (v[j] != null) pts.push(v[j]);
+  if (pts.length < 2) return "";
+  const mn = Math.min(...pts), mx = Math.max(...pts), sp = mx - mn || 1;
+  const d = pts.map((p, k) => `${(k / (pts.length - 1) * 100).toFixed(2)},${(28 - (p - mn) / sp * 26).toFixed(2)}`).join(" ");
+  return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="${d}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function cards(box, syms, colorOf, onClick, focused) {
+  const { i0, i1 } = range;
+  box.innerHTML = "";
+  syms.forEach((t, k) => {
+    const v = S[t].v, j = lastIdx(v, i0, i1), c = change(t, i0, i1), dc = dayChange(t, i1);
+    const sc = colorOf(t), color = sc || (c == null ? css("--muted") : c >= 0 ? css("--up") : css("--down"));
+    const el = document.createElement("button");
+    el.type = "button"; el.className = "card" + (focused === t ? " focus" : "");
+    el.innerHTML = `<div class="n">${sc ? `<i style="background:${sc}"></i>` : ""}${esc(S[t].name)}</div>
+      <div class="v">${j >= 0 ? nf(v[j], v[j] >= 1000 ? 0 : 2) : "–"}</div>
+      <div class="c"><span class="${cls(c)}" title="Zeitraum">${pct(c)}</span><span class="${cls(dc)}" title="Tag">${dc == null ? "" : "1T " + (dc > 0 ? "+" : "") + nf(dc * 100, 1) + "%"}</span></div>
+      ${spark(t, color)}`;
+    el.addEventListener("click", () => onClick(t));
+    box.appendChild(el);
+  });
+}
+
+/* ================= Hauptchart: Indizes ================= */
+const mainEl = document.getElementById("mainChart");
+const main = makeChart(mainEl, document.getElementById("mainTip"), document.getElementById("mainLegend"), () => D.groups["Indizes"]);
+const indexCards = document.getElementById("indexCards");
+main.onBuild = () => renderMainExtras();
+function focusIndex(t) {
+  if (D.groups["Indizes"].includes(t)) main.focus(t);
+  else { main.state.focus = main.state.focus === t ? null : t; main.build(); }
+  mainEl.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+}
+function renderMainExtras() {
+  const f = main.state.focus;
+  document.getElementById("modeInfo").textContent = f ? `Einzelansicht ${S[f].name} in Indexpunkten · Klick auf „Alle zeigen“ = zurück`
+    : "Veränderung in % seit Beginn des Zeitraums · Legende = ein/aus · Karte = Einzelansicht · im Chart ziehen = zoomen";
+  document.getElementById("mainSub").textContent = `${dlabel(range.i0)} – ${dlabel(range.i1)}`;
+  const all = [...D.groups["Indizes"], ...D.groups["Weitere Indizes"]];
+  cards(indexCards, all, t => COLORS[D.groups["Indizes"].indexOf(t)] || null, focusIndex, f);
+  const { i0, i1 } = range;
+  document.getElementById("mainTable").innerHTML = `<table class="data"><thead><tr><th>Index</th><th>${dlabel(i0)}</th><th>${dlabel(i1)}</th><th>Veränderung</th></tr></thead><tbody>` +
+    all.map(t => { const v = S[t].v, a = firstIdx(v, i0, i1), b = lastIdx(v, i0, i1), c = change(t, i0, i1);
+      return `<tr><td>${esc(S[t].name)}</td><td>${a >= 0 ? nf(v[a]) : "–"}</td><td>${b >= 0 ? nf(v[b]) : "–"}</td><td class="${cls(c)}">${pct(c)}</td></tr>`; }).join("") + "</tbody></table>";
+}
+const btnChart = document.getElementById("btnChart"), btnTable = document.getElementById("btnTable");
+function view(table) {
+  btnChart.setAttribute("aria-pressed", !table); btnTable.setAttribute("aria-pressed", table);
+  document.getElementById("mainTable").hidden = !table; mainEl.hidden = table; document.getElementById("mainLegend").hidden = table;
+  if (!table) main.build();
+}
+btnChart.addEventListener("click", () => view(false)); btnTable.addEventListener("click", () => view(true));
+
+/* ================= Rohstoffe ================= */
+const comGroups = Object.keys(D.groups).filter(g => !g.includes("Indizes"));
+let comGroup = store.get("comGroup");
+if (!comGroups.includes(comGroup)) comGroup = comGroups[0];
+const comTabs = document.getElementById("comTabs");
+comGroups.forEach(g => { const b = document.createElement("button"); b.type = "button"; b.textContent = g.toUpperCase(); b.dataset.g = g;
+  b.addEventListener("click", () => { comGroup = g; store.set("comGroup", g); com.state.focus = null; com.state.hidden.clear(); renderCom(); }); comTabs.appendChild(b); });
+const comEl = document.getElementById("comChart"); comEl.dataset.h = "s";
+const com = makeChart(comEl, document.getElementById("comTip"), document.getElementById("comLegend"), () => D.groups[comGroup]);
+com.onBuild = () => renderComCards();
+function renderCom() {
+  comTabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.g === comGroup));
+  com.build();
+}
+function renderComCards() {
+  const g = D.groups[comGroup];
+  cards(document.getElementById("comCards"), g, t => COLORS[g.indexOf(t)], t => com.focus(t), com.state.focus);
+}
+
+/* ================= Hot-Picks ================= */
+(function picks() {
+  const P = D.picks;
+  const row = (rank, name, ticker, right, why, badge = "") => `<div class="pick"><div class="rk">${rank}</div>
+    <div class="nm">${esc(name)}${name !== ticker ? `<small>${esc(ticker)}</small>` : ""}${badge}</div><div class="rt">${right}</div><div class="why">${esc(why)}</div></div>`;
+  const perf = p => `<span class="${cls(p.m3)}">3M ${p.m3 > 0 ? "+" : ""}${nf(p.m3 * 100, 0)}%</span><br><span class="${cls(p.m6)}">6M ${p.m6 > 0 ? "+" : ""}${nf(p.m6 * 100, 0)}%</span>`;
+  const none = '<div class="empty">Aktuell erfüllt kein Wert die Trendkriterien.</div>';
+  document.getElementById("pSectors").innerHTML = P.sectors.map((p, i) => row(i + 1, p.name, p.ticker, perf(p), p.reason)).join("") || none;
+  document.getElementById("pStocks").innerHTML = P.stocks.map((p, i) => row(i + 1, p.name, p.ticker, perf(p), p.reason)).join("") || none;
+  document.getElementById("pPositions").innerHTML = P.positions.map((p, i) => {
+    const up = p.target / p.ref_close - 1, dn = p.stop / p.ref_close - 1;
+    return row(i + 1, p.name || p.ticker, p.ticker, `<span class="up">Ziel ${nf(up * 100, 0)}%</span><br><span class="down">Stop ${nf(dn * 100, 0)}%</span>`,
+      `seit ${p.signal_date}${p.horizon ? " · Horizont " + p.horizon : ""} · Einstieg bis ${nf(p.ref_close * 1.01)}`,
+      `<span class="badge">${p.strategy === "ki" ? "KI-IDEE" : "SWING"}</span>`);
+  }).join("") || '<div class="empty">Keine offenen Signale. Neue Kaufideen erscheinen hier und per Telegram.</div>';
+})();
+
+/* ================= Protokoll ================= */
+(function log() {
+  const icon = { warning: "⚠️", macro: "🌍", idea: "🟢", signal: "🟢" };
+  document.getElementById("log").innerHTML = D.alerts.map(a => `<div><time>${new Date(a.time).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</time>${icon[a.kind] || "•"} ${esc(a.title)}</div>`).join("")
+    || '<div class="muted">Noch keine Meldungen.</div>';
+  const r = D.record;
+  document.getElementById("record").textContent = r.closed ? `Live-Bilanz: ${r.wins}/${r.closed} Treffer` : "Live-Bilanz: noch keine abgeschlossenen Signale";
+})();
+
+/* ================= Start ================= */
+function renderAll() { main.build(); renderCom(); }
+const saved = PRESETS.find(([l]) => l === store.get("preset")) || PRESETS[5];
+applyPreset(...saved);
+})();
+</script>
+</body>
+</html>

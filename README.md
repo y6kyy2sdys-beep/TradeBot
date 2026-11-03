@@ -60,3 +60,13 @@ Läufe: werktags nach Börsenschluss Asien, Europa und USA, am Wochenende für K
 - Bei 100 € und 1 € Gebühr pro Order kosten Kauf + Verkauf 2 %. Der Bot rechnet das ein,
   deshalb kommen nur wenige Signale. Das ist Absicht.
 - Keine Anlageberatung. Immer Stop-Loss setzen und nur Geld einsetzen, dessen Verlust du verkraftest.
+
+## Dashboard (Kommandozentrale)
+
+`docs/index.html` ist ein Dashboard im Matrix-Look: marktbewegende News, die größten Weltindizes
+mit Zeitregler (1W bis 10 Jahre, Datumsauswahl, Zoom per Ziehen), Hot-Picks, Rohstoffe/Öl/Gas
+und das Signal-Protokoll. Der Bot schreibt die Daten bei jedem Lauf nach `docs/data.js`.
+
+Einschalten: **Settings → Pages → Source: Deploy from a branch → Branch `master`, Ordner `/docs` → Save**.
+Nach 1–2 Minuten ist es unter `https://<benutzername>.github.io/TradeBot/` erreichbar.
+(GitHub Pages ist bei öffentlichen Repos kostenlos.)

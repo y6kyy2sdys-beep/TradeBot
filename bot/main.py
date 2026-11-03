@@ -21,7 +21,7 @@ import pandas as pd
 import requests
 import yfinance as yf
 
-from . import analyst, macro
+from . import analyst, dashboard, macro
 from .strategies import STRATEGIES, add_indicators, backtest, simulate_trade
 from .watchlist import MACRO, UNIVERSE
 
@@ -211,8 +211,11 @@ def alert_due(state: dict, key: str) -> bool:
     return datetime.now(timezone.utc) - datetime.fromisoformat(last) >= timedelta(days=days)
 
 
-def mark_alert(state: dict, key: str) -> None:
-    state["alerts"][key] = datetime.now(timezone.utc).isoformat(timespec="minutes")
+def mark_alert(state: dict, key: str, kind: str, title: str) -> None:
+    now = datetime.now(timezone.utc).isoformat(timespec="minutes")
+    state["alerts"][key] = now
+    state.setdefault("alert_log", []).append({"time": now, "kind": kind, "title": title})
+    state["alert_log"] = state["alert_log"][-100:]
 
 
 def save_state(state: dict) -> None:
@@ -436,16 +439,20 @@ def run_analysis(state, mv, heads, rule_alerts, dry_run) -> None:
     if not result:
         return
     send("🧭 <b>KI-Lagebild</b>\n\n" + esc(result["lagebild"]), dry_run)
+    state["last_analysis"] = {
+        "time": datetime.now(timezone.utc).isoformat(timespec="minutes"),
+        "lagebild": result["lagebild"], "makro_signale": result["makro_signale"], "warnungen": result["warnungen"],
+    }
     for m in result["makro_signale"]:
         key = "ki:macro:" + m["titel"].lower()[:40]
         if alert_due(state, key):
             send(ki_macro_message(m), dry_run)
-            mark_alert(state, key)
+            mark_alert(state, key, "macro", m["titel"])
     for w in result["warnungen"]:
         key = "ki:warn:" + w["titel"].lower()[:40]
         if alert_due(state, key):
             send(ki_warning_message(w), dry_run)
-            mark_alert(state, key)
+            mark_alert(state, key, "warning", w["titel"])
     sent = 0
     for idea in result["kaufideen"]:
         reason = validate_idea(idea, mv, state)
@@ -456,6 +463,7 @@ def run_analysis(state, mv, heads, rule_alerts, dry_run) -> None:
             break
         m = mv[idea["ticker"]]
         send(idea_message(idea, m), dry_run)
+        mark_alert(state, "ki:idea:" + idea["ticker"], "idea", f"Kaufidee {idea['name']} ({idea['ticker']})")
         state["open"].append({
             "ticker": idea["ticker"], "name": idea["name"], "currency": "", "strategy": "ki",
             "signal_date": m["date"], "ref_close": round(m["last"], 4),
@@ -501,12 +509,13 @@ def main() -> None:
     evaluate_open(state, data, args.dry_run)
 
     mv = macro.moves(data)
-    heads = macro.headlines()
+    news_items = macro.headline_items()
+    heads = [h["title"] for h in news_items][:40]
     rule_alerts = macro.risk_warnings(mv) + macro.move_alerts(mv) + macro.scenario_alerts(heads, mv)
     for a in rule_alerts:
         if alert_due(state, a.key):
             send(alert_message(a), args.dry_run)
-            mark_alert(state, a.key)
+            mark_alert(state, a.key, a.kind, a.title)
     if args.analysis:
         try:
             run_analysis(state, mv, heads, rule_alerts, args.dry_run)
@@ -535,10 +544,16 @@ def main() -> None:
             "backtest_hit": round(f["bt"].hit_rate, 3), "backtest_trades": f["bt"].trades,
         })
         sent += 1
+        mark_alert(state, f"swing:{f['ticker']}", "signal", f"Swing-Signal {info.get('shortName') or f['ticker']} ({f['ticker']})")
 
     if args.report:
         daily_report(state, ctx, sent, args.dry_run)
     save_state(state)
+    try:
+        dashboard.export(data, news_items, state, ctx["regime"])
+    except Exception as e:
+        print("Dashboard-Export fehlgeschlagen:", repr(e), file=sys.stderr)
+        SEND_FAILURES.append("dashboard")
     print(f"Fertig: {sent} neue Signale, {len(state['open'])} offen")
     if SEND_FAILURES:
         sys.exit(f"Fehler beim Senden/Analysieren: {SEND_FAILURES}")

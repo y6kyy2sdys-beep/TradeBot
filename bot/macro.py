@@ -209,7 +209,8 @@ FEEDS = [
 ]
 
 
-def headlines(limit: int = 40) -> list[str]:
+def headline_items(limit: int = 60) -> list[dict]:
+    """Schlagzeilen mit Quelle, Link und Zeit (Google-News-RSS)."""
     seen, out = set(), []
     for q, hl, gl in FEEDS:
         url = f"https://news.google.com/rss/search?q={quote(q)}&hl={hl}&gl={gl}&ceid={gl}:{hl}"
@@ -221,8 +222,17 @@ def headlines(limit: int = 40) -> list[str]:
             title = (item.findtext("title") or "").strip()
             if title and title not in seen:
                 seen.add(title)
-                out.append(title)
+                out.append({
+                    "title": title,
+                    "link": item.findtext("link") or "",
+                    "source": item.findtext("source") or "",
+                    "time": item.findtext("pubDate") or "",
+                })
     return out[:limit]
+
+
+def headlines(limit: int = 40) -> list[str]:
+    return [h["title"] for h in headline_items(limit)]
 
 
 @dataclass(frozen=True)
