@@ -7,6 +7,7 @@ Fundamentaldaten werden ~1x täglich aktualisiert und in state/fundamentals.json
 
 import json
 import math
+import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -174,6 +175,15 @@ def verdict(tech: dict, info: dict, fee_pct: float) -> dict:
     return {"kurz": score(short), "mittel": score(mid)}
 
 
+def clean_name(raw: str) -> str:
+    """Yahoo-Namen lesbar machen: Gattungskürzel (N, I, V, NA O.N. ...) weg, GROSSBUCHSTABEN normalisieren."""
+    name = re.sub(r"(\s+(N|I|V|A|NA|ON|O\.N\.|INH|VZO|VZ|ST|NAM|EO|-,?\d+))+\.?$", "", " ".join(str(raw).split()))
+    if name.isupper() and len(name) > 4:
+        keep = {"SE", "AG", "CO.", "N.V.", "+", "&"}
+        name = " ".join("KGaA" if w == "KGAA" else w if w in keep or len(w) <= 2 else w.capitalize() for w in name.split())
+    return name.replace("Aktiengesellschaft", "AG")
+
+
 def export(fee_pct: float, calls: dict[str, dict]) -> None:
     infos = load_fundamentals([t for t in TICKERS if t not in CRYPTO])
     closes = _closes(TICKERS)
@@ -186,7 +196,7 @@ def export(fee_pct: float, calls: dict[str, dict]) -> None:
         info = infos.get(t, {})
         tech = technicals(c)
         kind = "Krypto" if t in CRYPTO else "ETF" if t in ETFS or info.get("quoteType") == "ETF" else "Aktie"
-        name = " ".join(str(NAMES.get(t) or info.get("longName") or info.get("shortName") or t).split())
+        name = clean_name(NAMES.get(t) or info.get("longName") or info.get("shortName") or t)
         tgt = info.get("targetMeanPrice")
         profiles.append({
             "t": t, "n": name, "k": kind, "w": wkn(t), "s": search_url(name),

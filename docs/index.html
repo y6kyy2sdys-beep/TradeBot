@@ -242,6 +242,12 @@ table.data th { color: var(--muted); font-weight: normal; }
 .qres .vb { text-align: right; }
 .vtag { font-size: calc(11px * var(--fs)); padding: 0 6px; border: 1px solid; margin-left: 4px; white-space: nowrap; }
 .vtag.g { color: var(--up); } .vtag.n { color: var(--warn); } .vtag.b { color: var(--down); }
+.qres .grp { padding: 6px 14px 10px; border-bottom: 1px solid var(--line); }
+.qres .gh { color: var(--matrix); letter-spacing: .12em; font-size: calc(13px * var(--fs)); margin-bottom: 4px; }
+.qres .gh small { color: var(--muted); }
+.qres .gl { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.qres .gl a { color: var(--text); text-decoration: none; border: 1px solid var(--line); padding: 2px 8px; font-size: calc(13px * var(--fs)); }
+.qres .gl a:hover { border-color: var(--matrix); color: var(--matrix); }
 .qres .none { padding: 12px 14px; color: var(--muted); font-size: calc(14px * var(--fs)); }
 
 /* ---------- Steckbrief ---------- */
@@ -311,7 +317,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     </div>
   </header>
   <div class="search" role="search">
-    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="🔎  Aktie, WKN oder Symbol suchen …  (Taste /)" aria-label="Aktie suchen" aria-controls="qres">
+    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="🔎  Aktie, WKN oder Symbol suchen – oder klicken für alle Werte  (Taste /)" aria-label="Aktie suchen" aria-controls="qres">
     <div class="qres" id="qres" role="listbox"></div>
   </div>
   <div class="ticker" aria-label="Tagesveränderungen"><div class="track" id="ticker"></div></div>
@@ -1069,14 +1075,31 @@ function renderComCards() {
 /* ================= Suche & Steckbrief ================= */
 (function search() {
   const q = document.getElementById("q"), box = document.getElementById("qres"), modal = document.getElementById("modal"), sheet = document.getElementById("sheet");
-  let P = null, loading = null, act = -1, hits = [], pchart = null;
+  let P = null, loading = null, act = -1, hits = [], pchart = null, failed = false;
+  const REGIONS = ["Deutschland", "USA", "Europa", "Asien & Pazifik", "ETFs", "Krypto"];
+  function region(p) {
+    if (p.k === "Krypto") return "Krypto";
+    if (p.k === "ETF") return "ETFs";
+    const t = p.t;
+    if (t.endsWith(".DE")) return "Deutschland";
+    if (/\.(T|HK|KS|AX)$/.test(t) || ["TSM", "BABA", "PDD", "JD", "NIO", "INFY", "SONY"].includes(t)) return "Asien & Pazifik";
+    if (/\.[A-Z]{1,2}$/.test(t)) return "Europa";
+    return "USA";
+  }
+  function overview() {
+    const groups = REGIONS.map(r => [r, P.filter(p => p._r === r).sort((a, b) => a.n.localeCompare(b.n, "de"))]).filter(([, l]) => l.length);
+    box.innerHTML = `<div class="none">${P.length} Werte verfügbar – tippen zum Filtern oder direkt anklicken:</div>` + groups.map(([r, l]) =>
+      `<div class="grp"><div class="gh">${esc(r)} <small>(${l.length})</small></div><div class="gl">${l.map(p => `<a href="#aktie=${encodeURIComponent(p.t)}" data-t="${esc(p.t)}">${esc(p.n)}</a>`).join("")}</div></div>`).join("");
+    box.classList.add("open");
+    box.querySelectorAll("a[data-t]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); open(P.find(p => p.t === a.dataset.t)); }));
+  }
   const norm = t => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   function load() {
     if (P) return Promise.resolve(P);
     if (!loading) loading = new Promise(res => {
       const sc = document.createElement("script"); sc.src = "profiles.js?v=" + (D.generated || "");
-      sc.onload = () => { P = (window.PROFILES || []).map(p => ({ ...p, _n: norm(p.n), _t: norm(p.t), _w: norm(p.w), _s: norm((p.sec || "") + " " + (p.ind || "")) })); res(P); };
-      sc.onerror = () => { P = []; res(P); };
+      sc.onload = () => { P = (window.PROFILES || []).map(p => ({ ...p, _n: norm(p.n), _t: norm(p.t), _w: norm(p.w), _s: norm((p.sec || "") + " " + (p.ind || "")), _r: region(p) })); res(P); };
+      sc.onerror = () => { sc.remove(); loading = null; failed = true; res(null); };  // beim nächsten Tippen erneut versuchen
       document.head.appendChild(sc);
     });
     return loading;
@@ -1096,9 +1119,13 @@ function renderComCards() {
     }).filter(([sc]) => sc > 0).sort((a, b) => b[0] - a[0] || (b[1].mcap || 0) - (a[1].mcap || 0)).slice(0, 10).map(([, p]) => p);
   }
   function render() {
-    if (!P) { box.innerHTML = '<div class="none">Lade Aktiendaten …</div>'; box.classList.add("open"); return; }
+    if (!P) {
+      box.innerHTML = failed ? '<div class="none">Aktiendaten konnten nicht geladen werden – bitte Seite neu laden (die Daten werden evtl. gerade veröffentlicht).</div>'
+        : '<div class="none">Lade Aktiendaten …</div>';
+      box.classList.add("open"); return;
+    }
     hits = find(q.value); act = hits.length ? 0 : -1;
-    if (!q.value.trim()) { box.classList.remove("open"); return; }
+    if (!q.value.trim()) { overview(); return; }
     box.innerHTML = hits.map((p, i) => `<button type="button" role="option" data-i="${i}" class="${i === act ? "act" : ""}">
         <span>${esc(p.n)} <small>${esc(p.t)}${p.w ? " · WKN " + esc(p.w) : ""} · ${esc(p.k)}${p.sec ? " · " + esc(p.sec) : ""}</small></span>
         <span class="vb"><span class="${cls(p.tech.d1)}">${pct(p.tech.d1)}</span><br>
@@ -1108,7 +1135,7 @@ function renderComCards() {
     box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => open(hits[+b.dataset.i])));
   }
   function highlight() { box.querySelectorAll("button").forEach((b, i) => b.classList.toggle("act", i === act)); const a = box.querySelector(".act"); if (a) a.scrollIntoView({ block: "nearest" }); }
-  q.addEventListener("focus", () => load().then(() => q.value && render()));
+  q.addEventListener("focus", () => { render(); load().then(render); });
   q.addEventListener("input", () => { render(); load().then(render); });
   q.addEventListener("keydown", e => {
     if (e.key === "ArrowDown" && hits.length) { act = (act + 1) % hits.length; highlight(); e.preventDefault(); }
