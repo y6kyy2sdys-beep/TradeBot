@@ -64,7 +64,7 @@ PROFILE_EXTRA = [
     "FRE.DE", "FME.DE", "HNR1.DE", "HEI.DE", "HEN3.DE", "MRK.DE", "MTX.DE", "P911.DE", "PAH3.DE", "QIA.DE",
     "RWE.DE", "SRT3.DE", "SHL.DE", "SY1.DE", "VOW3.DE", "VNA.DE", "ZAL.DE",
     # Weitere Deutschland
-    "LHA.DE", "TUI1.DE", "PUM.DE", "HAG.DE", "RENK.DE", "AIXA.DE", "EVT.DE", "DWNI.DE", "TKA.DE", "SAX.DE",
+    "LHA.DE", "TUI1.DE", "PUM.DE", "HAG.DE", "R3NK.DE", "AIXA.DE", "EVT.DE", "DWNI.DE", "TKA.DE", "SAX.DE",
     # USA
     "ABBV", "PFE", "MRK", "PEP", "PG", "HD", "BAC", "WFC", "GS", "MS", "INTC", "CSCO", "IBM", "QCOM", "TXN",
     "NKE", "MCD", "SBUX", "PYPL", "INTU", "NOW", "T", "VZ", "AMGN", "TMO", "ABT", "HON", "DE", "MMM", "F",
@@ -74,7 +74,7 @@ PROFILE_EXTRA = [
     # Europa
     "SAN.PA", "BNP.PA", "SU.PA", "RMS.PA", "KER.PA", "CS.PA", "SAF.PA", "DG.PA", "STLAM.MI", "RACE.MI",
     "ISP.MI", "UCG.MI", "INGA.AS", "PRX.AS", "ADYEN.AS", "PHIA.AS", "HEIA.AS", "UBSG.SW", "ZURN.SW",
-    "ABBN.SW", "CFR.SW", "HSBA.L", "BP.L", "ULVR.L", "GSK.L", "RIO.L", "BARC.L", "RR.L", "BAE.L",
+    "ABBN.SW", "CFR.SW", "HSBA.L", "BP.L", "ULVR.L", "GSK.L", "RIO.L", "BARC.L", "RR.L", "BA.L",
     "SAN.MC", "ITX.MC", "IBE.MC", "NESTE.HE", "NOKIA.HE", "ERIC-B.ST", "VOLV-B.ST", "EQNR.OL", "DSV.CO", "MAERSK-B.CO",
     # Asien / Sonstige
     "9984.T", "6861.T", "8306.T", "7974.T", "005930.KS", "000660.KS", "1211.HK", "3690.HK", "BHP.AX", "INFY", "SONY",
