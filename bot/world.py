@@ -90,21 +90,33 @@ COUNTRY_QIDS = {"USA": "Q30", "MEX": "Q96", "CHN": "Q148", "DEU": "Q183", "JPN":
                 "ISR": "Q801", "IRN": "Q794", "TUR": "Q43", "SAU": "Q851", "AUS": "Q408", "ZAF": "Q258"}
 
 
-def fetch_leaders() -> dict[str, list[dict]]:
-    """Aktuelles Staatsoberhaupt und Regierungschef je Land (Wikidata, mit Foto von Wikimedia Commons)."""
-    out = _leaders_query("""
+def fetch_leaders(previous: dict | None = None) -> dict[str, list[dict]]:
+    """Aktuelles Staatsoberhaupt und Regierungschef je Land (Wikidata, mit Foto von Wikimedia Commons).
+
+    Jede Abfrage ist unabhängig: fällt eine aus (Zeitüberschreitung), bleiben die übrigen Ergebnisse
+    erhalten; fehlende Länder kommen aus dem letzten Stand oder dem festen Ersatz.
+    """
+    out: dict[str, list[dict]] = {}
+
+    def run(label, *args, **kw):
+        try:
+            res = _leaders_query(*args, **kw)
+            out.update({k: v for k, v in res.items() if k not in out})
+        except Exception as e:
+            print(f"Wikidata ({label}) fehlgeschlagen: {e!r}")
+
+    run("alle Länder", """
   VALUES ?type { wd:Q3624078 wd:Q6256 }
   ?c wdt:P31 ?type; wdt:P298 ?iso.""")
-    missing = {iso: q for iso, q in COUNTRY_QIDS.items() if iso not in out}
-    if missing:
-        values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
-        out.update(_leaders_query(f"\n  VALUES (?c ?iso) {{ {values} }}"))
-    missing = {iso: q for iso, q in COUNTRY_QIDS.items() if iso not in out}
-    if missing:  # Amtsinhaber ohne Amtsende mit dem jüngsten Amtsantritt
-        values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
-        out.update(_leaders_query(f"\n  VALUES (?c ?iso) {{ {values} }}", by_statement=True))
-    for iso, people in FIXED_LEADERS.items():  # nur falls Wikidata für dieses Land gar nichts liefert
-        if iso not in out:
+    for by_statement in (False, True):
+        missing = {iso: q for iso, q in COUNTRY_QIDS.items() if iso not in out}
+        if missing:
+            values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
+            run("Ausweichweg", f"\n  VALUES (?c ?iso) {{ {values} }}", by_statement=by_statement)
+    for iso, lst in (previous or {}).items():  # Lücken mit dem letzten bekannten Stand füllen
+        out.setdefault(iso, lst)
+    for iso, people in FIXED_LEADERS.items():  # nur falls weiterhin nichts vorliegt
+        if not out.get(iso):
             out[iso] = [{"role": role, "name": name, **_person_image(name)} for name, role in people]
     return out
 
@@ -145,7 +157,7 @@ SELECT ?iso ?role ?person ?personLabel ?img ?start WHERE {""" + country_filter +
   SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
 }"""
     r = requests.get("https://query.wikidata.org/sparql", params={"query": query, "format": "json"},
-                     headers={"User-Agent": "TradeBot-Dashboard/1.0 (GitHub Actions)", "Accept": "application/sparql-results+json"}, timeout=60)
+                     headers={"User-Agent": "TradeBot-Dashboard/1.0 (GitHub Actions)", "Accept": "application/sparql-results+json"}, timeout=90)
     r.raise_for_status()
     out: dict[str, list[dict]] = {}
     rows = r.json()["results"]["bindings"]
@@ -239,12 +251,8 @@ def export(titles: list[str], analysis: dict | None) -> None:
             indicators[code] = previous["indicators"][code]
             source[code] = previous.get("source", {}).get(code, "") + " (älterer Stand)"
 
-    try:
-        leaders = fetch_leaders()
-        print(f"Staatsführung: {len(leaders)} Länder")
-    except Exception as e:
-        print("Wikidata fehlgeschlagen:", repr(e))
-        leaders = previous.get("leaders", {})
+    leaders = fetch_leaders(previous.get("leaders", {}))
+    print(f"Staatsführung: {len(leaders)} Länder")
     escalation = escalation_from_news(titles)
     inflation_now = {}
     if analysis:
