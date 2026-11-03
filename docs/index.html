@@ -418,6 +418,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     <p>Bitte den fünfstelligen Code eingeben.</p>
     <input type="password" id="gatePin" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" aria-label="Code" required>
     <div class="err" id="gateErr"></div>
+    <div class="muted" id="gateStamp" style="font-size:calc(11px * var(--fs));margin-top:4px"></div>
     <label><input type="checkbox" id="gateKeep" checked> auf diesem Gerät 30 Tage angemeldet bleiben</label>
   </form>
 </div>
@@ -650,8 +651,14 @@ else {
 }
 }
 // Passwortsperre: PBKDF2-Hash aus auth.js (Passwort nur im GitHub-Secret DASH_PIN)
-(function gate() {
-  const A = window.AUTH, el = document.getElementById("gate");
+(async function gate() {
+  // Prüfsumme frisch laden (am Zwischenspeicher vorbei), sonst die mitgeladene Version nehmen
+  let A = window.AUTH;
+  try {
+    const r = await fetch("auth.js?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) { const t = await r.text(), m = t.match(/window\.AUTH = (.*);\s*$/s); if (m) A = JSON.parse(m[1]); }
+  } catch {}
+  const el = document.getElementById("gate");
   const KEYG = "unlock";
   const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
   const until = +(store.get(KEYG) || 0);
@@ -661,13 +668,18 @@ else {
   const gr = rain(document.getElementById("gateRain"), { size: 16, fps: 20, fade: 0.1, speed: 0.8 });
   const pin = document.getElementById("gatePin"), err = document.getElementById("gateErr");
   setTimeout(() => pin.focus(), 50);
+  if (A.updated) document.getElementById("gateStamp").textContent = "Code-Stand: " + new Date(A.updated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+  const digits = v => [...String(v)].map(ch => { const d = "0123456789０１２３４５６７８９٠١٢٣٤٥٦٧٨٩".indexOf(ch); return d < 0 ? "" : String(d % 10); }).join("");
   let busy = false, fails = 0;
   async function check() {
     if (busy || !/^\d{5}$/.test(pin.value)) return;
     busy = true; err.textContent = "prüfe …";
-    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin.value), "PBKDF2", false, ["deriveBits"]);
-    const salt = new Uint8Array(A.salt.match(/../g).map(h => parseInt(h, 16)));
-    const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: A.iter }, key, 256);
+    let bits;
+    try {
+      const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin.value), "PBKDF2", false, ["deriveBits"]);
+      const salt = new Uint8Array(A.salt.match(/../g).map(h => parseInt(h, 16)));
+      bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: A.iter }, key, 256);
+    } catch (e) { busy = false; err.textContent = "Prüfung im Browser fehlgeschlagen (" + (e.name || e) + ") – bitte anderen Browser versuchen."; return; }
     busy = false;
     if (hex(bits) === A.hash) {
       if (document.getElementById("gateKeep").checked) { store.set(KEYG, Date.now() + 30 * 864e5); store.set(KEYG + "h", A.hash); }
@@ -678,7 +690,7 @@ else {
       if (fails >= 3) { pin.disabled = true; setTimeout(() => { pin.disabled = false; pin.focus(); err.textContent = ""; }, 3000 * (fails - 2)); }
     }
   }
-  pin.addEventListener("input", () => { pin.value = pin.value.replace(/\D/g, "").slice(0, 5); if (pin.value.length === 5) check(); });
+  pin.addEventListener("input", () => { pin.value = digits(pin.value).slice(0, 5); if (pin.value.length === 5) check(); });
   document.getElementById("gateForm").addEventListener("submit", e => { e.preventDefault(); check(); });
 })();
 
