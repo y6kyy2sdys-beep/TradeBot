@@ -21,7 +21,7 @@ import pandas as pd
 import requests
 import yfinance as yf
 
-from . import analyst, dashboard, depot, macro, profiles, world
+from . import analyst, dashboard, depot, doomsday, macro, profiles, world
 from .wkn import search_url, wkn
 from .strategies import STRATEGIES, add_indicators, backtest, simulate_trade
 from .watchlist import MACRO, UNIVERSE
@@ -666,6 +666,10 @@ def main() -> None:
     except Exception as e:
         print("Steckbrief-Export fehlgeschlagen:", repr(e), file=sys.stderr)
         SEND_FAILURES.append("profiles")
+    try:
+        doomsday.export()
+    except Exception as e:
+        print("Frühwarn-Export fehlgeschlagen:", repr(e), file=sys.stderr)
     print(f"Fertig: {sent} neue Signale, {len(state['open'])} offen")
     if SEND_FAILURES:
         sys.exit(f"Fehler beim Senden/Analysieren: {SEND_FAILURES}")

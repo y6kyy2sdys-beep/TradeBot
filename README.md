@@ -84,3 +84,12 @@ das ist keine Vorhersage.
 Einschalten: **Settings → Pages → Source: Deploy from a branch → Branch `master`, Ordner `/docs` → Save**.
 Nach 1–2 Minuten ist es unter `https://<benutzername>.github.io/TradeBot/` erreichbar.
 (GitHub Pages ist bei öffentlichen Repos kostenlos.)
+
+## Frühwarnsystem („Doomsday“) und Globus
+
+- Herauszoomen aus der Weltkarte verwandelt sie in einen drehbaren Globus (ziehen = drehen, hineinzoomen = zurück).
+- Der Knopf **☢ DOOMSDAY** startet einen Zeitraffer über 30 Konflikt-Sequenzen und zeigt danach die Weltkarte mit
+  roten Symbolen: Militärflugzeuge mit eingeschaltetem Transponder (ADS-B, api.adsb.lol, Momentaufnahme je Bot-Lauf)
+  und Konflikt-Brennpunkte aus der Meldungslage der letzten 48 Stunden (Luftangriffe, Marine, U-Boot-Meldungen,
+  Bodenkämpfe, Raketen, Nuklear). Echte Positionen von Truppen, Schiffen oder U-Booten sind nicht öffentlich und
+  werden nicht dargestellt.
