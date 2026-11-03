@@ -44,6 +44,7 @@ WKN = {
     "ISRG": "888024", "VRTX": "882807", "REGN": "881535", "MRNA": "A2N9D9", "BMY": "850501", "GILD": "885823",
     "AXP": "850226", "C": "A1H92V", "NOC": "851915", "LRCX": "869686", "AMAT": "865177",
     "KLAC": "865884", "SMCI": "A0MKJF", "MSTR": "722713",
+    "NEM": "853823", "AEM": "860325", "GFI": "868144",
     # Europa
     "SAN.PA": "920657", "BNP.PA": "887771", "SU.PA": "860180", "RMS.PA": "886670", "SAF.PA": "924781",
     "DG.PA": "867475", "RACE.MI": "A2ACKK", "ADYEN.AS": "A2JNF4", "UBSG.SW": "A12DFH", "HSBA.L": "923893",
@@ -79,6 +80,9 @@ NAMES = {
     "NOVN.SW": "Novartis", "SHEL.L": "Shell", "AZN.L": "AstraZeneca", "ENI.MI": "Eni",
     "7203.T": "Toyota", "6758.T": "Sony", "0700.HK": "Tencent", "9988.HK": "Alibaba (HK)",
     "DHL.DE": "DHL Group", "EOAN.DE": "E.ON", "TUI1.DE": "TUI", "SAX.DE": "Ströer",
+    "NEM": "Newmont", "AEM": "Agnico Eagle Mines", "B": "Barrick Mining", "WPM": "Wheaton Precious Metals",
+    "FNV": "Franco-Nevada", "KGC": "Kinross Gold", "GFI": "Gold Fields", "AU": "AngloGold Ashanti",
+    "NST.AX": "Northern Star Resources", "EVN.AX": "Evolution Mining", "2899.HK": "Zijin Mining", "GDX": "VanEck Gold Miners ETF",
 }
 
 

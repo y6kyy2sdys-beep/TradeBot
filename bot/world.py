@@ -64,6 +64,56 @@ CONFLICT_WORDS = (
 )
 
 
+# Gold: amtliche Reserven der Zentralbanken in Tonnen (World Gold Council, gerundet, Stand ca. Mitte 2025)
+# und Minenförderung in Tonnen pro Jahr (USGS Mineral Commodity Summaries 2025, Werte für 2024, gerundet).
+# Es gibt dafür keine freie Echtzeit-API; die Werte ändern sich nur langsam und werden hier gepflegt.
+GOLD_SOURCE = {"reserven": "World Gold Council, Zentralbank-Bestände, ca. Mitte 2025 (gerundet)",
+               "foerderung": "USGS Mineral Commodity Summaries 2025, Förderung 2024 (gerundet)"}
+GOLD_RESERVES = {
+    "USA": 8133, "DEU": 3350, "ITA": 2452, "FRA": 2437, "RUS": 2330, "CHN": 2299, "CHE": 1040, "IND": 880,
+    "JPN": 846, "NLD": 612, "TUR": 600, "POL": 515, "PRT": 383, "UZB": 380, "SAU": 323, "GBR": 310,
+    "KAZ": 300, "LBN": 287, "ESP": 282, "AUT": 280, "THA": 235, "BEL": 227, "SGP": 220, "IRQ": 160,
+    "PHL": 160, "BRA": 130, "EGY": 127, "SWE": 126, "ZAF": 125, "MEX": 120, "LBY": 117, "GRC": 114,
+    "KOR": 104, "ROU": 104, "QAT": 110, "AUS": 80, "KWT": 79, "IDN": 79, "DNK": 67, "PAK": 65, "ARG": 62,
+}
+GOLD_PRODUCTION = {
+    "CHN": 380, "RUS": 310, "AUS": 290, "CAN": 200, "USA": 160, "MEX": 140, "GHA": 140, "KAZ": 130,
+    "UZB": 120, "PER": 100, "IDN": 100, "ZAF": 100, "SDN": 80, "MLI": 70, "BRA": 70, "TZA": 60,
+    "BFA": 60, "COL": 60, "GIN": 60, "PNG": 50, "ARG": 50, "CHL": 40, "KGZ": 30, "PHL": 30,
+}
+
+
+def fetch_leaders() -> dict[str, list[dict]]:
+    """Aktuelles Staatsoberhaupt und Regierungschef je Land (Wikidata, mit Foto von Wikimedia Commons)."""
+    query = """
+SELECT ?iso ?role ?person ?personLabel ?img WHERE {
+  ?c wdt:P31 wd:Q3624078; wdt:P298 ?iso.
+  { ?c wdt:P35 ?person. BIND("Staatsoberhaupt" AS ?role) } UNION { ?c wdt:P6 ?person. BIND("Regierungschef" AS ?role) }
+  OPTIONAL { ?person wdt:P18 ?img. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
+}"""
+    r = requests.get("https://query.wikidata.org/sparql", params={"query": query, "format": "json"},
+                     headers={"User-Agent": "TradeBot-Dashboard/1.0 (GitHub Actions)", "Accept": "application/sparql-results+json"}, timeout=60)
+    r.raise_for_status()
+    out: dict[str, list[dict]] = {}
+    for b in r.json()["results"]["bindings"]:
+        iso, name = b["iso"]["value"], b["personLabel"]["value"]
+        if name.startswith("Q") and name[1:].isdigit():
+            continue
+        lst = out.setdefault(iso, [])
+        if any(x["name"] == name for x in lst):
+            for x in lst:
+                if x["name"] == name and b["role"]["value"] not in x["role"]:
+                    x["role"] += " & " + b["role"]["value"]
+            continue
+        img = b.get("img", {}).get("value", "")
+        if img.startswith("http://"):
+            img = "https://" + img[len("http://"):]
+        lst.append({"role": b["role"]["value"], "name": name, "img": img + "?width=320" if img else "",
+                    "wiki": b["person"]["value"]})
+    return out
+
+
 def _imf(code: str) -> dict[str, list]:
     r = requests.get(f"https://www.imf.org/external/datamapper/api/v1/{code}", headers=UA, timeout=40)
     r.raise_for_status()
@@ -129,6 +179,12 @@ def export(titles: list[str], analysis: dict | None) -> None:
             indicators[code] = previous["indicators"][code]
             source[code] = previous.get("source", {}).get(code, "") + " (älterer Stand)"
 
+    try:
+        leaders = fetch_leaders()
+        print(f"Staatsführung: {len(leaders)} Länder")
+    except Exception as e:
+        print("Wikidata fehlgeschlagen:", repr(e))
+        leaders = previous.get("leaders", {})
     escalation = escalation_from_news(titles)
     inflation_now = {}
     if analysis:
@@ -146,6 +202,8 @@ def export(titles: list[str], analysis: dict | None) -> None:
         "escalation": escalation,
         "inflation_now": inflation_now,
         "ausblick_2050": (analysis or {}).get("ausblick_2050"),
+        "gold": {"reserven": GOLD_RESERVES, "foerderung": GOLD_PRODUCTION, "source": GOLD_SOURCE},
+        "leaders": leaders,
         "analysis_time": (analysis or {}).get("time"),
     }
     OUT.write_text("window.WORLD = " + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n")

@@ -79,3 +79,7 @@ PROFILE_EXTRA = [
     # Asien / Sonstige
     "9984.T", "6861.T", "8306.T", "7974.T", "005930.KS", "000660.KS", "1211.HK", "3690.HK", "BHP.AX", "INFY", "SONY",
 ]
+
+# Goldbranche: größte Goldproduzenten, Royalty-Firmen und der Goldminen-ETF
+GOLD_MINERS = ["NEM", "AEM", "B", "WPM", "FNV", "KGC", "GFI", "AU", "NST.AX", "EVN.AX", "2899.HK", "GDX"]
+PROFILE_EXTRA += GOLD_MINERS

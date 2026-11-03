@@ -183,7 +183,34 @@ table.data th { color: var(--muted); font-weight: normal; }
 .cty.sel { stroke: #fff; stroke-width: 1.4; }
 .cty.hot { animation: hot 1.6s ease-in-out infinite; }
 @keyframes hot { 50% { stroke: #ff9b7f; stroke-width: 1.6; } }
-.grat { fill: none; stroke: var(--grid); stroke-width: .5; }
+.grat { fill: none; stroke: var(--grid); stroke-width: .5; vector-effect: non-scaling-stroke; }
+.cty { vector-effect: non-scaling-stroke; }
+#worldMap svg { cursor: grab; }
+.mapbtn { position: absolute; top: 8px; right: 8px; z-index: 4; }
+.mapcard { position: absolute; left: 8px; top: 8px; z-index: 4; width: min(420px, calc(100% - 16px)); background: rgba(0,8,3,.92); border: 1px solid var(--matrix);
+  box-shadow: 0 0 24px rgba(0,255,65,.25); padding: 10px 12px; font-size: calc(13px * var(--fs)); display: none; }
+.mapcard.open { display: block; animation: cardin .35s ease-out; }
+@keyframes cardin { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.mapcard .x { position: absolute; top: 6px; right: 8px; background: transparent; border: 0; color: var(--matrix); cursor: pointer; font-size: calc(16px * var(--fs)); }
+.mapcard h4 { margin: 0 24px 6px 0; color: var(--matrix); font-weight: normal; letter-spacing: .1em; font-size: calc(17px * var(--fs)); }
+.leaders { display: flex; gap: 10px; margin: 6px 0 8px; flex-wrap: wrap; }
+.leader { width: 112px; }
+.leader small { display: block; color: var(--muted); font-size: calc(11px * var(--fs)); margin-top: 3px; line-height: 1.25; }
+.leader b { display: block; font-weight: normal; color: var(--text); font-size: calc(12px * var(--fs)); line-height: 1.25; }
+.portrait { position: relative; width: 112px; height: 136px; overflow: hidden; border: 1px solid var(--line-strong); background: #000; }
+.portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%;
+  filter: grayscale(1) contrast(1.35) brightness(.8) sepia(1) hue-rotate(68deg) saturate(5); }
+.portrait::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.45) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.7)); }
+.portrait::after { content: ""; position: absolute; inset: -60px 0 0 0; z-index: 2; pointer-events: none; opacity: .35; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='60'%3E%3Cg fill='%2300ff41' font-family='monospace' font-size='9'%3E%3Ctext x='1' y='9'%3E1%3C/text%3E%3Ctext x='13' y='21'%3E0%3C/text%3E%3Ctext x='1' y='33'%3E0%3C/text%3E%3Ctext x='13' y='45'%3E1%3C/text%3E%3Ctext x='1' y='57'%3E1%3C/text%3E%3C/g%3E%3C/svg%3E");
+  animation: coderain 3s linear infinite; }
+@keyframes coderain { to { transform: translateY(60px); } }
+.portrait.none { display: grid; place-items: center; color: var(--muted); font-size: calc(11px * var(--fs)); text-align: center; }
+.grade { display: inline-block; padding: 1px 8px; color: #000; font-size: calc(12px * var(--fs)); letter-spacing: .08em; }
+.sumlist { margin: 6px 0 0; padding: 0; list-style: none; }
+.sumlist li { padding: 2px 0; }
+.goldlist .pick { grid-template-columns: 26px 1fr auto; }
 .maplegend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: calc(12px * var(--fs)); color: var(--muted); margin-top: 6px; align-items: center; }
 .maplegend i { display: inline-block; width: 14px; height: 10px; margin-right: 5px; vertical-align: -1px; border-radius: 2px; }
 .yearbox { display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; font-size: calc(13px * var(--fs)); color: var(--muted); }
@@ -401,6 +428,12 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <button type="submit">+ HINZUFÜGEN</button>
     </form>
     <div id="dMsg" class="muted"></div>
+    <div class="act" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px">
+      <button type="button" class="dbtn" id="dExport">💾 BACKUP-DATEI</button>
+      <label class="dbtn" style="display:inline-flex;align-items:center">📂 BACKUP LADEN<input type="file" id="dImport" accept=".json,application/json" hidden></label>
+      <button type="button" class="dbtn" id="dLink">🔗 DEPOT-LINK FÜR ANDERE GERÄTE</button>
+      <span class="muted" id="dStore" style="align-self:center;font-size:calc(12px * var(--fs))"></span>
+    </div>
     <div class="dsum" id="dSum"></div>
     <div class="hold" id="dHold" hidden>
       <div class="top">HALTEDAUER <b id="hVal">1 Jahr</b><span id="hTotal"></span></div>
@@ -441,7 +474,9 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     </div>
     <div class="world">
       <div>
-        <div id="worldMap"><div class="tip" id="mapTip"></div></div>
+        <div id="worldMap"><div class="tip" id="mapTip"></div>
+          <button type="button" class="tbtn mapbtn" id="mapReset" hidden>🌍 WELTANSICHT</button>
+          <div class="mapcard" id="mapCard" role="region" aria-label="Länder-Steckbrief"></div></div>
         <div class="maplegend" id="mapLegend"></div>
       </div>
       <div class="world-side">
@@ -988,16 +1023,26 @@ function renderComCards() {
   const NODATA = "#0d1a12";
   const growthColor = v => v == null ? NODATA : v <= -3 ? "#e66767" : v <= -1 ? "#a34a4a" : v < 1 ? "#383835" : v < 3 ? "#1c5cab" : "#3987e5";
   const inflColor = v => v == null ? NODATA : v < 2 ? "#184f95" : v < 4 ? "#2a78d6" : v < 8 ? "#5598e7" : "#86b6ef";
-  const MODES = { esc: "ESKALATION", gdp: "WIRTSCHAFT", infl: "INFLATION" };
+  const MODES = { esc: "ESKALATION", gdp: "WIRTSCHAFT", infl: "INFLATION", goldr: "GOLDRESERVEN", goldp: "GOLDFÖRDERUNG" };
+  const STATIC = m => ["esc", "goldr", "goldp"].includes(m);
+  const GOLD = W.gold || { reserven: {}, foerderung: {}, source: {} };
+  const GOLD_RAMP = ["#6c5005", "#987000", "#c39308", "#f0bb3b"];
+  const GOLD_BINS = { goldr: [100, 500, 2000], goldp: [50, 100, 200] };
+  const goldColor = (v, m) => v == null ? NODATA : GOLD_RAMP[GOLD_BINS[m].filter(b => v >= b).length];
+  const rankOf = (obj, iso) => Object.entries(obj).sort((a, b) => b[1] - a[1]).findIndex(([k]) => k === iso) + 1;
   const ui = { mode: store.get("mapMode") || "esc", scen: store.get("mapScen") || "basis", year: Math.min(2050, NOW), sel: "DEU" };
   if (!MODES[ui.mode]) ui.mode = "esc"; if (!SCEN[ui.scen]) ui.scen = "basis";
   const value = iso => {
     if (ui.mode === "esc") return (W.escalation[iso] || {}).stufe ?? 0;
+    if (ui.mode === "goldr") return GOLD.reserven[iso] ?? null;
+    if (ui.mode === "goldp") return GOLD.foerderung[iso] ?? null;
     const a = proj(ui.mode === "gdp" ? "NGDP_RPCH" : "PCPIPCH", iso, ui.scen);
     return a ? a[YRS.indexOf(ui.year)] : null;
   };
-  const color = iso => ui.mode === "esc" ? ESC[value(iso)] : ui.mode === "gdp" ? growthColor(value(iso)) : inflColor(value(iso));
-  const fmtV = (iso, v = value(iso)) => v == null ? "keine Daten" : ui.mode === "esc" ? `Stufe ${v} – ${ESC_TXT[v]}` : `${v > 0 && ui.mode === "gdp" ? "+" : ""}${nf(v, 1)} %`;
+  const color = iso => ui.mode === "esc" ? ESC[value(iso)] : ui.mode === "gdp" ? growthColor(value(iso)) : ui.mode === "infl" ? inflColor(value(iso)) : goldColor(value(iso), ui.mode);
+  const fmtV = (iso, v = value(iso)) => v == null ? "keine Daten" : ui.mode === "esc" ? `Stufe ${v} – ${ESC_TXT[v]}`
+    : ui.mode === "goldr" ? `${nf(v, 0)} t Gold (Platz ${rankOf(GOLD.reserven, iso)})` : ui.mode === "goldp" ? `${nf(v, 0)} t Förderung/Jahr (Platz ${rankOf(GOLD.foerderung, iso)})`
+    : `${v > 0 && ui.mode === "gdp" ? "+" : ""}${nf(v, 1)} %`;
 
   // ---- Karte
   const feats = topojson.feature(WORLD_TOPO, WORLD_TOPO.objects.countries).features.filter(f => f.id !== "010");
@@ -1005,9 +1050,23 @@ function renderComCards() {
   const svg = d3.select(box).insert("svg", ":first-child").attr("viewBox", "0 0 960 470").attr("role", "img").attr("aria-label", "Weltkarte");
   const projection = d3.geoNaturalEarth1().fitExtent([[4, 4], [956, 466]], { type: "FeatureCollection", features: feats });
   const path = d3.geoPath(projection);
-  svg.append("path").attr("class", "grat").attr("d", path(d3.geoGraticule10()));
+  const zg = svg.append("g");
+  zg.append("path").attr("class", "grat").attr("d", path(d3.geoGraticule10()));
   const tip = document.getElementById("mapTip");
-  const paths = svg.append("g").selectAll("path").data(feats).join("path").attr("class", "cty").attr("d", path)
+  const resetBtn = document.getElementById("mapReset"), card = document.getElementById("mapCard");
+  const zoom = d3.zoom().scaleExtent([1, 9]).translateExtent([[0, 0], [960, 470]])
+    .on("zoom", ev => { zg.attr("transform", ev.transform); resetBtn.hidden = ev.transform.k <= 1.01; });
+  svg.call(zoom).on("dblclick.zoom", null);
+  function zoomTo(iso) {
+    const f = feats.find(x => x.iso === iso); if (!f) return;
+    const [[x0, y0], [x1, y1]] = path.bounds(f);
+    const k = Math.max(1, Math.min(9, 0.75 / Math.max((x1 - x0) / 960, (y1 - y0) / 470)));
+    const t = d3.zoomIdentity.translate(480 - k * (x0 + x1) / 2, 235 - k * (y0 + y1) / 2).scale(k);
+    svg.transition().duration(reduced ? 0 : 850).call(zoom.transform, t);
+  }
+  resetBtn.addEventListener("click", () => { svg.transition().duration(reduced ? 0 : 700).call(zoom.transform, d3.zoomIdentity); card.classList.remove("open"); });
+  function pick(iso) { ui.sel = iso; render(); zoomTo(iso); showCard(iso); }
+  const paths = zg.append("g").selectAll("path").data(feats).join("path").attr("class", "cty").attr("d", path)
     .on("mousemove", (ev, f) => {
       const r = box.getBoundingClientRect();
       tip.innerHTML = `<div class="d">${esc(nameOf(f.iso) || f.properties.name)}</div><div>${esc(fmtV(f.iso))}</div>` +
@@ -1017,7 +1076,7 @@ function renderComCards() {
       tip.style.left = (x + 14 + w > r.width ? x - w - 14 : x + 14) + "px"; tip.style.top = (ev.clientY - r.top + 12) + "px";
     })
     .on("mouseleave", () => tip.style.display = "none")
-    .on("click", (ev, f) => { if (f.iso) { ui.sel = f.iso; render(); } });
+    .on("click", (ev, f) => { if (f.iso) pick(f.iso); });
 
   // ---- Bedienelemente
   const seg = (el, items, key) => { el.innerHTML = ""; Object.entries(items).forEach(([k, l]) => {
@@ -1030,7 +1089,7 @@ function renderComCards() {
   let timer = null; const playBtn = document.getElementById("yearPlay");
   playBtn.addEventListener("click", () => {
     if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; return; }
-    if (ui.mode === "esc") { ui.mode = "gdp"; }
+    if (STATIC(ui.mode)) { ui.mode = "gdp"; }
     if (ui.year >= 2050) ui.year = 2000;
     playBtn.textContent = "❚❚";
     timer = setInterval(() => { ui.year++; yr.value = ui.year; render(); if (ui.year >= 2050) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; } }, 220);
@@ -1038,8 +1097,11 @@ function renderComCards() {
 
   // ---- Balken: wichtigste Volkswirtschaften
   function bars() {
-    const keys = W.key, H = 230, top = 22, bot = 56, w = 420, bw = (w - 20) / keys.length;
-    const BAR = { USA: "USA", CHN: "China", DEU: "Deutschl.", JPN: "Japan", IND: "Indien", GBR: "UK", FRA: "Frankr.", ITA: "Italien", BRA: "Brasilien", CAN: "Kanada", RUS: "Russland", KOR: "Südkorea" };
+    const gold = ui.mode === "goldr" ? GOLD.reserven : ui.mode === "goldp" ? GOLD.foerderung : null;
+    const keys = gold ? Object.entries(gold).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k]) => k) : W.key;
+    const H = 230, top = 22, bot = 56, w = 420, bw = (w - 20) / keys.length;
+    const BAR = { USA: "USA", CHN: "China", DEU: "Deutschl.", JPN: "Japan", IND: "Indien", GBR: "UK", FRA: "Frankr.", ITA: "Italien", BRA: "Brasilien", CAN: "Kanada", RUS: "Russland", KOR: "Südkorea",
+      CHE: "Schweiz", NLD: "Niederl.", TUR: "Türkei", POL: "Polen", AUS: "Austral.", MEX: "Mexiko", GHA: "Ghana", KAZ: "Kasachst.", UZB: "Usbekist.", PER: "Peru", IDN: "Indonesien", ZAF: "Südafrika" };
     const vals = keys.map(k => value(k));
     const nums = vals.filter(v => v != null);
     const max = ui.mode === "esc" ? 4 : Math.max(1, ...nums.map(Math.abs));
@@ -1052,13 +1114,51 @@ function renderComCards() {
       if (v != null) {
         const h = Math.max(2, Math.abs(v) * scale), y = v >= 0 ? zero - h : zero;
         g += `<rect x="${x}" y="${y}" width="${bwid}" height="${h}" rx="3" fill="${color(k)}" stroke="${ui.sel === k ? "#fff" : "none"}" stroke-width="1.5" data-iso="${k}"><title>${esc(nameOf(k))}: ${esc(fmtV(k, v))}</title></rect>`;
-        g += `<text class="v" x="${x + bwid / 2}" y="${v >= 0 ? y - 4 : y + h + 12}" text-anchor="middle">${ui.mode === "esc" ? v : nf(v, 1)}</text>`;
+        g += `<text class="v" x="${x + bwid / 2}" y="${v >= 0 ? y - 4 : y + h + 12}" text-anchor="middle">${ui.mode === "esc" || gold ? nf(v, 0) : nf(v, 1)}</text>`;
       }
       g += `<text x="${x + bwid / 2 + 4}" y="${H - bot + 12}" text-anchor="end" transform="rotate(-45 ${x + bwid / 2 + 4} ${H - bot + 12})">${esc(BAR[k] || nameOf(k).slice(0, 9))}</text>`;
     });
-    const title = ui.mode === "esc" ? "Eskalationsstufe (0–4), aktuell" : `${ui.mode === "gdp" ? "BIP-Wachstum" : "Inflation"} ${ui.year} in %${ui.year > lastImfYear ? " · Szenario " + SCEN[ui.scen] : ui.year > NOW ? " · IMF-Prognose" : ""}`;
+    const title = ui.mode === "goldr" ? "Top 12: Goldreserven der Zentralbanken in Tonnen" : ui.mode === "goldp" ? "Top 12: Goldförderung in Tonnen pro Jahr"
+      : ui.mode === "esc" ? "Eskalationsstufe (0–4), aktuell" : `${ui.mode === "gdp" ? "BIP-Wachstum" : "Inflation"} ${ui.year} in %${ui.year > lastImfYear ? " · Szenario " + SCEN[ui.scen] : ui.year > NOW ? " · IMF-Prognose" : ""}`;
     document.getElementById("bars").innerHTML = `<div class="muted" style="font-size:calc(12px * var(--fs))">${esc(title)}</div><svg viewBox="0 0 ${w} ${H}" aria-label="${esc(title)}">${g}</svg>`;
-    document.querySelectorAll("#bars rect").forEach(r => r.addEventListener("click", () => { ui.sel = r.dataset.iso; render(); }));
+    document.querySelectorAll("#bars rect").forEach(r => r.addEventListener("click", () => pick(r.dataset.iso)));
+  }
+
+  // ---- Wie geht es dem Land? (Regelwerk aus IMF-Daten, Sicherheitslage und Gold)
+  function summary(iso) {
+    const at = (code, y) => { const a = proj(code, iso, "basis"); return a ? a[YRS.indexOf(y)] : null; };
+    const g = at("NGDP_RPCH", NOW), inf = at("PCPIPCH", NOW), lur = latestReal("LUR", iso), debt = latestReal("GGXWDG_NGDP", iso);
+    const fut = [1, 2, 3, 4].map(d => at("NGDP_RPCH", NOW + d)).filter(v => v != null);
+    const e = (W.escalation[iso] || {}).stufe || 0;
+    const pts = [];
+    if (g != null) pts.push(g >= 3 ? [15, `Wirtschaft wächst kräftig (+${nf(g, 1)} % in ${NOW})`] : g >= 1 ? [5, `Wirtschaft wächst moderat (+${nf(g, 1)} %)`]
+      : g >= 0 ? [-5, `Wirtschaft stagniert (${nf(g, 1)} %)`] : [-15, `Wirtschaft schrumpft (${nf(g, 1)} %)`]);
+    if (inf != null) pts.push(inf < 2.5 ? [10, `Preise stabil (Inflation ${nf(inf, 1)} %)`] : inf < 5 ? [0, `Inflation leicht erhöht (${nf(inf, 1)} %)`]
+      : inf < 10 ? [-10, `Hohe Inflation (${nf(inf, 1)} %) – Kaufkraft sinkt`] : [-20, `Sehr hohe Inflation (${nf(inf, 0)} %) – Kaufkraft schwindet`]);
+    if (lur) pts.push(lur.v < 5 ? [5, `Niedrige Arbeitslosigkeit (${nf(lur.v, 1)} %)`] : lur.v > 10 ? [-10, `Hohe Arbeitslosigkeit (${nf(lur.v, 1)} %)`] : [0, `Arbeitslosigkeit ${nf(lur.v, 1)} %`]);
+    if (debt) pts.push(debt.v > 120 ? [-10, `Sehr hoch verschuldet (${nf(debt.v, 0)} % des BIP)`] : debt.v < 60 ? [5, `Solide Staatsfinanzen (${nf(debt.v, 0)} % Schulden)`] : [0, `Staatsschulden ${nf(debt.v, 0)} % des BIP`]);
+    pts.push([[5, -5, -15, -25, -35][e], e ? `Sicherheitslage: ${ESC_TXT[e]} (Stufe ${e})` : "Sicherheitslage ruhig"]);
+    if (fut.length) { const a = fut.reduce((x, y) => x + y, 0) / fut.length; pts.push([a >= 2 ? 5 : a < 0.8 ? -5 : 0, `Ausblick bis ${NOW + fut.length} (IMF): Ø ${a > 0 ? "+" : ""}${nf(a, 1)} % Wachstum pro Jahr`]); }
+    if (GOLD.reserven[iso]) pts.push([0, `Goldreserven: ${nf(GOLD.reserven[iso], 0)} t (Platz ${rankOf(GOLD.reserven, iso)} weltweit)`]);
+    if (GOLD.foerderung[iso]) pts.push([0, `Goldförderung: ${nf(GOLD.foerderung[iso], 0)} t/Jahr (Platz ${rankOf(GOLD.foerderung, iso)})`]);
+    const sc = Math.max(0, Math.min(100, 50 + pts.reduce((a, [p]) => a + p, 0)));
+    const [label, col] = sc >= 65 ? ["GUT", "var(--up)"] : sc >= 45 ? ["GEMISCHT", "var(--warn)"] : sc >= 30 ? ["ANGESPANNT", "#ec835a"] : ["KRITISCH", "var(--down)"];
+    return { sc, label, col, pts };
+  }
+  const sumHtml = (s, n = 99) => `<div><span class="grade" style="background:${s.col}">GESAMTLAGE: ${s.label}</span> <span class="muted">${s.sc}/100</span></div>
+    <ul class="sumlist">${s.pts.slice(0, n).map(([p, t]) => `<li class="${p > 0 ? "up" : p < 0 ? "down" : ""}">${p > 0 ? "▲" : p < 0 ? "▼" : "■"} ${esc(t)}</li>`).join("")}</ul>`;
+  function leadersHtml(iso) {
+    const L = (W.leaders || {})[iso] || [];
+    if (!L.length) return '<div class="muted">Keine Angaben zur Staatsführung.</div>';
+    return `<div class="leaders">${L.slice(0, 2).map(l => `<div class="leader">
+        <div class="portrait${l.img ? "" : " none"}">${l.img ? `<img src="${esc(l.img)}" alt="${esc(l.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.remove()">` : "KEIN BILD"}</div>
+        <b>${esc(l.name)}</b><small>${esc(l.role)}</small></div>`).join("")}</div>
+      <div class="muted" style="font-size:calc(11px * var(--fs))">Quelle: Wikidata, Fotos: Wikimedia Commons (Lizenzen dort) · Matrix-Filter</div>`;
+  }
+  function showCard(iso) {
+    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4>${esc(nameOf(iso))}</h4>${leadersHtml(iso)}${sumHtml(summary(iso), 5)}`;
+    card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
+    card.classList.add("open");
   }
 
   // ---- Länderdetail mit Kaufkraft und BIP-Verlauf bis 2050
@@ -1088,6 +1188,8 @@ function renderComCards() {
     }
     const nowInf = W.inflation_now[iso];
     document.getElementById("detail").innerHTML = `<h3>${esc(nameOf(iso))}</h3>
+      ${leadersHtml(iso)}
+      <div style="margin:8px 0">${sumHtml(summary(iso))}</div>
       <div><span class="esc" style="background:${ESC[e.stufe]};color:${e.stufe >= 3 ? "#000" : "#fff"}">Stufe ${e.stufe} · ${ESC_TXT[e.stufe]}</span>
         <span class="muted">${esc(e.quelle || "")}</span></div>
       <p class="muted" style="margin:6px 0">${esc(e.grund)}</p>
@@ -1099,21 +1201,44 @@ function renderComCards() {
         <span>Arbeitslosenquote</span><span>${lur ? nf(lur.v, 1) + " % (" + lur.y + ")" : "–"}</span>
         <span>Staatsschulden</span><span>${debt ? nf(debt.v, 0) + " % des BIP" : "–"}</span>
         <span>Wirtschaftsleistung</span><span>${size ? nf(size.v / 1000, 2) + " Bio. USD" : "–"}</span>
+        <span>Goldreserven</span><span>${GOLD.reserven[iso] ? nf(GOLD.reserven[iso], 0) + " t (Platz " + rankOf(GOLD.reserven, iso) + ")" : "–"}</span>
+        <span>Goldförderung</span><span>${GOLD.foerderung[iso] ? nf(GOLD.foerderung[iso], 0) + " t/Jahr (Platz " + rankOf(GOLD.foerderung, iso) + ")" : "–"}</span>
       </div>
       <div class="muted" style="margin-top:8px;font-size:calc(12px * var(--fs))">Reales BIP (2025 = 100) – bis ${lastImfYear} IMF, danach Szenarien:</div>${chart}`;
   }
 
   function legend() {
     const items = ui.mode === "esc" ? ESC.map((c, i) => [c, `${i} ${ESC_TXT[i]}`])
+      : ui.mode === "goldr" ? GOLD_RAMP.map((c, i) => [c, ["< 100 t", "100–500 t", "500–2.000 t", "≥ 2.000 t"][i]])
+      : ui.mode === "goldp" ? GOLD_RAMP.map((c, i) => [c, ["< 50 t/J", "50–100 t/J", "100–200 t/J", "≥ 200 t/J"][i]])
       : ui.mode === "gdp" ? [["#e66767", "≤ −3 %"], ["#a34a4a", "−3 bis −1"], ["#383835", "−1 bis +1"], ["#1c5cab", "+1 bis +3"], ["#3987e5", "≥ +3 %"]]
       : [["#184f95", "< 2 %"], ["#2a78d6", "2–4 %"], ["#5598e7", "4–8 %"], ["#86b6ef", "≥ 8 %"]];
     document.getElementById("mapLegend").innerHTML = items.map(([c, l]) => `<span><i style="background:${c}"></i>${esc(l)}</span>`).join("") + `<span><i style="background:${NODATA};outline:1px solid var(--line)"></i>keine Daten</span>`;
-    const src = ui.mode === "esc" ? (W.analysis_time ? "Eskalation: KI-Analyse + Nachrichtenlage" : "Eskalation: Zählung von Konflikt-Schlagzeilen (KI-Analyse noch nicht aktiv)")
+    const src = ui.mode === "goldr" ? "Quelle: " + esc(GOLD.source.reserven || "") : ui.mode === "goldp" ? "Quelle: " + esc(GOLD.source.foerderung || "")
+      : ui.mode === "esc" ? (W.analysis_time ? "Eskalation: KI-Analyse + Nachrichtenlage" : "Eskalation: Zählung von Konflikt-Schlagzeilen (KI-Analyse noch nicht aktiv)")
       : `Quelle: ${esc(Object.values(W.source)[0] || "IMF")} · Stand ${new Date(W.generated).toLocaleDateString("de-DE")}`;
     document.getElementById("mapLegend").insertAdjacentHTML("beforeend", `<span>· ${src}</span>`);
   }
 
+  const GOLD_MINERS = ["NEM", "AEM", "B", "WPM", "FNV", "KGC", "GFI", "AU", "NST.AX", "EVN.AX", "2899.HK", "GDX"];
+  function goldBranch() {
+    const el = document.getElementById("outlook");
+    const g = S["GC=F"] ? S["GC=F"].v : null;
+    const gch = g ? change("GC=F", Math.max(0, N - 253), N - 1) : null, gl = g ? g[lastIdx(g, 0, N - 1)] : null;
+    el.innerHTML = `<div><b>Goldpreis:</b> ${gl ? nf(gl, 0) + " USD/Unze" : "–"} <span class="${cls(gch)}">${pct(gch)} in 1 Jahr</span></div>
+      <div style="margin-top:8px"><b>Goldbranche – größte Produzenten & Gold-Royalty-Firmen</b> <span class="muted">(Klick = Steckbrief)</span></div><div class="goldlist" id="goldList"><div class="muted">Lade …</div></div>`;
+    const go = () => window.TB ? TB.load().then(P => {
+      const box = document.getElementById("goldList"); if (!box) return;
+      const list = (P || []).filter(p => GOLD_MINERS.includes(p.t)).sort((a, b) => (b.mcap || 0) - (a.mcap || 0));
+      box.innerHTML = list.map((p, i) => `<div class="pick" data-open="${esc(p.t)}" title="Steckbrief öffnen"><div class="rk">${i + 1}</div>
+        <div class="nm">${esc(p.n)}<small>${esc(p.t)}</small>${p.w ? ` <small>WKN ${esc(p.w)}</small>` : ""}</div>
+        <div class="rt"><span class="${cls(p.tech.d1)}">${pct(p.tech.d1)}</span><br><span class="${cls(p.tech.m3)}">3M ${p.tech.m3 > 0 ? "+" : ""}${nf((p.tech.m3 || 0) * 100, 0)}%</span></div>
+        <div class="why">kurz: ${esc(p.v.kurz.label)} · mittel: ${esc(p.v.mittel.label)}</div></div>`).join("") || '<div class="muted">Daten zur Goldbranche folgen mit dem nächsten Bot-Lauf.</div>';
+    }) : setTimeout(go, 200);
+    go();
+  }
   function outlook() {
+    if (ui.mode === "goldr" || ui.mode === "goldp") return goldBranch();
     const ki = W.ausblick_2050 || {};
     const model = `Bis ${lastImfYear}: IMF-Prognose. Danach Modell (keine Vorhersage): <b>Basis</b> = Wachstum nähert sich dem langfristigen Potenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = Schulden-/Konfliktkrise 2033, Klimaschock 2041, dauerhaft −2 Prozentpunkte und Inflationsschub.`;
     const txt = ui.scen === "dystopie" ? ki.dystopie : ui.scen === "basis" ? ki.basis : null;
@@ -1122,10 +1247,10 @@ function renderComCards() {
 
   function render() {
     ["mapMode", "mapScen"].forEach(id => document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute("aria-pressed", b.dataset.k === (id === "mapMode" ? ui.mode : ui.scen))));
-    document.getElementById("yearBox").style.opacity = ui.mode === "esc" ? .4 : 1;
-    document.getElementById("yearVal").textContent = ui.mode === "esc" ? "JETZT" : ui.year;
-    document.getElementById("yearTag").hidden = ui.mode === "esc" || ui.year <= lastImfYear;
-    yr.disabled = ui.mode === "esc";
+    document.getElementById("yearBox").style.opacity = STATIC(ui.mode) ? .4 : 1;
+    document.getElementById("yearVal").textContent = STATIC(ui.mode) ? "JETZT" : ui.year;
+    document.getElementById("yearTag").hidden = STATIC(ui.mode) || ui.year <= lastImfYear;
+    yr.disabled = STATIC(ui.mode);
     paths.attr("fill", f => color(f.iso)).classed("sel", f => f.iso === ui.sel)
       .classed("hot", f => ui.mode === "esc" && !reduced && (W.escalation[f.iso] || {}).stufe >= 3);
     bars(); detail(); legend(); outlook();
@@ -1289,8 +1414,24 @@ function renderComCards() {
 /* ================= Mein Depot ================= */
 (function myDepot() {
   const KEY = "depot";
+  // Doppelte Sicherung: localStorage + IndexedDB; der Browser wird gebeten, die Daten nie automatisch zu löschen.
+  const idb = (mode, fn) => new Promise(res => {
+    try {
+      const r = indexedDB.open("tradebot", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("kv");
+      r.onsuccess = () => { try { const tx = r.result.transaction("kv", mode); const q = fn(tx.objectStore("kv")); tx.oncomplete = () => res(q && q.result); tx.onerror = () => res(null); } catch { res(null); } };
+      r.onerror = () => res(null);
+    } catch { res(null); }
+  });
   const read = () => { try { return JSON.parse(store.get(KEY) || "[]"); } catch { return []; } };
-  const write = list => store.set(KEY, JSON.stringify(list));
+  const write = list => { store.set(KEY, JSON.stringify(list)); idb("readwrite", os => os.put(JSON.stringify(list), KEY)); };
+  const storeInfo = document.getElementById("dStore");
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(ok => {
+    storeInfo.textContent = ok ? "🔒 Dauerhaft gespeichert (Browser löscht nicht automatisch)" : "Gespeichert in diesem Browser – zusätzlich Backup-Datei oder Depot-Link empfohlen";
+  }); else storeInfo.textContent = "Gespeichert in diesem Browser – zusätzlich Backup-Datei empfohlen";
+  const enc = list => btoa(unescape(encodeURIComponent(JSON.stringify(list))));
+  const dec = str => JSON.parse(decodeURIComponent(escape(atob(str))));
+  const valid = l => Array.isArray(l) && l.every(x => x && typeof x.t === "string" && x.qty > 0 && x.buy > 0);
   const HOLD = [["1 Woche", 5], ["2 Wochen", 10], ["1 Monat", 21], ["2 Monate", 42], ["3 Monate", 63], ["6 Monate", 126], ["9 Monate", 189],
                 ["1 Jahr", 252], ["18 Monate", 378], ["2 Jahre", 504], ["3 Jahre", 756], ["5 Jahre", 1260], ["10 Jahre", 2520]];
   const FX = D.fx || { EUR: 1 };
@@ -1427,8 +1568,32 @@ function renderComCards() {
     P = list; byT = Object.fromEntries(P.map(p => [p.t, p]));
     dl.innerHTML = P.map(p => `<option value="${esc(label(p))}">`).join(""); render();
   });
+  // Backup-Datei, Import, Depot-Link
+  document.getElementById("dExport").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify({ depot: read(), saved: new Date().toISOString() }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `tradebot-depot-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000); msg.textContent = "Backup-Datei gespeichert.";
+  });
+  document.getElementById("dImport").addEventListener("change", ev => {
+    const f = ev.target.files[0]; if (!f) return;
+    f.text().then(t => { const d = JSON.parse(t); const l = d.depot || d; if (!valid(l)) throw 0;
+      if (confirm(`${l.length} Position(en) aus der Datei laden? Das aktuelle Depot wird ersetzt.`)) { write(l); render(); if (!P) ready(); msg.textContent = "Backup geladen."; } })
+      .catch(() => msg.innerHTML = '<span class="down">Datei ist kein gültiges Depot-Backup.</span>');
+    ev.target.value = "";
+  });
+  document.getElementById("dLink").addEventListener("click", () => {
+    const url = location.origin + location.pathname + "#depot=" + enc(read());
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(
+      () => msg.textContent = "Depot-Link kopiert. Auf dem anderen Gerät öffnen – oder als Lesezeichen speichern. Die Daten stecken nur im Link, nicht auf einem Server.",
+      () => prompt("Diesen Link kopieren:", url));
+  });
+  const hm = location.hash.match(/^#depot=(.+)$/);
+  if (hm) { try { const l = dec(hm[1]); if (valid(l) && confirm(`Depot aus dem Link übernehmen (${l.length} Position(en))? Das Depot in diesem Browser wird ersetzt.`)) write(l); } catch {}
+    history.replaceState(null, "", location.pathname + location.search); }
   render();
-  if (read().length) ready(); else nameInp.addEventListener("focus", ready, { once: true });
+  const start = () => { if (read().length) ready(); else nameInp.addEventListener("focus", ready, { once: true }); };
+  if (!read().length) idb("readonly", os => os.get(KEY)).then(v => { try { const l = JSON.parse(v || "[]"); if (valid(l) && l.length) { store.set(KEY, JSON.stringify(l)); render(); } } catch {} start(); });
+  else { idb("readwrite", os => os.put(JSON.stringify(read()), KEY)); start(); }
 })();
 
 /* ================= Start ================= */
