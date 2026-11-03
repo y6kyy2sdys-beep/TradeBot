@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
+from . import depot as depot_mod
 from . import sectors as sector_mod
 from .macro import SCENARIOS
 from .strategies import rsi
@@ -174,6 +175,7 @@ def export(stock_data: dict[str, pd.DataFrame], news_items: list[dict], state: d
         },
         "sectors": sector_cards(closes, state.get("last_analysis")),
         "alerts": state.get("alert_log", [])[-30:][::-1],
+        "fx": depot_mod.fx_rates(),
         "record": {
             "closed": len(state["closed"]),
             "wins": sum(s["net_pct"] > 0 for s in state["closed"]),

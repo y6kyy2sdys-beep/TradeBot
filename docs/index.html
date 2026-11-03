@@ -282,6 +282,39 @@ body.modal-open { overflow: hidden; }
 #pchart { width: 100%; position: relative; }
 .pick[data-open] { cursor: pointer; }
 
+/* ---------- Mein Depot ---------- */
+.dform { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; margin-bottom: 12px; }
+.dform label { display: flex; flex-direction: column; gap: 3px; font-size: calc(12px * var(--fs)); color: var(--muted); }
+.dform input { background: #000; color: var(--text); border: 1px solid var(--line); padding: 7px 9px; font-family: var(--font); font-size: calc(14px * var(--fs)); color-scheme: dark; }
+.dform input:focus { border-color: var(--matrix); outline: none; }
+.dform .wide { flex: 1 1 260px; } .dform .wide input { width: 100%; }
+.dform button, .dbtn { background: transparent; color: var(--matrix); border: 1px solid var(--line-strong); padding: 7px 12px; cursor: pointer; font-family: var(--font); font-size: calc(13px * var(--fs)); }
+.dform button:hover, .dbtn:hover { background: rgba(0,255,65,.1); }
+.dsum { display: flex; flex-wrap: wrap; gap: 8px 26px; margin: 4px 0 12px; font-size: calc(14px * var(--fs)); }
+.dsum b { display: block; font-size: calc(22px * var(--fs)); font-weight: normal; color: var(--text); }
+.dsum span { color: var(--muted); }
+.hold { border: 1px solid var(--line-strong); padding: 10px 12px; margin: 10px 0 14px; background: rgba(0,0,0,.4); }
+.hold .top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: calc(13px * var(--fs)); color: var(--muted); }
+.hold .top b { color: var(--matrix); font-size: calc(24px * var(--fs)); font-weight: normal; text-shadow: 0 0 8px rgba(0,255,65,.6); min-width: 110px; }
+.hold input[type=range] { width: 100%; accent-color: #00ff41; margin: 8px 0 2px; }
+.hold .ticks { display: flex; justify-content: space-between; font-size: calc(11px * var(--fs)); color: var(--muted); }
+.pos { border: 1px solid var(--line); padding: 10px 12px; margin-bottom: 8px; background: rgba(0,0,0,.35); display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px 18px; font-size: calc(13px * var(--fs)); }
+@media (max-width: 900px) { .pos { grid-template-columns: 1fr; } }
+.pos .nm { font-size: calc(16px * var(--fs)); color: var(--text); cursor: pointer; }
+.pos .nm:hover { color: var(--matrix); }
+.pos .sub2 { color: var(--muted); }
+.pos .kv2 { display: grid; grid-template-columns: auto auto; gap: 2px 12px; }
+.pos .kv2 span:nth-child(odd) { color: var(--muted); }
+.pos .act { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.fan { position: relative; height: 22px; margin: 6px 0 4px; background: rgba(255,255,255,.04); }
+.fan .z { position: absolute; top: -3px; bottom: -3px; width: 1px; background: rgba(201,247,211,.5); }
+.fan .band { position: absolute; top: 6px; height: 10px; border-radius: 2px; }
+.fan .med { position: absolute; top: 1px; width: 3px; height: 20px; background: #fff; border-radius: 1px; }
+.warnline { color: var(--warn); font-size: calc(12px * var(--fs)); }
+details.secret { margin-top: 14px; font-size: calc(13px * var(--fs)); color: var(--muted); }
+details.secret summary { cursor: pointer; color: var(--matrix); }
+details.secret code { display: block; background: #000; border: 1px solid var(--line); padding: 8px; margin: 6px 0; color: var(--text); word-break: break-all; }
+
 footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -355,6 +388,34 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     <div class="legend" id="comLegend"></div>
     <div class="toolbar"><span>Veränderung in % seit Beginn des Zeitraums · Legende = ein/aus · Karte = Einzelansicht in Preisen · im Chart ziehen = zoomen</span></div>
     <div class="cards" id="comCards"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-depot" id="depot">
+    <h2 id="h-depot">// Mein Depot<span class="sub">nur in diesem Browser gespeichert · Kaufkurs in Euro</span></h2>
+    <form class="dform" id="dForm" autocomplete="off">
+      <label class="wide">AKTIE (Name, Symbol oder WKN)<input id="dName" list="dList" placeholder="z. B. SAP oder 716460" required></label>
+      <datalist id="dList"></datalist>
+      <label>STÜCK<input id="dQty" type="number" step="any" min="0" placeholder="z. B. 0,5" required></label>
+      <label>KAUFKURS €<input id="dBuy" type="number" step="any" min="0" placeholder="pro Stück" required></label>
+      <label>KAUFDATUM<input id="dDate" type="date"></label>
+      <button type="submit">+ HINZUFÜGEN</button>
+    </form>
+    <div id="dMsg" class="muted"></div>
+    <div class="dsum" id="dSum"></div>
+    <div class="hold" id="dHold" hidden>
+      <div class="top">HALTEDAUER <b id="hVal">1 Jahr</b><span id="hTotal"></span></div>
+      <input type="range" id="hRange" min="0" max="12" step="1" aria-label="Haltedauer">
+      <div class="ticks"><span>1 Woche</span><span>3 Monate</span><span>1 Jahr</span><span>3 Jahre</span><span>10 Jahre</span></div>
+    </div>
+    <div id="dList2"></div>
+    <details class="secret" id="dSecret" hidden>
+      <summary>📲 Telegram-Wächter für dieses Depot einrichten</summary>
+      <p>Der Bot meldet dir dann starke Tagesverluste, Bruch der 200-Tage-Linie, Verlust über 10 % und Gewinn über 20 % deiner Positionen.
+        Lege in GitHub unter <b>Settings → Secrets and variables → Actions</b> ein Secret <b>DEPOT</b> an (oder bearbeite es) mit genau diesem Inhalt.
+        Secrets sind auch in öffentlichen Repos für niemanden sichtbar. Bei jedem Kauf/Verkauf hier aktualisieren.</p>
+      <code id="dCode"></code>
+      <button type="button" class="dbtn" id="dCopy">KOPIEREN</button>
+    </details>
   </section>
 
   <section class="panel" aria-labelledby="h-picks">
@@ -1185,12 +1246,14 @@ function renderComCards() {
       ${call}
       <div class="kgrid">${k.map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("")}</div>
       ${p.desc ? `<div class="desc"><b>Unternehmen</b> (Yahoo Finance, Englisch): ${esc(p.desc)}${p.desc.length >= 600 ? " …" : ""}</div>` : ""}
-      <div class="links"><a href="https://www.finanzen.net/suchergebnis.asp?_search=${encodeURIComponent(p.w || p.n)}" target="_blank" rel="noopener noreferrer">finanzen.net ↗</a>
+      <div class="links"><button type="button" class="dbtn" id="toDepot">+ ZU MEINEM DEPOT</button>
+        <a href="https://www.finanzen.net/suchergebnis.asp?_search=${encodeURIComponent(p.w || p.n)}" target="_blank" rel="noopener noreferrer">finanzen.net ↗</a>
         <a href="https://finance.yahoo.com/quote/${encodeURIComponent(p.t)}" target="_blank" rel="noopener noreferrer">Yahoo Finance ↗</a>
         ${p.web ? `<a href="${esc(p.web)}" target="_blank" rel="noopener noreferrer">Website ↗</a>` : ""}</div>
       <div class="note">Einschätzung = Regelwerk aus Trend, Momentum, Bewertung, Bilanz und Analystenmeinung – keine Garantie, keine Anlageberatung.
         Bei 100 € und 1 € Ordergebühr muss der Kurs rund 2 % steigen, nur um die Kosten zu decken. Daten: Yahoo Finance, Stand ${new Date(D.generated).toLocaleDateString("de-DE")}.</div>`;
     sheet.querySelector(".x").addEventListener("click", close);
+    sheet.querySelector("#toDepot").addEventListener("click", () => { close(); window.TB_depotPrefill && window.TB_depotPrefill(p); });
     modal.classList.add("open"); document.body.classList.add("modal-open");
     history.replaceState(null, "", "#aktie=" + encodeURIComponent(p.t));
     // Kursverlauf
@@ -1220,6 +1283,152 @@ function renderComCards() {
   modal.addEventListener("click", e => { if (e.target === modal) close(); });
   addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("open")) close(); });
   const m = location.hash.match(/^#aktie=(.+)$/); if (m) openTicker(decodeURIComponent(m[1]));
+  window.TB = { load, openTicker, close };
+})();
+
+/* ================= Mein Depot ================= */
+(function myDepot() {
+  const KEY = "depot";
+  const read = () => { try { return JSON.parse(store.get(KEY) || "[]"); } catch { return []; } };
+  const write = list => store.set(KEY, JSON.stringify(list));
+  const HOLD = [["1 Woche", 5], ["2 Wochen", 10], ["1 Monat", 21], ["2 Monate", 42], ["3 Monate", 63], ["6 Monate", 126], ["9 Monate", 189],
+                ["1 Jahr", 252], ["18 Monate", 378], ["2 Jahre", 504], ["3 Jahre", 756], ["5 Jahre", 1260], ["10 Jahre", 2520]];
+  const FX = D.fx || { EUR: 1 };
+  const toEur = (v, cur) => v == null ? null : (cur || "EUR") === "EUR" ? v : FX[cur] ? v * FX[cur] : null;
+  const fee = () => +(store.get("feeEur") || 1);
+  let P = null, byT = {};
+  const nameInp = document.getElementById("dName"), dl = document.getElementById("dList"), msg = document.getElementById("dMsg");
+  const hr = document.getElementById("hRange"); hr.value = +(store.get("hold") ?? 7);
+  const label = p => `${p.n} · ${p.t}${p.w ? " · WKN " + p.w : ""}`;
+  function lookup(v) {
+    const t = String(v || "").trim().toLowerCase(); if (!t || !P) return null;
+    return P.find(p => label(p).toLowerCase() === t) || P.find(p => p.t.toLowerCase() === t || (p.w || "").toLowerCase() === t)
+      || P.find(p => p.n.toLowerCase().startsWith(t)) || null;
+  }
+  // Normalverteilung
+  const erf = x => { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x);
+    return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x)); };
+  const Phi = x => 0.5 * (1 + erf(x / Math.SQRT2));
+  function estimate(p, days) {
+    // Lognormal-Modell: historische Schwankung (2 J.), Trend zur Hälfte auf langfristige Aktienrendite (7 % p. a.) geschrumpft
+    const px = p.px.filter(v => v > 0), r = [];
+    for (let i = 1; i < px.length; i++) r.push(Math.log(px[i] / px[i - 1]));
+    if (r.length < 60) return null;
+    const mean = r.reduce((a, b) => a + b, 0) / r.length;
+    const sd = Math.sqrt(r.reduce((a, b) => a + (b - mean) ** 2, 0) / (r.length - 1));
+    const prior = Math.log(p.k === "Krypto" ? 1.10 : 1.07);
+    const mu = Math.max(-0.3, Math.min(0.3, 0.5 * mean * 252 + 0.5 * prior)), sig = sd * Math.sqrt(252), T = days / 252;
+    const m = mu * T, s = sig * Math.sqrt(T);
+    const out = { med: Math.exp(m) - 1, lo: Math.exp(m - 1.2816 * s) - 1, hi: Math.exp(m + 1.2816 * s) - 1, pos: Phi(m / s), mu, sig };
+    if (days < px.length - 20) {  // historischer Vergleich: alle Zeitfenster dieser Länge in den letzten 2 Jahren
+      const h = []; for (let i = 0; i + days < px.length; i++) h.push(px[i + days] / px[i] - 1);
+      h.sort((a, b) => a - b); out.hist = { med: h[Math.floor(h.length / 2)], pos: h.filter(x => x > 0).length / h.length };
+    }
+    return out;
+  }
+  function render() {
+    const list = read(), H = HOLD[+hr.value];
+    document.getElementById("hVal").textContent = H[0];
+    document.getElementById("dHold").hidden = !list.length;
+    document.getElementById("dSecret").hidden = !list.length;
+    const box = document.getElementById("dList2");
+    if (!list.length) { box.innerHTML = '<div class="empty">Noch keine Positionen. Trage oben deine erste Aktie ein – z. B. SAP.</div>'; document.getElementById("dSum").innerHTML = ""; return; }
+    if (!P) { box.innerHTML = '<div class="empty">Lade Kursdaten …</div>'; return; }
+    let inv = 0, val = 0, expSum = 0, rows = [], maxAbs = 0.2, unpriced = 0;
+    const items = list.map((x, i) => {
+      const p = byT[x.t]; const e = p ? estimate(p, H[1]) : null;
+      if (e) maxAbs = Math.max(maxAbs, Math.abs(e.lo), Math.abs(e.hi));
+      return { x, i, p, e };
+    });
+    maxAbs = Math.min(maxAbs, 3);
+    for (const { x, i, p, e } of items) {
+      const price = p ? toEur(p.tech.last, p.cur) : null;
+      const cost = x.qty * x.buy, value = price != null ? x.qty * price : null;
+      if (value != null) { inv += cost; val += value; } else unpriced++;
+      const pnl = value != null ? value - cost : null, pnlP = value != null ? value / cost - 1 : null;
+      const warn = [];
+      if (p && p.tech.sma200 && p.tech.last < p.tech.sma200) warn.push("unter der 200-Tage-Linie");
+      if (p && p.tech.d1 <= -0.04) warn.push(`heute ${nf(p.tech.d1 * 100, 1)} %`);
+      if (pnlP != null && pnlP <= -0.10) warn.push("Verlust über 10 % – Kaufgründe prüfen");
+      if (pnlP != null && pnlP >= 0.20) warn.push("Gewinn über 20 % – Teilverkauf/Stop-Loss überlegen");
+      if (p && p.cur && p.cur !== "EUR" && !FX[p.cur]) warn.push(`Kurs in ${p.cur}, kein Wechselkurs verfügbar`);
+      let fc = '<span class="muted">Keine Prognose möglich (zu wenig Kursdaten).</span>';
+      if (e && value != null) {
+        const net = value * e.med - fee(); expSum += net;
+        const X = v => 50 + Math.max(-1, Math.min(1, v / maxAbs)) * 50;
+        fc = `<div><b>Erwartung (Median) in ${esc(H[0])}:</b> <span class="${cls(e.med)}">${e.med > 0 ? "+" : ""}${nf(e.med * 100, 1)} %</span>
+            → <span class="${cls(net)}">${net > 0 ? "+" : ""}${nf(net)} €</span> <span class="muted">(nach ${nf(fee())} € Verkaufsgebühr)</span></div>
+          <div class="fan" role="img" aria-label="Bandbreite ${nf(e.lo * 100, 0)} bis ${nf(e.hi * 100, 0)} Prozent">
+            <span class="z" style="left:50%"></span>
+            <span class="band" style="left:${X(e.lo)}%;width:${X(e.hi) - X(e.lo)}%;background:linear-gradient(90deg, var(--down), #383835 ${(50 - X(e.lo)) / Math.max(1, X(e.hi) - X(e.lo)) * 100}%, var(--s1))"></span>
+            <span class="med" style="left:calc(${X(e.med)}% - 1px)"></span></div>
+          <div class="muted">80 % der Fälle zwischen <span class="down">${nf(e.lo * 100, 0)} %</span> und <span class="up">+${nf(e.hi * 100, 0)} %</span>
+            · Chance auf Plus <b>${nf(e.pos * 100, 0)} %</b>${e.hist ? ` · historisch (2 J.): Median ${e.hist.med > 0 ? "+" : ""}${nf(e.hist.med * 100, 1)} %, ${nf(e.hist.pos * 100, 0)} % im Plus` : ""}</div>
+          ${p.an && p.an.up != null && H[1] >= 189 && H[1] <= 378 ? `<div class="muted">Analysten (12 Monate): Ø Kursziel ${nf(p.an.tgt)} = ${p.an.up > 0 ? "+" : ""}${nf(p.an.up * 100, 0)} %</div>` : ""}`;
+      }
+      rows.push(`<div class="pos">
+        <div><div class="nm" data-t="${esc(x.t)}" title="Steckbrief öffnen">${esc(p ? p.n : x.t)}</div>
+          <div class="sub2">${esc(x.t)}${p && p.w ? " · WKN " + esc(p.w) : ""}${x.date ? " · gekauft " + new Date(x.date).toLocaleDateString("de-DE") : ""}</div>
+          ${p ? `<div style="margin-top:4px"><span class="vtag ${p.v.kurz.label.startsWith("interessant") ? "g" : p.v.kurz.label.startsWith("neutral") ? "n" : "b"}">kurz: ${esc(p.v.kurz.label)}</span>
+            <span class="vtag ${p.v.mittel.label.startsWith("interessant") ? "g" : p.v.mittel.label.startsWith("neutral") ? "n" : "b"}">mittel: ${esc(p.v.mittel.label)}</span></div>` : ""}
+          ${warn.length ? `<div class="warnline">⚠️ ${esc(warn.join(" · "))}</div>` : ""}
+          <div class="act"><button type="button" class="dbtn" data-edit="${i}">BEARBEITEN</button><button type="button" class="dbtn" data-del="${i}">ENTFERNEN</button></div></div>
+        <div class="kv2"><span>Stück</span><span>${nf(x.qty, x.qty % 1 ? 4 : 0)}</span>
+          <span>Kaufkurs</span><span>${nf(x.buy)} €</span>
+          <span>Aktuell</span><span>${price != null ? nf(price) + " €" : "–"} ${p ? `<span class="${cls(p.tech.d1)}">(${pct(p.tech.d1)})</span>` : ""}</span>
+          <span>Wert</span><span>${value != null ? nf(value) + " €" : "–"}</span>
+          <span>Gewinn/Verlust</span><span class="${cls(pnl)}">${pnl != null ? `${pnl > 0 ? "+" : ""}${nf(pnl)} € (${pnlP > 0 ? "+" : ""}${nf(pnlP * 100, 1)} %)` : "–"}</span></div>
+        <div>${fc}</div></div>`);
+    }
+    box.innerHTML = rows.join("") + `<div class="note">Prognose = statistisches Modell aus der Schwankung der letzten 2 Jahre; der Trend wird zur Hälfte auf die langfristige
+      Aktienrendite von ~7 % p. a. zurückgeführt, damit kurze Hypes nicht endlos fortgeschrieben werden. Ereignisse (Zahlen, Krisen) kann es nicht vorhersehen.
+      Fremdwährungen: Wechselkurs von heute, Währungsrisiko nicht eingerechnet. Keine Anlageberatung.</div>`;
+    const pnlT = val - inv;
+    document.getElementById("dSum").innerHTML = `<div><span>Einsatz</span><b>${nf(inv)} €</b></div><div><span>Aktueller Wert</span><b>${nf(val)} €</b></div>
+      <div><span>Gewinn/Verlust</span><b class="${cls(pnlT)}">${pnlT > 0 ? "+" : ""}${nf(pnlT)} € (${inv ? (pnlT > 0 ? "+" : "") + nf(pnlT / inv * 100, 1) : "0"} %)</b></div>` +
+      (unpriced ? `<div class="warnline" style="align-self:end">${unpriced} Position(en) ohne Euro-Kurs nicht eingerechnet – Wechselkurse folgen mit dem nächsten Bot-Lauf.</div>` : "");
+    document.getElementById("hTotal").innerHTML = `Erwarteter Gewinn gesamt (Summe der Mediane): <b class="${cls(expSum)}" style="font-size:1em">${expSum > 0 ? "+" : ""}${nf(expSum)} €</b>`;
+    document.getElementById("dCode").textContent = list.map(x => `${x.t}:${x.qty}:${x.buy}`).join(";");
+    box.querySelectorAll("[data-t]").forEach(el => el.addEventListener("click", () => TB.openTicker(el.dataset.t)));
+    box.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
+      const l = read(); const [gone] = l.splice(+b.dataset.del, 1);
+      if (confirm(`${gone.t} wirklich aus dem Depot entfernen?`)) { write(l); render(); }
+    }));
+    box.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => {
+      const l = read(), x = l[+b.dataset.edit], p = byT[x.t];
+      nameInp.value = p ? label(p) : x.t; document.getElementById("dQty").value = x.qty; document.getElementById("dBuy").value = x.buy;
+      document.getElementById("dDate").value = x.date || ""; l.splice(+b.dataset.edit, 1); write(l); render();
+      msg.textContent = "Werte ändern und auf + HINZUFÜGEN klicken, um zu speichern."; nameInp.focus();
+    }));
+  }
+  hr.addEventListener("input", () => { store.set("hold", hr.value); render(); });
+  nameInp.addEventListener("change", () => { const p = lookup(nameInp.value); const b = document.getElementById("dBuy");
+    if (p && !b.value) { const e = toEur(p.tech.last, p.cur); if (e) b.placeholder = "aktuell " + nf(e) + " €"; } });
+  document.getElementById("dForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const p = lookup(nameInp.value);
+    if (!p) { msg.innerHTML = `<span class="down">„${esc(nameInp.value)}“ nicht gefunden. Bitte aus der Vorschlagsliste wählen (${P ? P.length : 0} Werte).</span>`; return; }
+    const qty = +document.getElementById("dQty").value, buy = +document.getElementById("dBuy").value;
+    if (!(qty > 0) || !(buy > 0)) { msg.innerHTML = '<span class="down">Bitte Stückzahl und Kaufkurs größer 0 eingeben.</span>'; return; }
+    const l = read(); l.push({ t: p.t, qty, buy, date: document.getElementById("dDate").value || null }); write(l);
+    ev.target.reset(); msg.textContent = `${p.n} hinzugefügt.`; render();
+  });
+  document.getElementById("dCopy").addEventListener("click", () => {
+    const t = document.getElementById("dCode").textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => msg.textContent = "Kopiert – jetzt in GitHub als Secret DEPOT einfügen.",
+      () => msg.textContent = "Bitte den Text oben manuell markieren und kopieren.");
+  });
+  window.TB_depotPrefill = p => {
+    nameInp.value = label(p); const e = toEur(p.tech.last, p.cur); if (e) document.getElementById("dBuy").placeholder = "aktuell " + nf(e) + " €";
+    document.getElementById("depot").scrollIntoView({ behavior: reduced ? "auto" : "smooth" }); document.getElementById("dQty").focus();
+  };
+  const ready = () => TB.load().then(list => {
+    if (!list) { if (read().length) document.getElementById("dList2").innerHTML = '<div class="empty">Kursdaten konnten nicht geladen werden – Seite neu laden.</div>'; return; }
+    P = list; byT = Object.fromEntries(P.map(p => [p.t, p]));
+    dl.innerHTML = P.map(p => `<option value="${esc(label(p))}">`).join(""); render();
+  });
+  render();
+  if (read().length) ready(); else nameInp.addEventListener("focus", ready, { once: true });
 })();
 
 /* ================= Start ================= */

@@ -21,7 +21,7 @@ import pandas as pd
 import requests
 import yfinance as yf
 
-from . import analyst, dashboard, macro, profiles, world
+from . import analyst, dashboard, depot, macro, profiles, world
 from .wkn import search_url, wkn
 from .strategies import STRATEGIES, add_indicators, backtest, simulate_trade
 from .watchlist import MACRO, UNIVERSE
@@ -39,7 +39,7 @@ MIN_IDEA_TARGET_PCT = float(os.getenv("MIN_IDEA_TARGET_PCT", "8"))  # Kaufideen:
 MAX_IDEAS_PER_RUN = int(os.getenv("MAX_IDEAS_PER_RUN", "2"))
 MIN_IDEA_EV_PCT = float(os.getenv("MIN_IDEA_EV_PCT", "5"))  # Erwartungswert der Szenarien nach Gebühren
 MAX_EXPLAIN_PER_RUN = int(os.getenv("MAX_EXPLAIN_PER_RUN", "3"))  # KI-Erklärungen für Marktbewegungen
-ALERT_COOLDOWN_DAYS = {"move": 2, "scenario": 3, "warn": 5, "ki": 1}
+ALERT_COOLDOWN_DAYS = {"move": 2, "scenario": 3, "warn": 5, "ki": 1, "depot": 3}
 
 # Ungefährer Handelsschluss (Stunde UTC) je Börsensuffix; bis dahin ist die heutige Tageskerze unfertig.
 CLOSE_HOUR_UTC = {
@@ -608,6 +608,10 @@ def main() -> None:
     heads = [h["title"] for h in news_items]
     rule_alerts = macro.risk_warnings(mv) + macro.move_alerts(mv, heads) + macro.scenario_alerts(heads, mv)
     explain_alerts(rule_alerts, state)
+    try:
+        depot.watch(state, send, esc, alert_due, args.dry_run)
+    except Exception as e:
+        print("Depot-Wächter fehlgeschlagen:", repr(e), file=sys.stderr)
     for a in rule_alerts:
         if alert_due(state, a.key):
             send(alert_message(a), args.dry_run)

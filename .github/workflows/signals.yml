@@ -41,6 +41,7 @@ jobs:
           FEE_PER_ORDER_EUR: ${{ vars.FEE_PER_ORDER_EUR || '1' }}
           MIN_HIT_RATE: ${{ vars.MIN_HIT_RATE || '0.70' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DEPOT: ${{ secrets.DEPOT }}
           AI_MODEL: ${{ vars.AI_MODEL || 'claude-opus-5-5' }}
         run: |
           MODE="${{ github.event.inputs.mode }}"

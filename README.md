@@ -67,7 +67,12 @@ Läufe: werktags nach Börsenschluss Asien, Europa und USA, am Wochenende für K
 mit Zeitregler (1W bis 10 Jahre, Datumsauswahl, Zoom per Ziehen), Hot-Picks mit WKN, KI-Calls mit
 Szenarien, eine Weltkarte (Eskalationsstufen, BIP-Wachstum, Inflation, Kaufkraft je Land, Szenarien
 bis 2050), Branchen-Barometer mit News, Rohstoffe/Öl/Gas mit eigenem Zeitregler, eine Suche über
-rund 240 Aktien/ETFs mit Steckbrief (Kennzahlen, Chart, Einschätzung kurz-/mittelfristig) und das Signal-Protokoll.
+rund 240 Aktien/ETFs mit Steckbrief (Kennzahlen, Chart, Einschätzung kurz-/mittelfristig), „Mein Depot“
+(nur im Browser gespeichert, mit Renditeprognose für eine per Regler wählbare Haltedauer) und das Signal-Protokoll.
+
+**Depot-Wächter (optional):** Secret `DEPOT` im Format `SAP.DE:1:230;NVDA:0.5:160` (Symbol:Stück:Kaufkurs in €).
+Der Bot meldet dann per Telegram starke Tagesverluste, Bruch der 200-Tage-Linie, Verlust > 10 % und Gewinn > 20 %.
+Das Dashboard erzeugt den Text unter „Telegram-Wächter einrichten“.
 Der Bot schreibt die Daten bei jedem Lauf nach `docs/data.js` und `docs/world.js`.
 
 Länderdaten: IMF World Economic Outlook (Ist-Werte und IMF-Prognosen bis ca. 2030, Aktualisierung
