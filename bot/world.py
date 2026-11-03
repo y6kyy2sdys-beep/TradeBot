@@ -98,13 +98,23 @@ def fetch_leaders() -> dict[str, list[dict]]:
     if missing:
         values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
         out.update(_leaders_query(f"\n  VALUES (?c ?iso) {{ {values} }}"))
+    missing = {iso: q for iso, q in COUNTRY_QIDS.items() if iso not in out}
+    if missing:  # Amtsinhaber ohne Amtsende mit dem jüngsten Amtsantritt
+        values = " ".join(f'(wd:{q} "{iso}")' for iso, q in missing.items())
+        out.update(_leaders_query(f"\n  VALUES (?c ?iso) {{ {values} }}", by_statement=True))
     return out
 
 
-def _leaders_query(country_filter: str) -> dict[str, list[dict]]:
+def _leaders_query(country_filter: str, by_statement: bool = False) -> dict[str, list[dict]]:
+    if by_statement:
+        office = """
+  { ?c p:P35 ?st. ?st ps:P35 ?person. BIND("Staatsoberhaupt" AS ?role) } UNION { ?c p:P6 ?st. ?st ps:P6 ?person. BIND("Regierungschef" AS ?role) }
+  ?st pq:P580 ?start. FILTER NOT EXISTS { ?st pq:P582 ?end. }"""
+    else:
+        office = """
+  { ?c wdt:P35 ?person. BIND("Staatsoberhaupt" AS ?role) } UNION { ?c wdt:P6 ?person. BIND("Regierungschef" AS ?role) }"""
     query = """
-SELECT ?iso ?role ?person ?personLabel ?img WHERE {""" + country_filter + """
-  { ?c wdt:P35 ?person. BIND("Staatsoberhaupt" AS ?role) } UNION { ?c wdt:P6 ?person. BIND("Regierungschef" AS ?role) }
+SELECT ?iso ?role ?person ?personLabel ?img ?start WHERE {""" + country_filter + office + """
   OPTIONAL { ?person wdt:P18 ?img. }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
 }"""
@@ -112,7 +122,15 @@ SELECT ?iso ?role ?person ?personLabel ?img WHERE {""" + country_filter + """
                      headers={"User-Agent": "TradeBot-Dashboard/1.0 (GitHub Actions)", "Accept": "application/sparql-results+json"}, timeout=60)
     r.raise_for_status()
     out: dict[str, list[dict]] = {}
-    for b in r.json()["results"]["bindings"]:
+    rows = r.json()["results"]["bindings"]
+    if by_statement:  # je Land und Amt nur den jüngsten Amtsantritt behalten
+        latest = {}
+        for b in rows:
+            k = (b["iso"]["value"], b["role"]["value"])
+            if k not in latest or b.get("start", {}).get("value", "") > latest[k].get("start", {}).get("value", ""):
+                latest[k] = b
+        rows = list(latest.values())
+    for b in rows:
         iso, name = b["iso"]["value"], b["personLabel"]["value"]
         if name.startswith("Q") and name[1:].isdigit():
             continue
