@@ -1,7 +1,27 @@
 # Trading-Signal-Bot (Telegram)
 
-Scannt automatisch ~95 Werte weltweit (US-, EU- und Asien-Aktien, ETFs, Krypto)
-auf Swing-Signale mit Haltedauer von wenigen Tagen und schickt sie per Telegram.
+Beobachtet Weltlage und Märkte und schickt per Telegram vier Arten von Nachrichten:
+
+| Nachricht | Quelle | Wann |
+|---|---|---|
+| 🌍 **Makro-Signal** – Öl, Gas, Zinsen, Währungen, Rohstoffe, Szenarien wie „Angriff auf Iran → Öl ↑ → Airlines ↓, Rüstung ↑“ | Regeln (kostenlos) + KI | bei jedem Lauf bzw. morgens |
+| ⚠️ **Marktwarnung** – VIX, Korrektur, Trendbruch, Kreditstress, inverse Zinskurve, KI-Risikoeinschätzung | Regeln + KI | sobald ausgelöst |
+| 🟢 **Kaufidee** – mit Begründung, Auslösern, Risiken, Zeithorizont (Wochen–Monate), Ziel und Stop | KI (Claude) | morgens |
+| 🟢 **Kaufsignal (Swing)** – technisches Signal für wenige Tage, per Backtest geprüft | Regeln | nach Börsenschluss |
+
+Kaufideen werden automatisch verworfen, wenn sie sich für 100 € nicht realistisch lohnen:
+Kursziel unter 8 % oder Chance/Risiko nach Gebühren unter 1,5.
+
+## KI-Lageanalyse (optional)
+
+Werktags vor Börsenstart und Sonntagabend recherchiert Claude per Websuche die aktuelle Lage
+und leitet Wirkungsketten, Warnungen und Kaufideen ab. Dafür braucht es das Secret
+`ANTHROPIC_API_KEY` (console.anthropic.com → API Keys). Ohne Schlüssel laufen alle
+regelbasierten Meldungen trotzdem weiter. Kosten: grob 0,30–0,60 $ pro Analyse, also etwa
+8–15 $ im Monat; begrenzbar über ein Ausgabenlimit in der Anthropic-Console.
+Modell änderbar über die Variable `AI_MODEL`.
+
+## Swing-Signale
 
 ## So entscheidet der Bot
 
@@ -28,9 +48,11 @@ Läufe: werktags nach Börsenschluss Asien, Europa und USA, am Wochenende für K
 1. Repo → **Settings → Secrets and variables → Actions → New repository secret**
    - `TELEGRAM_BOT_TOKEN` – Token von @BotFather
    - `TELEGRAM_CHAT_ID` – deine Chat-ID
+   - `ANTHROPIC_API_KEY` – optional, für die KI-Lageanalyse
 2. Optional unter **Variables**: `BUDGET_EUR` (Standard 100),
    `FEE_PER_ORDER_EUR` (Standard 1), `MIN_HIT_RATE` (Standard 0.70)
-3. **Actions → Trading-Signale → Run workflow** mit Modus `test` → Testnachricht in Telegram.
+3. **Actions → Trading-Signale → Run workflow** mit Modus `test` → Testnachricht in Telegram,
+   mit Modus `analysis` → sofortige KI-Lageanalyse.
 
 ## Wichtig
 

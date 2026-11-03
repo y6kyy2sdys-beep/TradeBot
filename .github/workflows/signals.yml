@@ -6,10 +6,12 @@ on:
     - cron: "50 16 * * 1-5"  # nach Börsenschluss Europa
     - cron: "20 21 * * 1-5"  # nach Börsenschluss USA + Tagesbericht
     - cron: "15 9 * * 0,6"   # Wochenende: Krypto
+    - cron: "40 5 * * 1-5"   # vor Börsenstart Europa: KI-Lageanalyse
+    - cron: "40 17 * * 0"    # Sonntagabend: KI-Lageanalyse (Wochenend-Ereignisse)
   workflow_dispatch:
     inputs:
       mode:
-        description: "scan, report oder test"
+        description: "scan, report, analysis oder test"
         default: "test"
 
 permissions:
@@ -38,10 +40,15 @@ jobs:
           BUDGET_EUR: ${{ vars.BUDGET_EUR || '100' }}
           FEE_PER_ORDER_EUR: ${{ vars.FEE_PER_ORDER_EUR || '1' }}
           MIN_HIT_RATE: ${{ vars.MIN_HIT_RATE || '0.70' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_MODEL: ${{ vars.AI_MODEL || 'claude-opus-5-5' }}
         run: |
           MODE="${{ github.event.inputs.mode }}"
+          SCHEDULE="${{ github.event.schedule }}"
           if [ "$MODE" = "test" ]; then
             python -m bot.main --test
+          elif [ "$MODE" = "analysis" ] || [ "$SCHEDULE" = "40 5 * * 1-5" ] || [ "$SCHEDULE" = "40 17 * * 0" ]; then
+            python -m bot.main --analysis
           elif [ "$MODE" = "report" ] || [ "${{ github.event.schedule }}" = "20 21 * * 1-5" ]; then
             python -m bot.main --report
           else
@@ -49,6 +56,7 @@ jobs:
           fi
 
       - name: Signal-Verlauf speichern
+        if: always()
         run: |
           git config user.name "signal-bot"
           git config user.email "signal-bot@users.noreply.github.com"

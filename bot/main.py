@@ -3,6 +3,7 @@
 Aufruf:
     python -m bot.main            # Scan + offene Signale auswerten
     python -m bot.main --report   # zusätzlich Tagesbericht senden
+    python -m bot.main --analysis # zusätzlich KI-Lageanalyse (Claude) mit Kaufideen
     python -m bot.main --test     # nur Testnachricht senden
     python -m bot.main --dry-run  # nichts senden, Ausgabe in der Konsole
 """
@@ -20,6 +21,7 @@ import pandas as pd
 import requests
 import yfinance as yf
 
+from . import analyst, macro
 from .strategies import STRATEGIES, add_indicators, backtest, simulate_trade
 from .watchlist import MACRO, UNIVERSE
 
@@ -32,6 +34,9 @@ MIN_HIT_RATE = float(os.getenv("MIN_HIT_RATE", "0.70"))
 MIN_TRADES = int(os.getenv("MIN_TRADES", "12"))
 MAX_SIGNALS_PER_RUN = int(os.getenv("MAX_SIGNALS_PER_RUN", "3"))
 HISTORY = os.getenv("HISTORY", "6y")
+MIN_IDEA_TARGET_PCT = float(os.getenv("MIN_IDEA_TARGET_PCT", "8"))  # Kaufideen: Mindest-Kursziel in %
+MAX_IDEAS_PER_RUN = int(os.getenv("MAX_IDEAS_PER_RUN", "2"))
+ALERT_COOLDOWN_DAYS = {"move": 2, "scenario": 3, "warn": 5, "ki": 1}
 
 # Ungefährer Handelsschluss (Stunde UTC) je Börsensuffix; bis dahin ist die heutige Tageskerze unfertig.
 CLOSE_HOUR_UTC = {
@@ -168,6 +173,9 @@ def market_context(data: dict[str, pd.DataFrame]) -> dict:
 # ---------------------------------------------------------------- Telegram
 
 
+SEND_FAILURES = []
+
+
 def send(text: str, dry_run: bool) -> None:
     if dry_run:
         print("----- TELEGRAM -----\n" + text + "\n")
@@ -181,15 +189,30 @@ def send(text: str, dry_run: bool) -> None:
     )
     if not r.ok:
         print("Telegram-Fehler:", r.status_code, r.text, file=sys.stderr)
+        SEND_FAILURES.append(r.status_code)
 
 
 # ---------------------------------------------------------------- Zustand
 
 
 def load_state() -> dict:
-    if STATE_FILE.exists():
-        return json.loads(STATE_FILE.read_text())
-    return {"open": [], "closed": []}
+    state = json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {}
+    for k, default in (("open", []), ("closed", []), ("alerts", {})):
+        state.setdefault(k, default)
+    return state
+
+
+def alert_due(state: dict, key: str) -> bool:
+    """Duplikat-Schutz: dieselbe Meldung erst nach Ablauf der Sperrfrist erneut senden."""
+    last = state["alerts"].get(key)
+    if not last:
+        return True
+    days = ALERT_COOLDOWN_DAYS.get(key.split(":")[0], 3)
+    return datetime.now(timezone.utc) - datetime.fromisoformat(last) >= timedelta(days=days)
+
+
+def mark_alert(state: dict, key: str) -> None:
+    state["alerts"][key] = datetime.now(timezone.utc).isoformat(timespec="minutes")
 
 
 def save_state(state: dict) -> None:
@@ -288,7 +311,7 @@ def signal_message(f: dict, info: dict, fund_lines: list[str], news: list[str], 
     gain_eur = BUDGET_EUR * up - 2 * FEE_PER_ORDER_EUR
     loss_eur = BUDGET_EUR * down + 2 * FEE_PER_ORDER_EUR
     parts = [
-        f"🟢 <b>KAUFSIGNAL: {esc(name)} ({esc(f['ticker'])})</b>",
+        f"🟢 <b>KAUFSIGNAL (Swing, Tage): {esc(name)} ({esc(f['ticker'])})</b>",
         f"Strategie: {esc(strat.name)}",
         "",
         f"Schlusskurs {f['date']}: <b>{f['close']:.2f} {esc(cur)}</b>",
@@ -313,6 +336,136 @@ def signal_message(f: dict, info: dict, fund_lines: list[str], news: list[str], 
     return "\n".join(parts)
 
 
+# ---------------------------------------------------------------- Makro, Warnungen, KI
+
+
+def bullets(title: str, items) -> list[str]:
+    items = [i for i in items if i]
+    return [f"<b>{title}</b>"] + [f"• {esc(i)}" for i in items] if items else []
+
+
+def alert_message(a: "macro.Alert") -> str:
+    if a.kind == "warning":
+        parts = [f"⚠️ <b>MARKTWARNUNG: {esc(a.title)}</b>", ""] + [esc(f) for f in a.facts]
+        parts += [""] + bullets("Bedeutung:", a.chain)
+        parts += ["", "<i>Keine Panik-Verkäufe – aber Stop-Loss prüfen und neue Käufe klein halten.</i>"]
+        return "\n".join(parts)
+    parts = [f"🌍 <b>MAKRO-SIGNAL: {esc(a.title)}</b>", ""] + [esc(f) for f in a.facts]
+    if a.chain:
+        parts += ["", "<b>Wirkungskette:</b>", esc(" → ".join(a.chain))]
+    parts += [""] + bullets("📈 Mögliche Gewinner:", a.winners)
+    parts += [""] + bullets("📉 Mögliche Verlierer:", a.losers)
+    if a.horizon:
+        parts += ["", f"⏱ <b>Zeitperspektive:</b> {esc(a.horizon)}"]
+    parts += ["", "<i>Einordnung, kein Kaufsignal.</i>"]
+    return "\n".join(parts)
+
+
+def ki_macro_message(m: dict) -> str:
+    parts = [f"🌍 <b>MAKRO-ANALYSE: {esc(m['titel'])}</b>", f"Eintrittswahrscheinlichkeit: {esc(m['wahrscheinlichkeit'])}", "",
+             esc(m["ausloeser"]), "", "<b>Wirkungskette:</b>", esc(" → ".join(m["wirkungskette"])), ""]
+    parts += bullets("📈 Mögliche Gewinner:", m["gewinner"]) + [""]
+    parts += bullets("📉 Mögliche Verlierer:", m["verlierer"])
+    parts += ["", f"⏱ <b>Zeitperspektive:</b> {esc(m['zeithorizont'])}", "", "<i>KI-Einordnung, kein Kaufsignal.</i>"]
+    return "\n".join(parts)
+
+
+def ki_warning_message(w: dict) -> str:
+    icon = {"hinweis": "ℹ️", "warnung": "⚠️", "alarm": "🚨"}.get(w["schwere"], "⚠️")
+    return "\n".join([
+        f"{icon} <b>MARKTWARNUNG ({esc(w['schwere'])}): {esc(w['titel'])}</b>", "",
+        esc(w["begruendung"]), "", f"<b>Was tun?</b> {esc(w['was_tun'])}",
+    ])
+
+
+def validate_idea(idea: dict, mv: dict, state: dict) -> str | None:
+    """Gibt einen Ablehnungsgrund zurück oder None, wenn die Idee realistisch lohnt."""
+    t = idea["ticker"]
+    if t not in UNIVERSE or t not in mv:
+        return "Symbol nicht in der Werteliste"
+    if t in {s["ticker"] for s in state["open"]}:
+        return "bereits offen"
+    up, down = idea["kursziel_prozent"], idea["stop_prozent"]
+    if up < MIN_IDEA_TARGET_PCT:
+        return f"Kursziel {up:.1f}% unter Mindestziel {MIN_IDEA_TARGET_PCT:.0f}%"
+    if not 2 <= down <= 25:
+        return f"Stop-Abstand {down:.1f}% unplausibel"
+    if (up - FEE_PCT * 100) / (down + FEE_PCT * 100) < 1.5:
+        return "Chance/Risiko nach Gebühren unter 1,5"
+    if not 5 <= idea["haltedauer_handelstage"] <= 180:
+        return "Haltedauer unplausibel"
+    return None
+
+
+def idea_message(idea: dict, m: dict) -> str:
+    close = m["last"]
+    up, down = idea["kursziel_prozent"] / 100, idea["stop_prozent"] / 100
+    gain = BUDGET_EUR * up - 2 * FEE_PER_ORDER_EUR
+    loss = BUDGET_EUR * down + 2 * FEE_PER_ORDER_EUR
+    parts = [
+        f"🟢 <b>KAUFIDEE: {esc(idea['name'])} ({esc(idea['ticker'])})</b>",
+        f"Überzeugung: {esc(idea['ueberzeugung'])} · Zeithorizont: <b>{esc(idea['zeithorizont'])}</b>",
+        "",
+        f"Schlusskurs {m['date']}: <b>{close:.2f}</b>",
+        f"Kauf: max. {close * 1.01:.2f}",
+        f"🎯 Kursziel: {close * (1 + up):.2f} (+{up:.0%})",
+        f"🛑 Stop-Loss: {close * (1 - down):.2f} (−{down:.0%})",
+        f"📈 Bei {BUDGET_EUR:.0f} €: +{gain:.2f} € Chance / −{loss:.2f} € Risiko (inkl. Gebühren)",
+        "",
+        f"<b>Warum?</b> {esc(idea['begruendung'])}",
+        "",
+    ]
+    parts += bullets("Auslöser:", idea["katalysatoren"]) + [""]
+    parts += bullets("Risiken:", idea["risiken"])
+    parts += ["", "<i>KI-Einschätzung, kein Backtest und keine Garantie. Keine Anlageberatung. Stop-Loss immer setzen.</i>"]
+    return "\n".join(parts)
+
+
+def run_analysis(state, mv, heads, rule_alerts, dry_run) -> None:
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=14)).date().isoformat()
+    recent = [f"{s['ticker']} ({s['signal_date']})" for s in state["open"] + state["closed"]
+              if s.get("strategy") == "ki" and s["signal_date"] >= cutoff]
+    fee = FEE_PCT * 100
+    rules = (
+        f"- kursziel_prozent ≥ {MIN_IDEA_TARGET_PCT:.0f}\n"
+        f"- (kursziel_prozent − {fee:.0f}) / (stop_prozent + {fee:.0f}) ≥ 1,5  (Gebühren {fee:.0f} % je Kauf+Verkauf)\n"
+        "- stop_prozent zwischen 2 und 25, haltedauer_handelstage zwischen 5 und 180\n"
+        f"- höchstens {MAX_IDEAS_PER_RUN} Ideen, keine Werte, die bereits offen sind"
+    )
+    result = analyst.analyse(mv, heads, rule_alerts, state["open"], recent, rules)
+    if not result:
+        return
+    send("🧭 <b>KI-Lagebild</b>\n\n" + esc(result["lagebild"]), dry_run)
+    for m in result["makro_signale"]:
+        key = "ki:macro:" + m["titel"].lower()[:40]
+        if alert_due(state, key):
+            send(ki_macro_message(m), dry_run)
+            mark_alert(state, key)
+    for w in result["warnungen"]:
+        key = "ki:warn:" + w["titel"].lower()[:40]
+        if alert_due(state, key):
+            send(ki_warning_message(w), dry_run)
+            mark_alert(state, key)
+    sent = 0
+    for idea in result["kaufideen"]:
+        reason = validate_idea(idea, mv, state)
+        if reason:
+            print(f"Kaufidee {idea['ticker']} verworfen: {reason}")
+            continue
+        if sent >= MAX_IDEAS_PER_RUN:
+            break
+        m = mv[idea["ticker"]]
+        send(idea_message(idea, m), dry_run)
+        state["open"].append({
+            "ticker": idea["ticker"], "name": idea["name"], "currency": "", "strategy": "ki",
+            "signal_date": m["date"], "ref_close": round(m["last"], 4),
+            "target": round(m["last"] * (1 + idea["kursziel_prozent"] / 100), 4),
+            "stop": round(m["last"] * (1 - idea["stop_prozent"] / 100), 4),
+            "max_days": int(idea["haltedauer_handelstage"]), "horizon": idea["zeithorizont"],
+        })
+        sent += 1
+
+
 def daily_report(state: dict, ctx: dict, n_signals: int, dry_run: bool) -> None:
     parts = ["📰 <b>Tagesbericht</b>", "", f"<b>Marktumfeld:</b> {ctx['regime']}"]
     parts += [esc(line) for line in ctx["lines"]]
@@ -333,11 +486,12 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--report", action="store_true")
     ap.add_argument("--test", action="store_true")
+    ap.add_argument("--analysis", action="store_true")
     args = ap.parse_args()
 
     if args.test:
         send("✅ Signal-Bot ist verbunden. Kaufsignale kommen ab jetzt hierher.", args.dry_run)
-        return
+        sys.exit(1 if SEND_FAILURES else 0)
 
     state = load_state()
     data = download(UNIVERSE + list(MACRO))
@@ -345,6 +499,20 @@ def main() -> None:
     ctx = market_context(data)
 
     evaluate_open(state, data, args.dry_run)
+
+    mv = macro.moves(data)
+    heads = macro.headlines()
+    rule_alerts = macro.risk_warnings(mv) + macro.move_alerts(mv) + macro.scenario_alerts(heads, mv)
+    for a in rule_alerts:
+        if alert_due(state, a.key):
+            send(alert_message(a), args.dry_run)
+            mark_alert(state, a.key)
+    if args.analysis:
+        try:
+            run_analysis(state, mv, heads, rule_alerts, args.dry_run)
+        except Exception as e:  # KI-Ausfall darf den restlichen Lauf nicht stoppen
+            print("KI-Analyse fehlgeschlagen:", repr(e), file=sys.stderr)
+            SEND_FAILURES.append("ki")
 
     min_hit = MIN_HIT_RATE + (0.05 if ctx["risk_off"] else 0)
     candidates = find_signals(data, state, min_hit)
@@ -372,6 +540,8 @@ def main() -> None:
         daily_report(state, ctx, sent, args.dry_run)
     save_state(state)
     print(f"Fertig: {sent} neue Signale, {len(state['open'])} offen")
+    if SEND_FAILURES:
+        sys.exit(f"Fehler beim Senden/Analysieren: {SEND_FAILURES}")
 
 
 if __name__ == "__main__":

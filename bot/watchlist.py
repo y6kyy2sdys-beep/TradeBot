@@ -15,7 +15,7 @@ STOCKS_EU = [
     "SAP.DE", "SIE.DE", "ALV.DE", "DTE.DE", "MBG.DE", "BMW.DE", "BAS.DE",
     "IFX.DE", "RHM.DE", "ADS.DE", "MUV2.DE", "DBK.DE", "ENR.DE", "AIR.PA",
     "MC.PA", "OR.PA", "TTE.PA", "ASML.AS", "NOVO-B.CO", "NESN.SW",
-    "ROG.SW", "SHEL.L", "AZN.L", "ENI.MI",
+    "NOVN.SW", "SHEL.L", "AZN.L", "ENI.MI",
 ]
 
 STOCKS_ASIA = ["7203.T", "6758.T", "0700.HK", "9988.HK"]
@@ -27,16 +27,32 @@ ETFS = [
 
 CRYPTO = ["BTC-USD", "ETH-USD", "SOL-USD"]
 
-# Marktumfeld: Volatilität, Indizes, Zinsen, Rohstoffe, Dollar
+# Marktumfeld: Volatilität, Indizes, Zinsen, Rohstoffe, Währungen, Kredit, Branchen
 MACRO = {
     "^VIX": "VIX (Angstindex)",
     "^GSPC": "S&P 500",
     "^GDAXI": "DAX",
     "^N225": "Nikkei 225",
     "^TNX": "US-Rendite 10J",
+    "^IRX": "US-Rendite 3M",
+    "BZ=F": "Brent-Öl",
     "CL=F": "Rohöl WTI",
+    "NG=F": "Erdgas USA",
+    "TTF=F": "Erdgas Europa (TTF)",
     "GC=F": "Gold",
+    "HG=F": "Kupfer",
+    "ZW=F": "Weizen",
     "DX-Y.NYB": "US-Dollar-Index",
+    "EURUSD=X": "EUR/USD",
+    "USDJPY=X": "USD/JPY",
+    "CNY=X": "USD/CNY",
+    "HYG": "US-Hochzinsanleihen",
+    "JETS": "Airlines (ETF)",
+    "XOP": "Öl-Förderer (ETF)",
+    "KRE": "US-Regionalbanken",
+    "XLU": "Versorger",
+    "XLY": "Zyklischer Konsum",
+    "XLP": "Basiskonsum",
 }
 
 UNIVERSE = STOCKS_US + STOCKS_EU + STOCKS_ASIA + ETFS + CRYPTO
