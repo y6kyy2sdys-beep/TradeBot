@@ -70,7 +70,7 @@ def military_aircraft(limit: int = 800) -> dict:
         alt = a.get("alt_baro")
         items.append({
             "lat": round(lat, 2), "lon": round(lon, 2), "trk": round(a.get("track") or 0),
-            "cs": (a.get("flight") or "").strip(), "typ": a.get("t") or "", "reg": a.get("r") or "",
+            "cs": (a.get("flight") or "").strip(), "typ": a.get("t") or "", "reg": a.get("r") or "", "hex": a.get("hex") or "",
             "alt": alt if isinstance(alt, (int, float)) else (0 if alt == "ground" else None),
             "gs": round(a["gs"]) if isinstance(a.get("gs"), (int, float)) else None,
         })

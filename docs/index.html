@@ -1170,7 +1170,8 @@ function renderComCards() {
       .attr("width", 20).attr("height", 20).attr("x", -10).attr("y", -10)
       .on("mousemove", (ev, d) => doomTip(ev, `<div class="d">✈ ${esc(d.cs || d.reg || "ohne Rufzeichen")}</div><div>${esc(d.typ || "Typ unbekannt")}${d.reg ? " · " + esc(d.reg) : ""}</div>
         <div class="muted">${d.alt != null ? nf(d.alt, 0) + " ft" : "Höhe ?"}${d.gs != null ? " · " + nf(d.gs * 1.852, 0) + " km/h" : ""} · Kurs ${d.trk}°</div>`))
-      .on("mouseleave", () => tip.style.display = "none");
+      .on("mouseleave", () => tip.style.display = "none")
+      .on("click", (ev, d) => showAircraft(d));
     hsSel = mk.append("g").selectAll("g").data((DOOM.hotspots || []).filter(h => h.level > 0)).join("g").attr("class", "hs")
       .on("mousemove", (ev, h) => doomTip(ev, `<div class="d">${esc(h.name)}</div><div>Meldungsdichte ${h.level}/5</div>
         <div class="muted">${Object.entries(h.counts).filter(([, n]) => n).map(([c, n]) => CAT[c][1] + ": " + n).join(" · ") || "allgemeine Meldungen"}</div>`))
@@ -1203,10 +1204,27 @@ function renderComCards() {
     hsSel.attr("display", h => pos(h.lon, h.lat) ? null : "none")
       .attr("transform", h => { const p = pos(h.lon, h.lat); return p ? `translate(${p[0].toFixed(1)},${p[1].toFixed(1)}) scale(${s.toFixed(3)})` : null; });
   }
+  const fr24Area = (lat, lon, z = 6) => `https://www.flightradar24.com/${lat.toFixed(2)},${lon.toFixed(2)}/${z}`;
+  const linkBtn = (href, label) => `<a class="dbtn" style="display:inline-block;text-decoration:none;margin:4px 6px 0 0" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  function showAircraft(d) {
+    const id = d.cs || d.reg;
+    const fr = d.cs ? `https://www.flightradar24.com/${encodeURIComponent(d.cs)}` : d.reg ? `https://www.flightradar24.com/data/aircraft/${encodeURIComponent(d.reg.toLowerCase())}` : fr24Area(d.lat, d.lon, 8);
+    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4 style="color:#ff4d4d">✈ ${esc(id || "Militärflugzeug ohne Rufzeichen")}</h4>
+      <div class="kv"><span>Typ</span><span>${esc(d.typ || "unbekannt")}</span><span>Kennzeichen</span><span>${esc(d.reg || "–")}</span>
+        <span>Höhe</span><span>${d.alt != null ? nf(d.alt, 0) + " ft (" + nf(d.alt * 0.3048, 0) + " m)" : "–"}</span>
+        <span>Geschwindigkeit</span><span>${d.gs != null ? nf(d.gs * 1.852, 0) + " km/h" : "–"}</span><span>Kurs</span><span>${d.trk}°</span>
+        <span>Position</span><span>${d.lat.toFixed(2)}° / ${d.lon.toFixed(2)}°</span></div>
+      <div style="margin-top:8px">${linkBtn(fr, "✈ IN FLIGHTRADAR24")}${d.hex ? linkBtn(`https://globe.adsbexchange.com/?icao=${encodeURIComponent(d.hex)}`, "📡 ADS-B EXCHANGE") : ""}</div>
+      <div class="doomnote">Position vom ${new Date(DOOM.generated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })} – das Flugzeug kann inzwischen gelandet sein.
+        Flightradar24 blendet viele Militärmaschinen aus; ADS-B Exchange zeigt sie ungefiltert.</div>`;
+    card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
+    card.classList.add("open");
+  }
   function showHotspot(h) {
     card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4 style="color:#ff4d4d">☢ ${esc(h.name)}</h4>
       <div>Meldungsdichte <b>${h.level}/5</b> · ${Object.entries(h.counts).filter(([, n]) => n).map(([c, n]) => esc(CAT[c][1]) + " " + n).join(" · ") || "allgemeine Meldungen"}</div>
       <ul class="sumlist">${h.news.map(n => `<li>▸ <a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a> <span class="muted">${esc(n.source)} · ${esc(relTime(n.time))}</span></li>`).join("")}</ul>
+      <div>${linkBtn(fr24Area(h.lat, h.lon), "✈ LUFTRAUM BEI FLIGHTRADAR24")}${linkBtn(`https://globe.adsbexchange.com/?lat=${h.lat}&lon=${h.lon}&zoom=6&mil=1`, "📡 MILITÄR BEI ADS-B EXCHANGE")}</div>
       <div class="doomnote">Meldungslage der letzten 48 Stunden – keine Positionsdaten von Truppen oder Schiffen.</div>`;
     card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
     card.classList.add("open");
@@ -1417,7 +1435,9 @@ function renderComCards() {
       document.getElementById("mapLegend").innerHTML = `<div class="doomleg">
         <span><svg viewBox="-10 -10 20 20"><use href="#ic-plane" x="-10" y="-10" width="20" height="20" fill="#ff3b3b"/></svg>Militärflugzeug mit Transponder (${nf((ac.items || []).length, 0)}${ac.ok ? "" : " – Abruf fehlgeschlagen"})</span>
         ${Object.values(CAT).map(([ic, l]) => `<span><svg viewBox="-10 -10 20 20"><use href="#${ic}" x="-10" y="-10" width="20" height="20" fill="#ff3b3b"/></svg>${esc(l)}</span>`).join("")}
-        <span><svg viewBox="-10 -10 20 20"><circle r="8" fill="rgba(255,59,59,.15)" stroke="#ff3b3b"/></svg>Brennpunkt (Größe = Meldungsdichte)</span></div>
+        <span><svg viewBox="-10 -10 20 20"><circle r="8" fill="rgba(255,59,59,.15)" stroke="#ff3b3b"/></svg>Brennpunkt (Größe = Meldungsdichte)</span>
+        <a class="dbtn" style="text-decoration:none" href="https://www.flightradar24.com/" target="_blank" rel="noopener noreferrer">✈ FLIGHTRADAR24 LIVE</a>
+        <a class="dbtn" style="text-decoration:none" href="https://globe.adsbexchange.com/?mil=1" target="_blank" rel="noopener noreferrer">📡 ADS-B EXCHANGE · NUR MILITÄR</a></div>
         <div class="doomnote">Stand ${new Date(DOOM.generated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })} · ${esc(DOOM.sources.aircraft)} · ${esc(DOOM.sources.hotspots)}.
         Symbole an Brennpunkten zeigen, <b>worüber berichtet wird</b> – keine echten Positionen von Truppen, Schiffen oder U-Booten (die sind nicht öffentlich). Herauszoomen = Globus.</div>`;
       return;
