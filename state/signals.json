@@ -1,4 +1,7 @@
 {
   "open": [],
-  "closed": []
+  "closed": [],
+  "alerts": {
+    "move:BZ=F:down": "2026-11-03T09:38+00:00"
+  }
 }
