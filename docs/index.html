@@ -420,6 +420,20 @@ table.det td:last-child { text-align: right; }
 /* ---------- App-Modus (Handy) ---------- */
 .appnav { display: none; }
 body.app .wrap { padding-bottom: 86px; }
+section.panel > h2 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; }
+section.panel > h2 .sub { margin-left: 0; }
+.pctl { margin-left: auto; display: inline-flex; gap: 4px; align-self: center; }
+.pctl button { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--font); font-size: calc(13px * var(--fs)); line-height: 1; padding: 5px 8px; cursor: pointer; letter-spacing: 0; }
+.pctl button:hover, .pctl button:focus-visible { color: var(--matrix); border-color: var(--matrix); }
+.pctl .grip { cursor: grab; touch-action: none; }
+section.panel.dragging { outline: 2px dashed var(--matrix); opacity: .75; }
+section.panel.drop-before { box-shadow: 0 -4px 0 0 var(--matrix); }
+section.panel.drop-after { box-shadow: 0 4px 0 0 var(--matrix); }
+section.panel.folded > :not(h2) { display: none !important; }
+section.panel.folded { padding-bottom: 6px; }
+section.panel.moved { animation: cardin .3s ease-out; }
+body.app .pctl .grip, body.app .pctl .mv { display: none; }
+body.dragmode, body.dragmode * { user-select: none; }
 body.app section.panel:not(.active) { display: none; }
 body.app header.top .brand small { display: none; }
 body.app .appnav { display: grid; grid-template-columns: repeat(7, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
@@ -472,6 +486,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <span class="pill" id="regime">–</span>
       <span class="seg" role="group" aria-label="Schriftgröße"><button class="tbtn" id="fsDown" type="button" aria-label="Schrift kleiner">A−</button><button class="tbtn" id="fsUp" type="button" aria-label="Schrift größer">A+</button></span>
       <button class="tbtn" id="refreshBtn" type="button" title="Bot jetzt starten und neueste Daten laden">⟳ AKTUALISIEREN</button>
+      <button class="tbtn" id="layoutBtn" type="button" title="Anordnung und eingeklappte Blöcke zurücksetzen">⟲ LAYOUT</button>
       <button class="tbtn" id="appBtn" type="button" title="Zwischen App-Ansicht (Handy) und Desktop umschalten">📱 APP</button>
       <button class="tbtn" id="rainBtn" type="button" aria-pressed="true">RAIN: AN</button>
     </div>
@@ -2428,6 +2443,74 @@ function renderAll() { main.build(); renderCom(); }
   btn.addEventListener("click", run);
 })();
 // App-Ansicht (Handy): Bereiche als Fächer mit Leiste unten
+/* ================= Blöcke verschieben, einklappen, Anordnung merken ================= */
+(function layout() {
+  const panels = () => [...document.querySelectorAll("section.panel")];
+  const box = panels()[0].parentNode, anchor = panels()[panels().length - 1].nextSibling;
+  const keyOf = sec => sec.getAttribute("aria-labelledby");
+  const DEFAULT = panels().map(keyOf);
+  const fold = new Set(JSON.parse(store.get("panelFold") || "[]"));
+  const save = () => { store.set("panelOrder", JSON.stringify(panels().map(keyOf))); store.set("panelFold", JSON.stringify([...fold])); };
+  const refresh = () => setTimeout(() => { dispatchEvent(new Event("resize")); try { renderAll(); } catch (e) {} }, 30);
+  function apply(order) {
+    const byKey = Object.fromEntries(panels().map(p => [keyOf(p), p]));
+    [...order.filter(k => byKey[k]), ...DEFAULT.filter(k => !order.includes(k))].forEach(k => box.insertBefore(byKey[k], anchor));
+  }
+  function flash(sec) { sec.classList.remove("moved"); void sec.offsetWidth; sec.classList.add("moved"); }
+  function move(sec, dir) {
+    const list = panels(), i = list.indexOf(sec), j = i + dir; if (j < 0 || j >= list.length) return;
+    dir < 0 ? box.insertBefore(sec, list[j]) : box.insertBefore(sec, list[j].nextSibling);
+    save(); flash(sec); refresh(); sec.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+  function setFold(sec, on) {
+    sec.classList.toggle("folded", on); on ? fold.add(keyOf(sec)) : fold.delete(keyOf(sec));
+    const b = sec.querySelector(".pctl .fold"); b.textContent = on ? "＋" : "－"; b.title = on ? "Block ausklappen" : "Block einklappen"; b.setAttribute("aria-expanded", !on);
+    save(); if (!on) refresh();
+  }
+  panels().forEach(sec => {
+    const h = sec.querySelector(":scope > h2"), name = h.firstChild.textContent.replace("//", "").trim();
+    const c = document.createElement("span"); c.className = "pctl";
+    c.innerHTML = `<button type="button" class="grip" title="Ziehen zum Verschieben" aria-label="${name} verschieben (ziehen)">⠿</button>
+      <button type="button" class="mv up" title="Nach oben" aria-label="${name} nach oben">▲</button>
+      <button type="button" class="mv down" title="Nach unten" aria-label="${name} nach unten">▼</button>
+      <button type="button" class="fold" aria-expanded="true">－</button>`;
+    h.appendChild(c);
+    c.querySelector(".up").addEventListener("click", () => move(sec, -1));
+    c.querySelector(".down").addEventListener("click", () => move(sec, 1));
+    c.querySelector(".fold").addEventListener("click", () => setFold(sec, !sec.classList.contains("folded")));
+    c.querySelector(".grip").addEventListener("keydown", e => { if (e.key === "ArrowUp") { e.preventDefault(); move(sec, -1); e.target.focus(); } if (e.key === "ArrowDown") { e.preventDefault(); move(sec, 1); e.target.focus(); } });
+    // Ziehen per Maus/Finger am Griff
+    c.querySelector(".grip").addEventListener("pointerdown", e => {
+      e.preventDefault(); const grip = e.currentTarget; grip.setPointerCapture(e.pointerId);
+      sec.classList.add("dragging"); document.body.classList.add("dragmode");
+      let target = null, after = false, y = e.clientY, raf = 0;
+      const mark = () => { panels().forEach(p => p.classList.remove("drop-before", "drop-after")); if (target) target.classList.add(after ? "drop-after" : "drop-before"); };
+      const find = () => {
+        const others = panels().filter(p => p !== sec); let hit = null;
+        for (const p of others) { const r = p.getBoundingClientRect(); if (y >= r.top && y <= r.bottom) { hit = p; after = y > r.top + r.height / 2; break; } }
+        if (!hit && others.length) { const f = others[0].getBoundingClientRect(), l = others[others.length - 1].getBoundingClientRect();
+          if (y < f.top) { hit = others[0]; after = false; } else if (y > l.bottom) { hit = others[others.length - 1]; after = true; } }
+        if (hit) target = hit;
+        mark();
+      };
+      const scroll = () => { const m = 90; if (y < m) scrollBy(0, -Math.ceil(36 * (m - y) / m)); else if (y > innerHeight - m) scrollBy(0, Math.ceil(36 * (y - innerHeight + m) / m)); find(); raf = requestAnimationFrame(scroll); };
+      raf = requestAnimationFrame(scroll);
+      const mv = ev => { y = ev.clientY; };
+      const up = () => {
+        cancelAnimationFrame(raf); grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up);
+        sec.classList.remove("dragging"); document.body.classList.remove("dragmode");
+        if (target) { box.insertBefore(sec, after ? target.nextSibling : target); save(); flash(sec); refresh(); }
+        target = null; mark();
+      };
+      grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+    });
+  });
+  try { const o = JSON.parse(store.get("panelOrder") || "null"); if (Array.isArray(o)) apply(o); } catch (e) {}
+  panels().forEach(sec => fold.has(keyOf(sec)) && setFold(sec, true));
+  document.getElementById("layoutBtn").addEventListener("click", () => {
+    apply(DEFAULT); fold.clear(); panels().forEach(sec => setFold(sec, false)); save(); refresh(); scrollTo({ top: 0, behavior: "smooth" });
+  });
+})();
 (function appMode() {
   const T = [["h-news", "📰", "Lage"], ["h-main", "📈", "Märkte"], ["h-depot", "💼", "Depot"], ["h-picks", "🔥", "Picks"], ["h-world", "🌍", "Welt"], ["h-sec", "🏭", "Branchen"], ["h-log", "📜", "Log"]];
   const nav = document.getElementById("appnav"), btn = document.getElementById("appBtn");
