@@ -6,7 +6,8 @@
     "scenario:iran": "2026-11-03T10:28+00:00",
     "scenario:russia": "2026-11-03T10:28+00:00",
     "scenario:tariffs": "2026-11-03T10:28+00:00",
-    "move:TTF=F:down": "2026-11-03T13:03+00:00"
+    "move:TTF=F:down": "2026-11-03T13:03+00:00",
+    "scenario:fed": "2026-11-04T13:16+00:00"
   },
   "alert_log": [
     {
@@ -28,6 +29,11 @@
       "time": "2026-11-03T13:03+00:00",
       "kind": "macro",
       "title": "Erdgas Europa (TTF) -8.7% an einem Tag"
+    },
+    {
+      "time": "2026-11-04T13:16+00:00",
+      "kind": "macro",
+      "title": "Szenario: Zinsentscheid / Notenbank"
     }
   ]
 }
