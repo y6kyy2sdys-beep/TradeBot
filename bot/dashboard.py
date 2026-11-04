@@ -26,9 +26,13 @@ INDICES = {
 }
 INDICES_EXTRA = {"^DJI": "Dow Jones", "^FCHI": "CAC 40", "^BSESN": "Sensex (Indien)", "^KS11": "KOSPI (Korea)"}
 COMMODITY_GROUPS = {
-    "Energie": {"BZ=F": "Brent-Öl", "CL=F": "WTI-Öl", "NG=F": "Erdgas USA", "TTF=F": "Erdgas Europa (TTF)"},
-    "Metalle": {"GC=F": "Gold", "SI=F": "Silber", "HG=F": "Kupfer", "PL=F": "Platin"},
-    "Agrar": {"ZW=F": "Weizen", "ZC=F": "Mais", "ZS=F": "Sojabohnen", "KC=F": "Kaffee"},
+    "Energie": {"BZ=F": "Brent-Öl", "CL=F": "WTI-Öl", "NG=F": "Erdgas USA", "TTF=F": "Erdgas Europa (TTF)",
+                "HO=F": "Heizöl", "RB=F": "Benzin"},
+    "Edelmetalle": {"GC=F": "Gold", "SI=F": "Silber", "PL=F": "Platin", "PA=F": "Palladium"},
+    "Industriemetalle": {"HG=F": "Kupfer", "ALI=F": "Aluminium", "LIT": "Lithium (ETF)", "URA": "Uran (ETF)"},
+    "Agrar": {"ZW=F": "Weizen", "ZC=F": "Mais", "ZS=F": "Sojabohnen", "KC=F": "Kaffee", "CC=F": "Kakao",
+              "SB=F": "Zucker", "CT=F": "Baumwolle", "OJ=F": "Orangensaft"},
+    "Vieh": {"LE=F": "Lebendrind", "HE=F": "Mastschwein", "GF=F": "Mastrind"},
     "Währungen": {"EURUSD=X": "EUR/USD", "DX-Y.NYB": "US-Dollar-Index", "USDJPY=X": "USD/JPY", "^VIX": "VIX (Angstindex)"},
 }
 SECTORS = {

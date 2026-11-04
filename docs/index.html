@@ -393,6 +393,11 @@ details.secret code { display: block; background: #000; border: 1px solid var(--
 .tabs button { background: transparent; border: 1px solid var(--line); border-bottom: 0; color: var(--muted); padding: 6px 14px; cursor: pointer; font-family: var(--font); font-size: calc(13px * var(--fs)); letter-spacing: .1em; }
 .tabs button[aria-selected="true"] { color: #001a06; background: var(--matrix); border-color: var(--matrix); }
 .tabpane[hidden] { display: none; }
+.dysto { margin: 10px 0; border: 1px solid #c74726; background: rgba(146,54,31,.12); padding: 10px 12px; font-size: calc(14px * var(--fs)); line-height: 1.6; }
+.dysto .dtag { display: inline-block; background: #c74726; color: #000; font-weight: bold; letter-spacing: .12em; padding: 1px 8px; margin-bottom: 6px; font-size: calc(12px * var(--fs)); }
+.dysto ul { margin: 6px 0 0 18px; padding: 0; }
+.dysto .check { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; color: var(--muted); font-size: calc(12.5px * var(--fs)); }
+.dysto .check b { color: var(--matrix); }
 .prose { font-size: calc(14px * var(--fs)); line-height: 1.6; color: var(--text); margin: 6px 0; }
 table.det { width: 100%; border-collapse: collapse; font-size: calc(13px * var(--fs)); }
 table.det td { padding: 4px 6px; border-bottom: 1px dotted var(--line); }
@@ -1559,7 +1564,9 @@ function renderComCards() {
   // ---- Bedienelemente
   const seg = (el, items, key) => { el.innerHTML = ""; Object.entries(items).forEach(([k, l]) => {
     const b = document.createElement("button"); b.type = "button"; b.textContent = l.toUpperCase(); b.dataset.k = k;
-    b.addEventListener("click", () => { ui[key] = k; store.set(key === "mode" ? "mapMode" : "mapScen", k); render(); }); el.appendChild(b); }); };
+    b.addEventListener("click", () => { ui[key] = k;
+      if (key === "scen" && k === "dystopie") { if (STATIC(ui.mode)) { ui.mode = "gdp"; store.set("mapMode", "gdp"); } if (ui.year <= NOW) { ui.year = Math.min(2050, NOW + 2); yr.value = ui.year; } }
+      store.set(key === "mode" ? "mapMode" : "mapScen", k); render(); }); el.appendChild(b); }); };
   seg(document.getElementById("mapMode"), MODES, "mode");
   seg(document.getElementById("mapScen"), SCEN, "scen");
   const yr = document.getElementById("year"); yr.value = ui.year;
@@ -1667,8 +1674,8 @@ function renderComCards() {
   }
   function showCard(iso) {
     card.classList.remove("wide");
-    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4>${esc(nameOf(iso))}</h4>${leadersHtml(iso)}
-      ${tabsHtml([["ov", "ÜBERBLICK", `<div class="prose">${esc(prose(iso))}</div>${sumHtml(summary(iso), 0)}`], ["det", "DETAILS", detailTable(iso)]])}`;
+    card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4 data-iso="${iso}">${esc(nameOf(iso))}</h4>${leadersHtml(iso)}
+      ${tabsHtml([["ov", "ÜBERBLICK", `<div class="dwrap">${dystoHtml(iso)}</div><div class="prose">${esc(prose(iso))}</div>${sumHtml(summary(iso), 0)}`], ["det", "DETAILS", detailTable(iso)]])}`;
     card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
     card.classList.add("open");
   }
@@ -1701,6 +1708,7 @@ function renderComCards() {
     const nowInf = W.inflation_now[iso];
     document.getElementById("detail").innerHTML = `<h3>${esc(nameOf(iso))}</h3>
       ${leadersHtml(iso)}
+      ${dystoHtml(iso)}
       <div class="prose">${esc(prose(iso))}</div>
       <div style="margin:8px 0">${sumHtml(summary(iso))}</div>
       <div><span class="esc" style="background:${ESC[e.stufe]};color:${e.stufe >= 3 ? "#000" : "#fff"}">Stufe ${e.stufe} · ${ESC_TXT[e.stufe]}</span>
@@ -1769,12 +1777,126 @@ function renderComCards() {
     }) : setTimeout(go, 200);
     go();
   }
+
+  // ---- FIKTIVES Dystopie-Lagebild: Ereignisse sind inspiriert von verbreiteten Verschwörungserzählungen,
+  //      werden aber als erfundene Szenarien erzählt – mit Realitäts-Check, ohne reale Schuldige.
+  const DYSTO = [
+    { id: "pandemie", from: 2028, base: .12, ramp: .05, aff: ["RUS", "CHN", "IND", "BRA", "IDN", "NGA", "PAK", "IRN"], label: "Virus-X-Pandemie",
+      early: "grassiert eine neue Viruspandemie („Virus X“): Kliniken sind überlastet, in den Großstädten gelten nächtliche Ausgangssperren",
+      late: "ist die Pandemie zur Dauerlage geworden: Ohne digitalen Gesundheitspass gibt es weder Zug noch Supermarkt, die Grenzen sind weitgehend dicht",
+      rumor: "In Messenger-Gruppen hält sich hartnäckig die Behauptung, das Virus sei absichtlich freigesetzt worden („Plandemie“).",
+      check: "Für geplante Pandemien gibt es keine Belege. Neue Erreger sind aber ein reales Risiko – deshalb gibt es Pandemie-Vorsorge (WHO, Impfstoff-Plattformen)." },
+    { id: "blackout", from: 2027, base: .08, ramp: .04, aff: ["DEU", "FRA", "ESP", "ITA", "GBR", "POL", "ZAF", "PAK", "UKR", "NGA"], label: "Großer Blackout",
+      early: "legte ein tagelanger Stromausfall weite Teile des Landes lahm; Notstromaggregate und Kerzen sind ausverkauft",
+      late: "wird Strom rationiert: Abends gibt es feste Abschaltzeiten, Kühlketten und Heizungen fallen regelmäßig aus",
+      rumor: "Viele glauben an gezielte Sabotage oder an ein „Abschalten auf Befehl“ von oben.",
+      check: "Die großen Stromnetze sind stark vernetzt und redundant. Großstörungen kommen vor (Iberische Halbinsel, April 2025), dauerten aber Stunden, nicht Wochen." },
+    { id: "cyber", from: 2028, base: .06, ramp: .03, aff: ["UKR", "EST", "ISR", "IRN", "USA", "TWN", "KOR", "DEU", "GBR", "RUS"], label: "Cyberkrieg",
+      early: "legen Hackerangriffe Krankenhäuser, Banken und Behörden lahm; der Mobilfunk fällt tageweise aus",
+      late: "ist das Land digital abgeschottet: Ausweis, Konto und Strom hängen an einem zentralen Netz, das täglich angegriffen wird",
+      rumor: "Aus Angst vor 5G-Strahlung werden Funkmasten angezündet – was die Ausfälle noch verschlimmert.",
+      check: "5G liegt weit unter den Strahlungs-Grenzwerten, Gesundheitsschäden sind nicht belegt. Cyberangriffe auf Infrastruktur sind dagegen real (z. B. Ukraine 2015)." },
+    { id: "bargeld", from: 2029, base: .08, ramp: .05, aff: ["DEU", "SWE", "NLD", "CHN", "GBR", "CAN", "AUS", "KOR", "FRA", "NOR"], label: "Bargeld-Aus & Überwachung",
+      early: "wird Bargeld aus dem Alltag gedrängt; bezahlt wird mit einer staatlichen Digitalwährung, die Ausgabelimits kennt",
+      late: "gibt es kein Bargeld mehr; ein Bürger-Punktekonto entscheidet über Kreditrahmen, Reiseerlaubnis und Wohnungsvergabe",
+      rumor: "Der „Great Reset“-Erzählung zufolge war genau das von Anfang an so geplant.",
+      check: "Der digitale Euro ist als Ergänzung geplant, Bargeld bleibt gesetzliches Zahlungsmittel. Ein flächendeckendes Sozialpunktesystem gibt es in Europa nicht." },
+    { id: "wetter", from: 2030, base: .10, ramp: .04, aff: ["IND", "PAK", "EGY", "IRN", "IRQ", "SAU", "AUS", "ESP", "MEX", "NGA", "ETH", "BGD"], label: "Klimachaos & Wetterkrieg-Gerüchte",
+      early: "folgen Hitzewellen, Dürre und Starkregen dicht aufeinander; ganze Ernten fallen aus",
+      late: "ist seit dem Klimaschock 2041 ein Teil der Agrarflächen unbrauchbar; Trinkwasser wird per Lkw verteilt",
+      rumor: "Statt des Klimawandels werden „Chemtrails“ und geheime Wettermaschinen verantwortlich gemacht.",
+      check: "Für Chemtrails gibt es keine Belege. Häufigere Wetterextreme sind dagegen eine gut belegte Folge des Klimawandels." },
+    { id: "ki", from: 2031, base: .05, ramp: .04, aff: ["USA", "CHN", "KOR", "JPN", "ISR", "ARE", "SGP", "GBR", "IND", "TWN"], label: "KI-Herrschaft",
+      early: "treffen KI-Systeme immer mehr Behördenentscheidungen; Millionen Bürojobs sind weggefallen",
+      late: "verwaltet ein KI-System Steuern, Strafen und Zuteilungen – Menschen dürfen nur noch Einspruch einlegen",
+      rumor: "Die „Dead-Internet“-Theorie gilt vielen als bewiesen: Online-Debatten führen fast nur noch Bots.",
+      check: "KI verändert die Arbeitswelt stark, eine KI-Regierung gibt es nicht. Der Bot-Anteil im Netz ist hoch, das Internet ist aber nicht „tot“." },
+    { id: "schulden", from: 2031, base: .10, ramp: .12, aff: ["USA", "JPN", "ITA", "GBR", "FRA", "ARG", "EGY", "TUR", "BRA", "GRC", "PAK"], label: "Schuldenkollaps",
+      early: "wanken die Staatsfinanzen: Anleihezinsen steigen, Rentenkassen werden angezapft",
+      late: "kam es im Crash 2033 zur Staatspleite: Bankkonten wurden eingefroren, Ersparnisse mit einer Zwangsabgabe belegt",
+      rumor: "Gold-Anhänger sehen die Stunde einer „BRICS-Goldwährung“ gekommen, die den Dollar ersetzt.",
+      check: "Hohe Schulden sind ein echtes Risiko, ein weltweiter Gleichzeitig-Crash ist aber kein Automatismus. Eine BRICS-Goldwährung existiert nicht." },
+    { id: "nahrung", from: 2034, base: .08, ramp: .04, aff: ["EGY", "LBN", "YEM", "SDN", "NGA", "PAK", "BGD", "GBR", "DEU", "NLD"], label: "Lebensmittel-Rationierung",
+      early: "werden Fleisch, Butter und Getreide rationiert; die Supermärkte füllen ihre Regale mit Ersatzprodukten",
+      late: "gibt es Lebensmittelkarten; Kleingärten und Felder werden nachts bewacht",
+      rumor: "Der Slogan „Ihr sollt Insekten essen“ wird zum Schlachtruf der Proteste.",
+      check: "Insektenprodukte sind in der EU zugelassen, aber freiwillig und gekennzeichnet – niemand muss sie essen." },
+    { id: "zonen", from: 2035, base: .05, ramp: .03, aff: ["GBR", "FRA", "NLD", "CAN", "AUS", "DEU", "ESP", "BEL"], label: "Zonen-Städte",
+      early: "dürfen Stadtbewohner ihren Bezirk nur noch mit digitalem Passierschein verlassen – offiziell für den Klimaschutz",
+      late: "sind die Städte in überwachte Zonen geteilt; Kameras erfassen jede Fahrt",
+      rumor: "Kritiker sehen in den „Klima-Lockdowns“ einen von langer Hand geplanten Schritt.",
+      check: "Die „15-Minuten-Stadt“ ist ein Stadtplanungskonzept für kurze Wege – keine Ausgangsbeschränkung." },
+    { id: "sonne", from: 2037, base: .18, ramp: .0, aff: ["CAN", "NOR", "SWE", "FIN", "RUS", "USA", "GBR", "ISL"], label: "Sonnensturm",
+      early: "zerstörte ein extremer Sonnensturm Satelliten und Großtransformatoren; GPS und Kartenzahlung fielen wochenlang aus",
+      late: "sind die Schäden des Sonnensturms von 2037 nur notdürftig repariert",
+      rumor: "Gerüchte sprechen von einem vertuschten „Strahlenangriff“.",
+      check: "Starke Sonnenstürme sind ein reales, aber seltenes Risiko (Carrington-Ereignis 1859); der Sturm im Mai 2024 blieb dank Warnungen weitgehend folgenlos." },
+    { id: "ufo", from: 2044, base: .04, ramp: .02, aff: ["USA", "MEX", "BRA", "GBR", "AUS", "CHL", "ARG"], label: "UFO-Panik",
+      early: "lösen angebliche UFO-„Enthüllungen“ Massenpanik aus; Bunkerplätze werden versteigert",
+      late: "lösen angebliche UFO-„Enthüllungen“ Massenpanik aus; Bunkerplätze werden versteigert",
+      rumor: "Die „Project Blue Beam“-Theorie behauptet, die Invasion werde nur inszeniert.",
+      check: "Behörden untersuchen unidentifizierte Himmelsphänomene (UAP); Belege für Außerirdische gibt es nicht." },
+  ];
+  const FORCE = { RUS: ["pandemie"], DEU: ["blackout", "bargeld"], USA: ["schulden", "ki"], CHN: ["bargeld", "ki"], IND: ["wetter"], GBR: ["zonen"] };
+  const hash01 = str => { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 10000) / 10000; };
+  function dystoEvents(iso, year) {
+    return DYSTO.filter(ev => {
+      if (year < ev.from) return false;
+      if ((FORCE[iso] || []).includes(ev.id)) return true;
+      const p = Math.min(.85, ev.base + ev.ramp * (year - ev.from) + (ev.aff.includes(iso) ? .4 : 0) + (ev.id === "schulden" && year >= 2033 ? .2 : 0));
+      return hash01(iso + ev.id) < p;
+    }).sort((a, b) => ((FORCE[iso] || []).includes(b.id) - (FORCE[iso] || []).includes(a.id)) || (hash01(iso + a.id + "o") - hash01(iso + b.id + "o")));
+  }
+  const dystoOn = () => ui.scen === "dystopie" && ui.year > NOW;
+  const dystoAt = (code, iso) => { const a = proj(code, iso, "dystopie"); return a ? a[YRS.indexOf(ui.year)] : null; };
+  const pctTxt = v => (v > 0 ? "+" : "") + nf(v, 1) + " %";
+  function dystoCountry(iso) {
+    const y = ui.year, n = nameOf(iso), evs = dystoEvents(iso, y), g = dystoAt("NGDP_RPCH", iso), inf = dystoAt("PCPIPCH", iso);
+    const gb = gdpIndex(iso, "basis"), gd = gdpIndex(iso, "dystopie"), i = YRS.indexOf(y);
+    const gap = gb && gd && gb[i] && gd[i] ? gd[i] / gb[i] - 1 : null, e = (W.escalation[iso] || {}).stufe || 0;
+    const sev = evs.length + (e >= 3 ? 1 : 0) + (g != null && g < -2 ? 1 : 0);
+    const lage = ["gespenstisch ruhig", "angespannt", "ernst", "dramatisch", "katastrophal"][Math.min(4, sev)];
+    const stage = ev => (y - ev.from >= 4 || (ev.id === "schulden" && y >= 2033) || (ev.id === "wetter" && y >= 2041)) ? ev.late : ev.early;
+    const main = evs.slice(0, 3);
+    let txt = `Im Jahr ${y} ist die Lage in ${n} ${lage}. `;
+    if (!main.length) txt += `Von den großen Krisen bleibt ${n} bislang weitgehend verschont – das Land wird zum Zufluchtsort, Grundstücks- und Lebensmittelpreise steigen, an den Grenzen bilden sich Schlangen. `;
+    else txt += `In ${n} ${stage(main[0])}. ` + main.slice(1).map((ev, k) => `${k ? "Außerdem" : "Gleichzeitig"} ${stage(ev)}.`).join(" ") + " ";
+    if (e >= 2) txt += `Der schon heute reale Konflikt (${ESC_TXT[e]}) hat sich im Szenario weiter verschärft. `;
+    if (g != null) txt += `Die Wirtschaft ${g < -2 ? "bricht ein" : g < 0 ? "schrumpft" : g < 1 ? "stagniert" : "wächst nur mühsam"} (${pctTxt(g)}), die Inflation liegt bei ${nf(inf, 1)} %${gap != null && Math.abs(gap) >= .01 ? ` – die Wirtschaftsleistung ist ${nf(Math.abs(gap) * 100, 0)} % ${gap < 0 ? "niedriger" : "höher"} als im Basispfad` : ""}. `;
+    if (main[0]) txt += main[0].rumor;
+    return { txt, evs: main };
+  }
+  function dystoWorld() {
+    const y = ui.year, isos = feats.map(f => f.iso).filter(Boolean);
+    const cnt = DYSTO.map(ev => [ev, isos.filter(iso => dystoEvents(iso, y).includes(ev)).length]).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
+    let wsum = 0, gsum = 0, isum = 0;
+    isos.forEach(iso => { const s = latestReal("NGDPD", iso), g = dystoAt("NGDP_RPCH", iso), inf = dystoAt("PCPIPCH", iso);
+      if (s && g != null && inf != null) { wsum += s.v; gsum += s.v * g; isum += s.v * inf; } });
+    const g = wsum ? gsum / wsum : null, inf = wsum ? isum / wsum : null;
+    const phase = y <= 2029 ? "Die ersten Risse zeigen sich: Einzelne Krisen treffen die Welt, noch hoffen die meisten auf eine schnelle Rückkehr zur Normalität."
+      : y <= 2032 ? "Die Krisen greifen ineinander. Staaten schotten sich ab, Lieferketten reißen, das Vertrauen in Regierungen und Medien erreicht Tiefstwerte."
+      : y <= 2034 ? "Der große Crash: Schulden-, Banken- und Währungskrise erschüttern die Weltwirtschaft gleichzeitig. Wer Sachwerte hat, ist im Vorteil."
+      : y <= 2040 ? "Eine neue, härtere Ordnung entsteht: weniger Freiheit, mehr Kontrolle, regionale Machtblöcke statt globalem Handel."
+      : y <= 2042 ? "Der Klimaschock 2041 trifft eine ohnehin geschwächte Welt – Migration und Verteilungskämpfe nehmen dramatisch zu."
+      : "Die Welt lebt im Dauer-Ausnahmezustand. Gerüchte ersetzen Nachrichten, und kaum jemand weiß noch, was wahr ist.";
+    const list = cnt.slice(0, 6).map(([ev, c]) => `<li><b>${esc(ev.label)}</b>: ${c} Länder</li>`).join("");
+    return `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO · WELTLAGE ${y}</span>
+      <div>${esc(phase)}${g != null ? ` Die Weltwirtschaft ${g < 0 ? "schrumpft" : "wächst nur"} um ${esc(pctTxt(g))}, die Inflation liegt im Schnitt bei ${nf(inf, 1)} % (Modell, BIP-gewichtet).` : ""}</div>
+      ${list ? `<ul>${list}</ul>` : ""}
+      <div class="check"><b>REALITÄTS-CHECK:</b> Das ist ein erfundenes Gedankenspiel, keine Prognose. Die Krisen sind an verbreitete Verschwörungserzählungen angelehnt; für deren Kernbehauptungen gibt es keine Belege. Land anklicken für das jeweilige Lagebild.</div></div>`;
+  }
+  function dystoHtml(iso) {
+    if (!dystoOn()) return "";
+    const d = dystoCountry(iso);
+    return `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO · ${ui.year}</span><div>${esc(d.txt)}</div>
+      ${d.evs.length ? `<div class="check"><b>REALITÄTS-CHECK:</b><ul>${d.evs.map(ev => `<li>${esc(ev.check)}</li>`).join("")}</ul></div>` : `<div class="check"><b>REALITÄTS-CHECK:</b> Erfundenes Gedankenspiel, keine Prognose.</div>`}</div>`;
+  }
   function outlook() {
     if (ui.mode === "goldr" || ui.mode === "goldp") return goldBranch();
     const ki = W.ausblick_2050 || {};
     const model = `Bis ${lastImfYear}: IMF-Prognose. Danach Modell (keine Vorhersage): <b>Basis</b> = Wachstum nähert sich dem langfristigen Potenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = Schulden-/Konfliktkrise 2033, Klimaschock 2041, dauerhaft −2 Prozentpunkte und Inflationsschub.`;
     const txt = ui.scen === "dystopie" ? ki.dystopie : ui.scen === "basis" ? ki.basis : null;
-    document.getElementById("outlook").innerHTML = (txt ? `<div><b>Ausblick 2050 · ${SCEN[ui.scen]}</b> (KI): ${esc(txt)}</div>` : "") + `<div class="muted">${model}</div>`;
+    document.getElementById("outlook").innerHTML = (dystoOn() ? dystoWorld() : ui.scen === "dystopie" ? `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO</span> Jahresregler auf ein Jahr nach ${NOW} stellen, um das fiktive Lagebild der Welt und der Länder zu sehen.</div>` : "") + (txt ? `<div><b>Ausblick 2050 · ${SCEN[ui.scen]}</b> (KI): ${esc(txt)}</div>` : "") + `<div class="muted">${model}</div>`;
   }
 
   function render() {
@@ -1786,6 +1908,8 @@ function renderComCards() {
     paths.attr("fill", f => doom ? "#07120b" : color(f.iso)).classed("sel", f => f.iso === ui.sel)
       .classed("hot", f => ui.mode === "esc" && !reduced && (W.escalation[f.iso] || {}).stufe >= 3);
     bars(); detail(); legend(); outlook();
+    const h = card.querySelector("h4[data-iso]"), dw = card.querySelector(".dwrap");
+    if (h && dw && card.classList.contains("open")) dw.innerHTML = dystoHtml(h.dataset.iso);
   }
   render();
 })();
