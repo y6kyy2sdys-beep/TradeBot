@@ -1144,7 +1144,7 @@ function renderComCards() {
         const lr = adv ? 1.2 : Math.min(4.5, Math.max(1.5, gL * 0.6));
         let g = gL + (lr - gL) * t;
         if (scen === "stagnation") g -= 1.2;
-        if (scen === "dystopie") { g -= 2; if (y === 2033) g = adv ? -4 : -6; if (y === 2034) g = -1.5; if (y === 2041) g = -3; }
+        if (scen === "dystopie") { g -= y < NOW + 6 ? 1 : 2; if (y === 2033) g = adv ? -4 : -6; if (y === 2034) g = -1.5; if (y === 2041) g = -3; }
         out[i] = g;
       } else if (code === "PCPIPCH") {
         const lr = adv ? 2 : 4; let v = gL + (lr - gL) * t;
@@ -1152,6 +1152,12 @@ function renderComCards() {
         if (scen === "dystopie") v = y < 2033 ? v + 1 : y === 2033 ? 12 : Math.max(5, 12 - (y - 2033) * 0.6);
         out[i] = v;
       } else out[i] = null;
+    }
+    if (scen === "dystopie") {       // Jahre 1–5: plausibles Abwärtsszenario (Schockgrößen ähnlich IMF-Risikoszenarien)
+      const e = (W.escalation[iso] || {}).stufe || 0, debt = latestReal("GGXWDG_NGDP", iso);
+      for (let i = 0; i <= L; i++) { const k = YRS[i] - NOW; if (k < 1) continue;
+        if (code === "NGDP_RPCH") out[i] -= [0, .4, .8, 1, .9, .8][Math.min(5, k)] + (e >= 3 ? .5 : 0) + (debt && debt.v > 100 ? .2 : 0);
+        if (code === "PCPIPCH") out[i] += [0, .5, .9, 1, .8, .6][Math.min(5, k)]; }
     }
     return cache[key] = out;
   }
@@ -1841,15 +1847,94 @@ function renderComCards() {
   const hash01 = str => { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 10000) / 10000; };
   function dystoEvents(iso, year) {
     return DYSTO.filter(ev => {
-      if (year < ev.from) return false;
+      if (year < Math.max(ev.from, FICTION)) return false;
       if ((FORCE[iso] || []).includes(ev.id)) return true;
       const p = Math.min(.85, ev.base + ev.ramp * (year - ev.from) + (ev.aff.includes(iso) ? .4 : 0) + (ev.id === "schulden" && year >= 2033 ? .2 : 0));
       return hash01(iso + ev.id) < p;
     }).sort((a, b) => ((FORCE[iso] || []).includes(b.id) - (FORCE[iso] || []).includes(a.id)) || (hash01(iso + a.id + "o") - hash01(iso + b.id + "o")));
   }
+  const FICTION = NOW + 6;   // bis NOW+5: plausibles Risikoszenario, danach bewusst fiktiv
+  const EU = ["DEU", "FRA", "ITA", "ESP", "NLD", "BEL", "AUT", "POL", "CZE", "SWE", "FIN", "DNK", "IRL", "PRT", "GRC", "HUN", "ROU", "SVK", "BGR", "HRV", "SVN", "LTU", "LVA", "EST", "LUX"];
+  const NATO = ["CAN", "GBR", "FRA", "DEU", "ITA", "ESP", "NLD", "BEL", "LUX", "DNK", "NOR", "ISL", "PRT", "GRC", "TUR", "POL", "CZE", "HUN", "SVK", "SVN", "HRV", "ROU", "BGR", "ALB", "MNE", "MKD", "EST", "LVA", "LTU", "FIN", "SWE"];
+  const OIL_EXP = ["SAU", "ARE", "KWT", "QAT", "IRQ", "IRN", "NOR", "RUS", "NGA", "AGO", "KAZ", "CAN", "BRA", "DZA", "LBY", "OMN", "AZE", "GUY", "VEN", "BHR"];
+  const OIL_IMP = [...EU, "JPN", "KOR", "IND", "CHN", "PAK", "TUR", "TWN", "THA", "PHL", "BGD", "LKA", "EGY", "MAR", "GBR", "UKR", "ZAF", "SGP", "CHL", "JOR", "LBN", "KEN"];
+  const has = l => iso => l.includes(iso);
+  const REAL = [
+    { id: "konflikt", w: 10, test: iso => ((W.escalation[iso] || {}).stufe || 0) >= 2, label: "Anhaltender Konflikt",
+      early: iso => `bleibt der Konflikt (${ESC_TXT[W.escalation[iso].stufe]}) ungelöst; Militärausgaben und Unsicherheit binden Mittel, die anderswo fehlen`,
+      late: () => "hat sich der Konflikt verfestigt; Sanktionen, Sicherheitsrisiken und hohe Militärausgaben belasten Wirtschaft und Staatshaushalt dauerhaft",
+      basis: iso => `Heutige Lage laut Nachrichtenauswertung: ${(W.escalation[iso] || {}).grund || "Konflikt"}` },
+    { id: "energie", w: 6, test: iso => OIL_IMP.includes(iso) || OIL_EXP.includes(iso), label: "Energiepreis-Schock",
+      early: iso => OIL_EXP.includes(iso) ? "spülen hohe Öl- und Gaspreise nach Spannungen am Golf und im Roten Meer zusätzliche Einnahmen in die Staatskasse – doch Exportrouten sind gefährdet"
+        : "treiben Spannungen am Persischen Golf und im Roten Meer die Öl- und Gaspreise; Sprit, Heizung und Transport werden spürbar teurer",
+      late: iso => OIL_EXP.includes(iso) ? "schwanken die Öleinnahmen stark; die Abhängigkeit vom Öl macht den Haushalt verwundbar"
+        : "belasten dauerhaft hohe Energiepreise Industrie und Haushalte; energieintensive Betriebe drosseln die Produktion oder wandern ab",
+      basis: () => "Rund ein Fünftel des weltweit gehandelten Öls passiert die Straße von Hormus; Huthi-Angriffe im Roten Meer leiten seit Ende 2023 Frachtrouten um." },
+    { id: "zoll", w: 5, test: has(["DEU", "CHN", "MEX", "CAN", "JPN", "KOR", "VNM", "TWN", "IRL", "NLD", "CHE", "MYS", "THA", "SVK", "CZE", "HUN", "ITA", "USA", "IND", "BRA"]), label: "Handelskrieg",
+      early: () => "dämpfen Zölle und Gegenzölle die Exporte; Unternehmen verschieben Investitionen und bauen Stellen ab",
+      late: () => "hat sich der Welthandel in Blöcke geteilt; Lieferketten sind teurer und langsamer, Waren kosten mehr",
+      basis: () => "Die USA haben 2025 breite Importzölle eingeführt; weitere Runden und Gegenmaßnahmen bleiben möglich." },
+    { id: "schulden", w: 5, test: iso => { const d = latestReal("GGXWDG_NGDP", iso), i = latestReal("PCPIPCH", iso); return d && (d.v > 100 || (d.v > 60 && i && i.v > 10)); }, label: "Schuldenstress",
+      early: iso => adv(iso) ? "verlangen Anleger höhere Zinsen für Staatsanleihen; die Regierung muss sparen, der Zinsdienst frisst Spielräume"
+        : "verliert die Währung an Wert, Importe und Kredite werden teurer",
+      late: iso => adv(iso) ? "erzwingt der Anleihemarkt harte Kürzungen bei Renten und Sozialleistungen; Proteste nehmen zu"
+        : "braucht das Land ein IWF-Hilfsprogramm mit strengen Sparauflagen",
+      basis: iso => { const d = latestReal("GGXWDG_NGDP", iso); return `Staatsschulden heute ${nf(d.v, 0)} % des BIP (IMF ${d.y}); höhere Zinsen verteuern die Refinanzierung.`; } },
+    { id: "chips", w: 4, from: 3, test: has(["TWN", "KOR", "JPN", "CHN", "USA", "NLD", "DEU", "MYS", "SGP", "PHL", "VNM"]), label: "Taiwan-Krise & Chip-Engpass",
+      early: () => "verunsichern chinesische Manöver um Taiwan die Chip-Lieferketten; Firmen horten Halbleiter",
+      late: () => "führt eine zeitweise Blockade der Seewege um Taiwan zu Chip-Engpässen; Auto- und Elektronikproduktion stockt",
+      basis: () => "Taiwan fertigt den Großteil der modernsten Halbleiter; China hält regelmäßig Großmanöver um die Insel ab." },
+    { id: "sabotage", w: 4, test: has(["DEU", "POL", "LTU", "LVA", "EST", "FIN", "SWE", "DNK", "NOR", "GBR", "NLD", "FRA", "CZE"]), label: "Hybride Angriffe",
+      early: () => "häufen sich Sabotage- und Cyberangriffe auf Bahn, Unterseekabel und Behörden",
+      late: () => "führen hybride Angriffe zu regionalen Strom- und Netzausfällen über mehrere Tage",
+      basis: () => "Seit 2023 wurden mehrfach Kabel und Pipelines in der Ostsee beschädigt; Sicherheitsbehörden warnen vor Sabotage und Cyberangriffen." },
+    { id: "ruestung", w: 3, test: has(NATO), label: "Aufrüstung",
+      early: () => "steigen die Verteidigungsausgaben stark; über die Rückkehr der Wehrpflicht wird heftig gestritten",
+      late: () => "verdrängen Rüstungsausgaben Investitionen in Schulen und Infrastruktur; Steuern oder Schulden steigen",
+      basis: () => "Die NATO-Staaten haben 2025 beschlossen, ihre Verteidigungsausgaben bis 2035 auf 5 % des BIP zu erhöhen (davon 3,5 % Kernausgaben)." },
+    { id: "hitze", w: 5, test: has(["IND", "PAK", "BGD", "EGY", "IRQ", "IRN", "SAU", "ARE", "MAR", "DZA", "TUN", "ESP", "ITA", "GRC", "PRT", "TUR", "MEX", "AUS", "NGA", "NER", "MLI", "TCD", "SDN", "ETH", "SOM", "KEN", "ZAF", "ZWE", "MOZ", "BRA"]), label: "Hitze & Dürre",
+      early: () => "drücken Hitzewellen und Dürre auf Ernten, Wasserreserven und Stromnetze",
+      late: () => "kommt es regelmäßig zu Wasserknappheit; Lebensmittelpreise und Abwanderung vom Land steigen",
+      basis: () => "2024 war das wärmste je gemessene Jahr; Hitzewellen und Dürren werden laut Klimaforschung häufiger und intensiver." },
+    { id: "nahrung", w: 5, test: has(["EGY", "LBN", "YEM", "SDN", "SOM", "ETH", "NGA", "PAK", "BGD", "HTI", "AFG", "SYR", "TUN", "JOR", "LBY", "KEN", "MDG", "SSD"]), label: "Teure Lebensmittel",
+      early: () => "steigen Brot- und Speiseölpreise stark; Subventionen belasten den Staatshaushalt",
+      late: () => "drohen Versorgungsengpässe und Proteste gegen die Lebenshaltungskosten",
+      basis: () => "Viele Länder hängen stark von Getreideimporten ab; Preisspitzen wie 2022 treffen sie am härtesten." },
+    { id: "h5n1", w: 2, from: 2, test: iso => ["USA", "CHN", "VNM", "IDN", "EGY", "KHM", "IND", "MEX", "NLD", "POL"].includes(iso) || hash01(iso + "h5") < .12, label: "Vogelgrippe H5N1",
+      early: () => "breitet sich die Vogelgrippe H5N1 weiter in Tierbeständen aus; Eier und Geflügel werden knapp und teuer",
+      late: () => "gab es regionale Ausbrüche bei Menschen; Kliniken melden Engpässe, Behörden prüfen Masken- und Testpflichten",
+      basis: () => "H5N1 verbreitet sich seit Jahren bei Wildvögeln und seit 2024 auch in US-Milchviehherden; Infektionen beim Menschen sind bisher selten." },
+    { id: "ki", w: 3, from: 3, test: has(["USA", "GBR", "CAN", "AUS", "DEU", "FRA", "NLD", "SWE", "JPN", "KOR", "SGP", "ISR", "IRL", "CHE", "IND", "PHL"]), label: "KI-Jobverlust",
+      early: iso => ["IND", "PHL"].includes(iso) ? "verlieren Callcenter und IT-Dienstleister Aufträge an KI-Systeme" : "streichen Unternehmen Einstiegsjobs im Büro, weil KI Texte, Code und Kundenservice übernimmt",
+      late: () => "steigt die Arbeitslosigkeit unter jungen Akademikern spürbar; die Politik streitet über eine KI-Abgabe",
+      basis: () => "KI-Systeme übernehmen zunehmend Büro-, Programmier- und Servicetätigkeiten; die Folgen für den Arbeitsmarkt sind umstritten." },
+  ];
+  const adv = iso => { const p = latestReal("PPPPC", iso); return p && p.v > 40000; };
+  function realEvents(iso, year) {
+    const k = year - NOW;
+    return REAL.filter(ev => k >= (ev.from || 1) && ev.test(iso))
+      .map(ev => [ev, ev.w + hash01(iso + ev.id) * 3]).sort((a, b) => b[1] - a[1]).map(([ev]) => ev);
+  }
   const dystoOn = () => ui.scen === "dystopie" && ui.year > NOW;
   const dystoAt = (code, iso) => { const a = proj(code, iso, "dystopie"); return a ? a[YRS.indexOf(ui.year)] : null; };
+  const ART = { USA: "den USA", NLD: "den Niederlanden", PHL: "den Philippinen", ARE: "den Vereinigten Arabischen Emiraten", CHE: "der Schweiz", TUR: "der Türkei",
+    UKR: "der Ukraine", SVK: "der Slowakei", MNG: "der Mongolei", DOM: "der Dominikanischen Republik", CAF: "der Zentralafrikanischen Republik", CZE: "Tschechien" };
+  const IM = ["IRN", "IRQ", "SDN", "SSD", "LBN", "YEM", "TCD", "NER", "SEN", "COD", "COG", "OMN"];
+  const inN = iso => IM.includes(iso) ? "im " + nameOf(iso).replace(/^(der|die|das) /i, "") : "in " + (ART[iso] || nameOf(iso));
+  const cap = t => t[0].toUpperCase() + t.slice(1);
   const pctTxt = v => (v > 0 ? "+" : "") + nf(v, 1) + " %";
+  function realCountry(iso) {
+    const y = ui.year, k = y - NOW, n = nameOf(iso), evs = realEvents(iso, y).slice(0, 3), g = dystoAt("NGDP_RPCH", iso), inf = dystoAt("PCPIPCH", iso);
+    const gb = proj("NGDP_RPCH", iso, "basis"), gBase = gb ? gb[YRS.indexOf(y)] : null, e = (W.escalation[iso] || {}).stufe || 0;
+    const sev = evs.length + (e >= 3 ? 1 : 0) + (g != null && g < 0 ? 1 : 0) - (k <= 2 ? 1 : 0);
+    const lage = ["stabil", "angespannt", "angespannt", "ernst", "kritisch"][Math.max(0, Math.min(4, sev))];
+    const st = ev => k >= 3 ? ev.late(iso) : ev.early(iso);
+    let txt = `Im Jahr ${y} ist die Lage ${inN(iso)} ${lage}. `;
+    txt += evs.length ? `${cap(inN(iso))} ${st(evs[0])}. ` + evs.slice(1).map((ev, j) => `${j ? "Außerdem" : "Gleichzeitig"} ${st(ev)}.`).join(" ") + " "
+      : `${n} ist von den großen globalen Risiken vergleichsweise wenig direkt betroffen, spürt aber die schwächere Weltkonjunktur. `;
+    if (g != null) txt += `Die Wirtschaft ${g < -1 ? "rutscht in die Rezession" : g < 0 ? "schrumpft leicht" : g < 1 ? "stagniert" : g < 2.5 ? "wächst nur moderat" : "wächst trotz allem"} (${pctTxt(g)}${gBase != null ? `, statt ${pctTxt(gBase)} laut IMF-Basisprognose` : ""}), die Inflation liegt bei ${nf(inf, 1)} %.`;
+    return { txt, evs };
+  }
   function dystoCountry(iso) {
     const y = ui.year, n = nameOf(iso), evs = dystoEvents(iso, y), g = dystoAt("NGDP_RPCH", iso), inf = dystoAt("PCPIPCH", iso);
     const gb = gdpIndex(iso, "basis"), gd = gdpIndex(iso, "dystopie"), i = YRS.indexOf(y);
@@ -1858,16 +1943,36 @@ function renderComCards() {
     const lage = ["gespenstisch ruhig", "angespannt", "ernst", "dramatisch", "katastrophal"][Math.min(4, sev)];
     const stage = ev => (y - ev.from >= 4 || (ev.id === "schulden" && y >= 2033) || (ev.id === "wetter" && y >= 2041)) ? ev.late : ev.early;
     const main = evs.slice(0, 3);
-    let txt = `Im Jahr ${y} ist die Lage in ${n} ${lage}. `;
+    let txt = `Im Jahr ${y} ist die Lage ${inN(iso)} ${lage}. `;
     if (!main.length) txt += `Von den großen Krisen bleibt ${n} bislang weitgehend verschont – das Land wird zum Zufluchtsort, Grundstücks- und Lebensmittelpreise steigen, an den Grenzen bilden sich Schlangen. `;
-    else txt += `In ${n} ${stage(main[0])}. ` + main.slice(1).map((ev, k) => `${k ? "Außerdem" : "Gleichzeitig"} ${stage(ev)}.`).join(" ") + " ";
+    else txt += `${cap(inN(iso))} ${stage(main[0])}. ` + main.slice(1).map((ev, k) => `${k ? "Außerdem" : "Gleichzeitig"} ${stage(ev)}.`).join(" ") + " ";
     if (e >= 2) txt += `Der schon heute reale Konflikt (${ESC_TXT[e]}) hat sich im Szenario weiter verschärft. `;
     if (g != null) txt += `Die Wirtschaft ${g < -2 ? "bricht ein" : g < 0 ? "schrumpft" : g < 1 ? "stagniert" : "wächst nur mühsam"} (${pctTxt(g)}), die Inflation liegt bei ${nf(inf, 1)} %${gap != null && Math.abs(gap) >= .01 ? ` – die Wirtschaftsleistung ist ${nf(Math.abs(gap) * 100, 0)} % ${gap < 0 ? "niedriger" : "höher"} als im Basispfad` : ""}. `;
     if (main[0]) txt += main[0].rumor;
     return { txt, evs: main };
   }
+  function worldMacro(isos) {
+    let wsum = 0, gsum = 0, isum = 0;
+    isos.forEach(iso => { const s = latestReal("NGDPD", iso), g = dystoAt("NGDP_RPCH", iso), inf = dystoAt("PCPIPCH", iso);
+      if (s && g != null && inf != null) { wsum += s.v; gsum += s.v * g; isum += s.v * inf; } });
+    return wsum ? [gsum / wsum, isum / wsum] : [null, null];
+  }
+  function realWorld() {
+    const y = ui.year, k = y - NOW, isos = feats.map(f => f.iso).filter(Boolean), [g, inf] = worldMacro(isos);
+    const cnt = REAL.map(ev => [ev, isos.filter(iso => realEvents(iso, y).slice(0, 3).includes(ev)).length]).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
+    const phase = ["", "Die Welt rutscht in ein Abwärtsszenario: Handelskonflikte, teure Energie und die laufenden Kriege bremsen das Wachstum; die Notenbanken können die Zinsen kaum senken.",
+      "Die Risiken verstärken sich gegenseitig: höhere Energiepreise, hohe Zinsen und schwächere Exporte drücken viele Länder Richtung Rezession.",
+      "Erste hoch verschuldete Staaten geraten an den Anleihemärkten unter Druck; Chips, Rohstoffe und Seewege werden zum Machtinstrument.",
+      "Die Weltwirtschaft zerfällt zunehmend in Blöcke. Verteidigungs- und Zinsausgaben verdrängen Investitionen, das Wachstum bleibt schwach.",
+      "Ein verlorenes halbes Jahrzehnt: Die Wirtschaftsleistung liegt in vielen Ländern deutlich unter dem früher erwarteten Pfad, die Spannungen bleiben hoch."][Math.min(5, k)];
+    return `<div class="dysto"><span class="dtag">PLAUSIBLES RISIKOSZENARIO · WELTLAGE ${y}</span>
+      <div>${esc(phase)}${g != null ? ` Weltwirtschaft im Szenario: ${esc(pctTxt(g))} Wachstum, Ø ${nf(inf, 1)} % Inflation (BIP-gewichtet).` : ""}</div>
+      ${cnt.length ? `<ul>${cnt.slice(0, 6).map(([ev, c]) => `<li><b>${esc(ev.label)}</b>: ${c} Länder</li>`).join("")}</ul>` : ""}
+      <div class="check"><b>EINORDNUNG:</b> Keine Prognose, sondern ein ungünstiger, aber plausibler Verlauf, aufgebaut nur auf heute belegten Risiken und den echten Länderdaten (IMF-Prognose minus Abwärtsschock von 0,4–1 Prozentpunkten Wachstum, stärker bei Krieg und hoher Verschuldung). Ab ${FICTION} wird das Szenario bewusst fiktiv. Land anklicken für das Lagebild.</div></div>`;
+  }
   function dystoWorld() {
     const y = ui.year, isos = feats.map(f => f.iso).filter(Boolean);
+    if (y < FICTION) return realWorld();
     const cnt = DYSTO.map(ev => [ev, isos.filter(iso => dystoEvents(iso, y).includes(ev)).length]).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
     let wsum = 0, gsum = 0, isum = 0;
     isos.forEach(iso => { const s = latestReal("NGDPD", iso), g = dystoAt("NGDP_RPCH", iso), inf = dystoAt("PCPIPCH", iso);
@@ -1887,6 +1992,9 @@ function renderComCards() {
   }
   function dystoHtml(iso) {
     if (!dystoOn()) return "";
+    if (ui.year < FICTION) { const r = realCountry(iso);
+      return `<div class="dysto"><span class="dtag">PLAUSIBLES RISIKOSZENARIO · ${ui.year}</span><div>${esc(r.txt)}</div>
+        <div class="check"><b>GRUNDLAGE (heute belegt):</b><ul>${r.evs.map(ev => `<li>${esc(ev.basis(iso))}</li>`).join("") || "<li>Schwächere Weltkonjunktur im Abwärtsszenario.</li>"}</ul>Keine Prognose – ein ungünstiger, aber plausibler Verlauf.</div></div>`; }
     const d = dystoCountry(iso);
     return `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO · ${ui.year}</span><div>${esc(d.txt)}</div>
       ${d.evs.length ? `<div class="check"><b>REALITÄTS-CHECK:</b><ul>${d.evs.map(ev => `<li>${esc(ev.check)}</li>`).join("")}</ul></div>` : `<div class="check"><b>REALITÄTS-CHECK:</b> Erfundenes Gedankenspiel, keine Prognose.</div>`}</div>`;
@@ -1894,7 +2002,7 @@ function renderComCards() {
   function outlook() {
     if (ui.mode === "goldr" || ui.mode === "goldp") return goldBranch();
     const ki = W.ausblick_2050 || {};
-    const model = `Bis ${lastImfYear}: IMF-Prognose. Danach Modell (keine Vorhersage): <b>Basis</b> = Wachstum nähert sich dem langfristigen Potenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = Schulden-/Konfliktkrise 2033, Klimaschock 2041, dauerhaft −2 Prozentpunkte und Inflationsschub.`;
+    const model = `Bis ${lastImfYear}: IMF-Prognose. Danach Modell (keine Vorhersage): <b>Basis</b> = Wachstum nähert sich dem langfristigen Potenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = bis ${NOW + 5} plausibles Abwärtsszenario auf Basis heutiger Risiken, danach fiktiv: Schulden-/Konfliktkrise 2033, Klimaschock 2041, dauerhaft −2 Prozentpunkte und Inflationsschub.`;
     const txt = ui.scen === "dystopie" ? ki.dystopie : ui.scen === "basis" ? ki.basis : null;
     document.getElementById("outlook").innerHTML = (dystoOn() ? dystoWorld() : ui.scen === "dystopie" ? `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO</span> Jahresregler auf ein Jahr nach ${NOW} stellen, um das fiktive Lagebild der Welt und der Länder zu sehen.</div>` : "") + (txt ? `<div><b>Ausblick 2050 · ${SCEN[ui.scen]}</b> (KI): ${esc(txt)}</div>` : "") + `<div class="muted">${model}</div>`;
   }
