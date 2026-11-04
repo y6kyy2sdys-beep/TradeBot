@@ -8,6 +8,8 @@ on:
     - cron: "15 9 * * 0,6"   # Wochenende: Krypto
     - cron: "40 5 * * 1-5"   # vor Börsenstart Europa: KI-Lageanalyse
     - cron: "40 17 * * 0"    # Sonntagabend: KI-Lageanalyse (Wochenend-Ereignisse)
+    - cron: "10 6-22 * * 1-5"  # werktags stündlich (Kurse, News, Dashboard)
+    - cron: "10 */3 * * 0,6"   # Wochenende alle 3 Stunden
   workflow_dispatch:
     inputs:
       mode:

@@ -428,6 +428,13 @@ body.app .mapcard { position: static; width: auto; max-height: none; margin-top:
 body.app .mapbtn { top: 4px; right: 4px; }
 body.app .presets button { padding: 6px 8px; }
 
+.refresh-dlg { position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.8); display: flex; align-items: flex-start; justify-content: center; padding: 8vh 12px; }
+.refresh-dlg[hidden] { display: none; }
+.refresh-dlg ol { padding-left: 20px; font-size: calc(13px * var(--fs)); line-height: 1.6; }
+.refresh-dlg input { width: 100%; background: #000; color: var(--text); border: 1px solid var(--line-strong); padding: 8px; font-family: var(--font); margin: 6px 0; }
+.refresh-dlg .prog { font-size: calc(15px * var(--fs)); color: var(--matrix); margin: 10px 0; }
+#refreshBtn.busy { color: var(--warn); border-color: var(--warn); animation: blink 1.2s steps(1) infinite; }
+
 footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -459,6 +466,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <span>DATEN <b id="gen">–</b></span>
       <span class="pill" id="regime">–</span>
       <span class="seg" role="group" aria-label="Schriftgröße"><button class="tbtn" id="fsDown" type="button" aria-label="Schrift kleiner">A−</button><button class="tbtn" id="fsUp" type="button" aria-label="Schrift größer">A+</button></span>
+      <button class="tbtn" id="refreshBtn" type="button" title="Bot jetzt starten und neueste Daten laden">⟳ AKTUALISIEREN</button>
       <button class="tbtn" id="appBtn" type="button" title="Zwischen App-Ansicht (Handy) und Desktop umschalten">📱 APP</button>
       <button class="tbtn" id="rainBtn" type="button" aria-pressed="true">RAIN: AN</button>
     </div>
@@ -593,6 +601,13 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 </div>
 
 <nav class="appnav" id="appnav" aria-label="Bereiche"></nav>
+<div id="refreshDlg" class="refresh-dlg" role="dialog" aria-modal="true" aria-label="Daten aktualisieren" hidden>
+  <div class="sheet" style="max-width:560px">
+    <button class="x" type="button" id="refreshX" aria-label="Schließen">✕</button>
+    <h3>⟳ DATEN AKTUALISIEREN</h3>
+    <div id="refreshBody"></div>
+  </div>
+</div>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Aktien-Steckbrief"><div class="sheet" id="sheet"></div></div>
 <script src="vendor/uPlot.iife.min.js"></script>
 <script src="vendor/d3.min.js"></script>
@@ -2133,6 +2148,53 @@ function renderComCards() {
 
 /* ================= Start ================= */
 function renderAll() { main.build(); renderCom(); }
+// Daten jetzt aktualisieren: startet den Bot über die GitHub-API (Schlüssel nur im Browser gespeichert)
+(function refresher() {
+  const REPO = "y6kyy2sdys-beep/TradeBot", btn = document.getElementById("refreshBtn"), dlg = document.getElementById("refreshDlg"), body = document.getElementById("refreshBody");
+  const genOf = t => { const m = t.match(/"generated":"([^"]+)"/); return m ? m[1] : null; };
+  const age = () => { const m = Math.round((Date.now() - new Date(D.generated)) / 60000); return m < 60 ? m + " Min." : Math.round(m / 60) + " Std."; };
+  const open = html => { body.innerHTML = html; dlg.hidden = false; };
+  document.getElementById("refreshX").addEventListener("click", () => dlg.hidden = true);
+  function askToken(err) {
+    open(`${err ? `<p class="down">${esc(err)}</p>` : ""}<p>Die angezeigten Daten sind <b>${age()}</b> alt (Stand ${new Date(D.generated).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}).
+      Damit dieser Knopf den Bot sofort starten darf, braucht er einmalig einen GitHub-Schlüssel, der <b>nur Läufe starten</b> kann:</p>
+      <ol><li>Öffne <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">github.com/settings/personal-access-tokens/new</a></li>
+        <li>Name z. B. „Dashboard“, Ablauf z. B. 1 Jahr</li>
+        <li><b>Repository access</b> → „Only select repositories“ → <b>TradeBot</b></li>
+        <li><b>Permissions</b> → Repository permissions → <b>Actions: Read and write</b> (sonst nichts)</li>
+        <li><b>Generate token</b>, Schlüssel kopieren (beginnt mit <code>github_pat_</code>) und hier einfügen:</li></ol>
+      <input id="tokIn" type="password" placeholder="github_pat_…" autocomplete="off">
+      <button type="button" class="dbtn" id="tokSave">SPEICHERN & JETZT AKTUALISIEREN</button>
+      <p class="note">Der Schlüssel bleibt nur in diesem Browser gespeichert und geht nur an GitHub. Schicke ihn niemandem.</p>`);
+    document.getElementById("tokSave").addEventListener("click", () => { const v = document.getElementById("tokIn").value.trim(); if (!v) return; store.set("ghToken", v); run(); });
+  }
+  async function run() {
+    const tok = store.get("ghToken"); if (!tok) return askToken();
+    open(`<div class="prog">Starte Bot …</div>`);
+    let r;
+    try {
+      r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/signals.yml/dispatches`, { method: "POST",
+        headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+        body: JSON.stringify({ ref: "master", inputs: { mode: "scan" } }) });
+    } catch (e) { return open(`<p class="down">GitHub nicht erreichbar (${esc(e.message)}). Bitte später erneut versuchen.</p>`); }
+    if (r.status === 401 || r.status === 403 || r.status === 404) { store.set("ghToken", ""); return askToken("Der Schlüssel wurde abgelehnt – bitte prüfen (Repository TradeBot, Actions: Read and write)."); }
+    if (!r.ok) return open(`<p class="down">GitHub meldet Fehler ${r.status}. Bitte später erneut versuchen.</p>`);
+    btn.classList.add("busy"); btn.textContent = "⟳ LÄUFT …";
+    const t0 = Date.now(), before = D.generated;
+    open(`<div class="prog" id="rProg">Bot gestartet ✓ – sammelt jetzt Kurse, News und Lagebild …</div>
+      <p class="muted">Das dauert meist 3–5 Minuten. Die Seite lädt automatisch neu, sobald die neuen Daten veröffentlicht sind. Du kannst dieses Fenster schließen.</p>`);
+    const tick = async () => {
+      const s = Math.round((Date.now() - t0) / 1000), el = document.getElementById("rProg");
+      if (el) el.textContent = `Bot läuft … ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} Min.`;
+      try { const t = await (await fetch("data.js?t=" + Date.now(), { cache: "no-store" })).text(); const g = genOf(t);
+        if (g && g > before) { if (el) el.textContent = "Neue Daten da ✓ – lade neu …"; setTimeout(() => location.reload(), 1200); return; } } catch {}
+      if (s > 900) { btn.classList.remove("busy"); btn.textContent = "⟳ AKTUALISIEREN"; if (el) el.textContent = "Das dauert ungewöhnlich lange – bitte in ein paar Minuten neu laden."; return; }
+      setTimeout(tick, 15000);
+    };
+    setTimeout(tick, 20000);
+  }
+  btn.addEventListener("click", run);
+})();
 // App-Ansicht (Handy): Bereiche als Fächer mit Leiste unten
 (function appMode() {
   const T = [["h-news", "📰", "Lage"], ["h-main", "📈", "Märkte"], ["h-depot", "💼", "Depot"], ["h-picks", "🔥", "Picks"], ["h-world", "🌍", "Welt"], ["h-sec", "🏭", "Branchen"], ["h-log", "📜", "Log"]];
