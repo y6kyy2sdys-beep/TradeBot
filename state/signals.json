@@ -2,13 +2,14 @@
   "open": [],
   "closed": [],
   "alerts": {
-    "move:BZ=F:down": "2026-11-03T09:38+00:00",
+    "move:BZ=F:down": "2026-11-05T13:29+00:00",
     "scenario:iran": "2026-11-03T10:28+00:00",
     "scenario:russia": "2026-11-03T10:28+00:00",
     "scenario:tariffs": "2026-11-03T10:28+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
     "scenario:fed": "2026-11-04T13:16+00:00",
-    "move:GC=F:up": "2026-11-04T22:14+00:00"
+    "move:GC=F:up": "2026-11-04T22:14+00:00",
+    "scenario:taiwan": "2026-11-05T13:29+00:00"
   },
   "alert_log": [
     {
@@ -40,6 +41,16 @@
       "time": "2026-11-04T22:14+00:00",
       "kind": "macro",
       "title": "Gold +3.3% an einem Tag"
+    },
+    {
+      "time": "2026-11-05T13:29+00:00",
+      "kind": "macro",
+      "title": "Brent-Öl -8.7% an einem Tag"
+    },
+    {
+      "time": "2026-11-05T13:29+00:00",
+      "kind": "macro",
+      "title": "Szenario: Spannungen China / Taiwan"
     }
   ]
 }
