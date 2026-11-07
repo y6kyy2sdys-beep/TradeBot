@@ -86,7 +86,7 @@ def indicators(F: dict, spy: pd.Series | None, sector_closes: pd.DataFrame | Non
 
     # --- Risikoappetit
     if spy is not None:
-        s = spy[spy.index <= asof]
+        s = spy[spy.index <= asof].dropna()
         if len(s) > 200:
             v = float(s.iat[-1] / s.rolling(200).mean().iat[-1] - 1) * 100
             add("trend", "S&P 500 ggü. 200-Tage-Linie", v, "%", 1 if v > 0 else -1, "risk", "über Linie = Aufwärtstrend", "Yahoo Finance SPY (Tagesschluss)", s.index[-1])

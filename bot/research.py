@@ -4,6 +4,7 @@ Katalysatoren und Backtest → docs/research.js (window.RESEARCH). Läuft tägli
 
 import json
 import math
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -117,7 +118,7 @@ def historical_regimes(F: dict) -> pd.Series | None:
 
 
 def sector_block(store, P, V, F, reg, hist_reg, fx, sector_hist) -> dict:
-    spy = P.get(S.BENCH)
+    spy = P[S.BENCH].dropna() if S.BENCH in P else None
     MF = S.macro_frame(F)
     metrics, info_out = {}, {}
     prev_metrics = {}
@@ -209,6 +210,31 @@ def rf_for(cur: str, F: dict):
     return None, None, "Kein risikofreier Zins verfügbar"
 
 
+FIN_BALANCE = re.compile(r"Bank|Insurance|Asset Management|Capital Markets|Mortgage|Conglomerate|Shell|Credit Union", re.I)
+
+
+def growth_inputs(est: dict, sm: dict):
+    """Konsens-Wachstum mit Plausibilitätsprüfung gegen den letzten Jahresabschluss."""
+    tab = est.get("rev_est") or {}
+    g_y0, g_y1 = S.num((tab.get("0y") or {}).get("growth")), S.num((tab.get("+1y") or {}).get("growth"))
+    avg0 = S.num((tab.get("0y") or {}).get("avg"))
+    rev0 = S._v((sm.get("hist") or {}).get("rev"))
+    own = avg0 / rev0 - 1 if avg0 and rev0 and rev0 > 0 else None
+    note, g0 = None, g_y0
+    if g_y0 is not None and own is not None and abs(own - g_y0) > 0.15:
+        if abs(g_y0) <= 0.6 and abs(own) > 0.6:
+            g0 = g_y0                      # Abweichung durch Währung/Einheit des Abschlusses
+        elif abs(g_y0) > 0.6 and abs(own) <= 0.6:
+            g0, note = own, f"Konsens-Wachstum laut Yahoo {g_y0:+.0%} unplausibel – ersetzt durch Konsensumsatz ÷ letzter Jahresumsatz ({own:+.0%})"
+        else:
+            g0, note = None, f"Konsens-Wachstum widersprüchlich (Yahoo {g_y0:+.0%}, eigene Rechnung {own:+.0%}) – nicht verwendet"
+    elif g_y0 is not None and abs(g_y0) > 0.8:
+        g0, note = None, f"Konsens-Wachstum {g_y0:+.0%} unplausibel – nicht verwendet"
+    if g_y1 is not None and abs(g_y1) > 0.8:
+        g_y1 = None
+    return g0, g_y1, note
+
+
 def stock_block(store, P, F, fx) -> dict:
     spy = P.get(S.BENCH)
     metrics, rows, groups, excl = {}, {}, {}, {}
@@ -232,14 +258,17 @@ def stock_block(store, P, F, fx) -> dict:
              "rev_cagr3": sm.get("rev_cagr3"), "rev_g_next": nxt("rev_est"), "eps_g_next": nxt("eps_est"),
              "r12_1": ps.get("r12_1"), "r6": ps.get("r6"), "trend": ps.get("trend"), "vol": ps.get("vol"), "mdd": ps.get("mdd"),
              "beta": S.num(info.get("beta"))}
-        is_fin = info.get("sector") == "Financial Services"
+        is_fin = info.get("sector") == "Financial Services" and bool(FIN_BALANCE.search(info.get("industry") or ""))
         metrics[t] = m
         groups[t] = info.get("sector") or "?"
         excl[t] = S.STOCK_FIN_EXCLUDE if is_fin else set()
         stm_ts = store.age("stm", t)
         fy = sm.get("fy_end")
         age = (NOW.replace(tzinfo=None) - pd.Timestamp(fy).to_pydatetime()).days if fy else None
+        g0, g1, g_note = growth_inputs(est, sm)
         flags = S.red_flags(m, sm, info, est, ev, is_fin, fx_note, age)
+        if g_note:
+            flags.append({"level": "dq", "cat": "Daten", "text": "Konsensdaten unplausibel", "value": g_note, "rule": "Abgleich Konsens vs. Jahresabschluss", "src": "Yahoo Finance"})
         price = S.num(info.get("currentPrice") or info.get("regularMarketPrice"))
         last_close = float(c.dropna().iat[-1]) if c is not None and c.dropna().size else None
         last_date = c.dropna().index[-1].strftime("%Y-%m-%d") if c is not None and c.dropna().size else None
@@ -256,6 +285,11 @@ def stock_block(store, P, F, fx) -> dict:
                 shares, mcap = so, mcap / 100
             else:
                 shares, share_note = implied, "Aktienzahl aus Marktkapitalisierung ÷ Kurs abgeleitet (ADR-Verhältnis/Aktiengattungen)"
+        if not shares:
+            bs_sh = S._v((sm.get("hist") or {}).get("shares"))
+            if bs_sh:
+                shares, share_note = bs_sh, "Aktienzahl aus der Bilanz (Yahoo liefert keine Marktkapitalisierung)"
+                mcap = mcap or (bs_sh * px_major if px_major else None)
         rf, rf_src, rf_note = rf_for(qcur, F)
         conv = lambda v: v * rate if v is not None and rate else None
         hist = sm.get("hist") or {}
@@ -266,8 +300,7 @@ def stock_block(store, P, F, fx) -> dict:
             "equity": r(conv(S._v(hist.get("eq"))), 6), "ni": r(conv(S._v(hist.get("ni"))), 6), "debt": r(conv(S._v(hist.get("debt"))), 6),
             "opm": r(sm.get("opm_avg3")), "opm_last": r(sm.get("op_m_fy")), "tax": r(sm.get("tax_rate")), "capex": r(sm.get("capex_pct")),
             "da": r(sm.get("da_pct")), "nwc": r(sm.get("nwc_pct")), "g_cagr3": r(sm.get("rev_cagr3")),
-            "g0": r(S.clip(S.num(((est.get("rev_est") or {}).get("0y") or {}).get("growth")), -0.3, 0.6)),
-            "g1": r(S.clip(S.num(((est.get("rev_est") or {}).get("+1y") or {}).get("growth")), -0.3, 0.6)),
+            "g0": r(S.clip(g0, -0.3, 0.6)), "g1": r(S.clip(g1, -0.3, 0.6)), "g_note": g_note,
             "roe": r(sm.get("roe_avg3")), "intrate": r(sm.get("intrate")),
             "beta": r(S.num(info.get("beta"))), "rf": r(rf), "rf_src": rf_src, "rf_note": rf_note,
             "tg": 0.025 if qcur == "USD" else 0.02, "erp": 0.05,
@@ -353,7 +386,7 @@ def main():
     store.refresh("est", STOCKS, 280)
     store.refresh("lest", extra, 300)
     store.refresh("events", STOCKS, 280)
-    store.refresh("stm", STOCKS, 90, workers=4)
+    store.refresh("stm", STOCKS, 240, workers=4)
     store.save()
 
     P_etf, V_etf = download(etfs + [S.BENCH], "max")
@@ -366,7 +399,7 @@ def main():
         curs.add(i.get("financialCurrency"))
     fx = fx_table({c for c in curs if c})
 
-    spy = P.get(S.BENCH)
+    spy = P[S.BENCH].dropna() if S.BENCH in P else None
     reg = regime.regime(F, spy, P_etf[[e for e in etfs if e in P_etf]])
     hist_reg = historical_regimes(F)
     sector_hist = store.c.setdefault("sector_hist", {})

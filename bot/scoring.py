@@ -160,7 +160,8 @@ def factor_table(metrics: dict[str, dict], factors: dict, exclude_for: dict[str,
             applicable = [k for k, _, _ in items if k not in exclude_for.get(i, set())]
             out[i]["cov"][f] = f"{len(vals)}/{len(applicable)}"
             if vals and len(vals) >= max(1, math.ceil(len(applicable) / 3)):
-                out[i]["z"][f] = round(float(np.mean(vals)), 3)
+                # Schrumpfung zur Mitte bei lückenhafter Datenlage: wenige Kennzahlen = weniger Gewicht
+                out[i]["z"][f] = round(float(np.mean(vals)) * len(vals) / len(applicable), 3)
     return out
 
 

@@ -36,7 +36,11 @@ Bei jedem Lauf:
    - drei Szenarien (Bull/Basis/Bear) mit Kursziel in % und Wahrscheinlichkeit, die zusammen 100 ergeben,
    - nach ~2 % Gebühren muss der erwartete Gewinn deutlich positiv sein.
    Keine Idee ist besser als eine schwache. Leere Listen sind ausdrücklich erlaubt.
-5. Gib einen Ausblick bis 2050: ein Basisszenario und ein dystopisches Szenario, jeweils mit den
+6. News-Einordnung: Wähle die 5–8 wirtschaftlich relevantesten aktuellen Nachrichten (jede Meldung nur einmal,
+   bevorzugt Reuters, Bloomberg, Financial Times, CNBC, Unternehmens- und Behördenmeldungen). Trenne strikt
+   Fakten (belegt, mit Quelle und Datum) von deiner Interpretation. Erkläre den wirtschaftlichen Kanal
+   (Umsatz, Kosten/Marge, Kapitalkosten/Bewertung) statt pauschal "positiv für die Aktie".
+7. Gib einen Ausblick bis 2050: ein Basisszenario und ein dystopisches Szenario, jeweils mit den
    wichtigsten Treibern. Kennzeichne das als Szenario, nicht als Vorhersage.
 
 Ehrlichkeit vor Optimismus: Nenne Unsicherheiten und Gegenargumente. Erfinde keine Kurse, Zahlen,
@@ -86,6 +90,17 @@ SCHEMA = _obj({
         "begruendung": _str,
     })},
     "ausblick_2050": _obj({"basis": _str, "dystopie": _str}),
+    "news_analyse": {"type": "array", "items": _obj({
+        "titel": _str, "quelle": _str, "datum": _str,
+        "fakten": {"type": "string", "description": "nur belegte Fakten"},
+        "interpretation": {"type": "string", "description": "deine Einordnung, klar als Interpretation"},
+        "richtung": {"type": "string", "enum": ["bullish", "neutral", "bearish", "mixed"]},
+        "unternehmen": _strs, "branchen": _strs,
+        "relevanz": {"type": "integer", "enum": [1, 2, 3, 4, 5]},
+        "wirkung_umsatz": _str, "wirkung_gewinn": _str, "wirkung_bewertung": _str,
+        "horizont": {"type": "string", "description": "z. B. 'Tage', 'Quartale', 'Jahre'"},
+        "unsicherheit": {"type": "string", "enum": ["niedrig", "mittel", "hoch"]},
+    })},
     "kaufideen": {"type": "array", "items": _obj({
         "ticker": _str, "name": _str,
         "wkn": {"type": "string", "description": "nur wenn sicher bekannt, sonst leer"},

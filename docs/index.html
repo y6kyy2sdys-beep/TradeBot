@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TradeBot Kommandozentrale</title>
-<meta name="description" content="Weltmärkte, Rohstoffe, marktbewegende News und Hot-Picks im Matrix-Look.">
+<title>TradeBot Research</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("theme")||"pro"}catch(e){document.documentElement.dataset.theme="pro"}</script>
+<meta name="description" content="Datenbasiertes Investment-Research: Marktregime, Branchen-Scoring, Aktien-Screener, Bewertung, Risiken und Makro.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="vendor/uPlot.min.css">
 <style>
 :root {
@@ -290,7 +291,7 @@ table.data th { color: var(--muted); font-weight: normal; }
 .scen span { display: block; height: 100%; }
 
 /* ---------- Suche ---------- */
-.search { position: sticky; top: 0; z-index: 30; padding: 10px 0; background: linear-gradient(#000300 75%, transparent); }
+.search { position: relative; z-index: 29; padding: 10px 0; }
 .search input { width: 100%; background: #000; color: var(--text); border: 1px solid var(--line-strong); padding: 11px 14px;
   font-size: calc(16px * var(--fs)); font-family: var(--font); box-shadow: 0 0 14px rgba(0,255,65,.12); outline: none; }
 .search input:focus { border-color: var(--matrix); box-shadow: 0 0 20px rgba(0,255,65,.35); }
@@ -417,6 +418,90 @@ table.det td:last-child { text-align: right; }
 .newsbox a:hover { color: var(--matrix); }
 .tone { display: inline-block; font-size: calc(11px * var(--fs)); padding: 0 6px; margin-top: 2px; border: 1px solid; }
 .tone.p { color: var(--up); } .tone.n { color: var(--down); } .tone.z { color: var(--muted); }
+
+/* ================= Profi-Design (Standard) – Matrix-Look per Knopf ================= */
+html[data-theme="pro"] {
+  --bg: #0b0e13; --surface-1: #11161d; --panel: #11161d; --line: #232b36; --line-strong: #3a4656;
+  --matrix: #4c9ffe; --matrix-dim: #3a7bd0; --text: #dbe2ea; --muted: #8a96a6; --up: #2fbf71; --down: #ef5350; --warn: #d9a400;
+  --grid: rgba(255,255,255,0.06); --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --fs: 1;
+}
+html[data-theme="pro"] body::after, html[data-theme="pro"] #rain, html[data-theme="pro"] #intro, html[data-theme="pro"] #rainBtn { display: none !important; }
+html[data-theme="pro"] section.panel { border-radius: 10px; backdrop-filter: none; }
+html[data-theme="pro"] section.panel::before, html[data-theme="pro"] section.panel::after { display: none; }
+html[data-theme="pro"] .brand { text-shadow: none; letter-spacing: .02em; font-weight: 700; }
+html[data-theme="pro"] .brand:hover { animation: none; }
+html[data-theme="pro"] h2 { letter-spacing: .04em; font-weight: 600; text-transform: none; color: var(--text); }
+html[data-theme="pro"] .ticker .track { animation-duration: 140s; }
+html[data-theme="pro"] .search input { background: var(--surface-1); border-radius: 8px; }
+html[data-theme="pro"] .search input:focus { box-shadow: 0 0 0 3px rgba(76,159,254,.25); }
+html[data-theme="pro"] .brand { color: var(--text); }
+html[data-theme="pro"] .b-m, html:not([data-theme="pro"]) .b-p { display: none; }
+html[data-theme="pro"] .brand small { letter-spacing: .08em; }
+html[data-theme="pro"] .tbtn, html[data-theme="pro"] .pctl button { border-radius: 6px; }
+.areanav { position: sticky; top: 0; z-index: 30; display: flex; gap: 4px; overflow-x: auto; background: var(--bg); border-bottom: 1px solid var(--line); padding: 8px 0; scrollbar-width: thin; }
+.areanav button { flex: 0 0 auto; background: transparent; border: 1px solid transparent; color: var(--muted); padding: 7px 12px; border-radius: 7px; cursor: pointer; font-family: var(--font); font-size: calc(13.5px * var(--fs)); white-space: nowrap; }
+.areanav button .n { display: inline-block; min-width: 1.3em; color: var(--line-strong); margin-right: 4px; font-variant-numeric: tabular-nums; }
+.areanav button:hover { color: var(--text); border-color: var(--line); }
+.areanav button[aria-current="page"] { color: var(--text); background: var(--surface-1); border-color: var(--line-strong); }
+.areanav button[aria-current="page"] .n { color: var(--matrix); }
+section.panel.area-hidden { display: none !important; }
+body.app .areanav { position: fixed; top: auto; bottom: 0; left: 0; right: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); border-bottom: 0; }
+/* Research-Bausteine */
+.small { font-size: calc(12px * var(--fs)); } .warn { color: var(--warn); }
+.dt { width: 100%; border-collapse: collapse; font-size: calc(13px * var(--fs)); }
+.dt th, .dt td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.dt th { color: var(--muted); font-weight: 500; white-space: nowrap; }
+.dt.num td, .dt.num th { text-align: right; font-variant-numeric: tabular-nums; } .dt.num td:first-child, .dt.num th:first-child { text-align: left; }
+.dt tr.click { cursor: pointer; } .dt tr.click:hover td { background: rgba(127,127,127,.06); }
+.dt tr.detail > td { background: rgba(127,127,127,.04); }
+.dt th.sort { cursor: pointer; } .dt th.sort.on { color: var(--text); }
+.tscroll { overflow-x: auto; max-width: 100%; }
+.mini { border-collapse: collapse; font-size: calc(12.5px * var(--fs)); width: 100%; } .mini td, .mini th { padding: 3px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.kls { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: calc(11.5px * var(--fs)); white-space: nowrap; border: 1px solid; }
+.kls.c1 { color: #2fbf71; border-color: #2fbf71; background: rgba(47,191,113,.12); } .kls.c2 { color: #7fd6a4; border-color: #3b8b62; }
+.kls.c3 { color: var(--muted); border-color: var(--line-strong); } .kls.c4 { color: #f0a35e; border-color: #8a5a2c; } .kls.c5 { color: #ef5350; border-color: #ef5350; background: rgba(239,83,80,.1); }
+.kls.c0 { color: var(--muted); border-color: var(--line); border-style: dashed; }
+.sub { font-variant-numeric: tabular-nums; } .sub.up { color: var(--up); } .sub.down { color: var(--down); }
+.fl { display: inline-block; min-width: 1.6em; text-align: center; border-radius: 4px; padding: 0 5px; margin-right: 3px; font-size: calc(11.5px * var(--fs)); }
+.fl.confirmed { background: rgba(239,83,80,.18); color: #ff8a80; } .fl.potential { background: rgba(217,164,0,.18); color: #f2c94c; } .fl.dq { background: rgba(138,150,166,.18); color: var(--muted); }
+.g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; } .g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 12px; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: rgba(127,127,127,.03); margin-top: 12px; }
+.card h3, #eqBody h3, #vaBody h3, #maBody h3, #caBody h3 { margin: 0 0 6px; font-size: calc(15px * var(--fs)); font-weight: 600; }
+.card ol, .card ul { margin: 4px 0 8px; padding-left: 20px; } .card li { margin: 3px 0; }
+.more { font-size: calc(12.5px * var(--fs)); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; } .tile .tl { color: var(--muted); font-size: calc(11.5px * var(--fs)); min-height: 2.4em; }
+.tile .tv { font-size: calc(19px * var(--fs)); font-weight: 600; font-variant-numeric: tabular-nums; }
+.rg { display: grid; grid-template-columns: minmax(260px, 1fr) 2fr; gap: 18px; } @media (max-width: 760px) { .rg { grid-template-columns: 1fr; } }
+.rgq { font-size: calc(26px * var(--fs)); font-weight: 700; margin: 2px 0; } .rgtags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 10px; font-size: calc(12.5px * var(--fs)); } .tag.up { color: var(--up); border-color: var(--up); } .tag.down { color: var(--down); border-color: var(--down); }
+.axis { margin-bottom: 10px; } .ah { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: calc(13px * var(--fs)); }
+.abar { position: relative; height: 8px; border-radius: 4px; margin: 5px 0 3px; background: linear-gradient(90deg, rgba(138,150,166,.25), rgba(138,150,166,.12) 50%, rgba(76,159,254,.45)); }
+.abar i { position: absolute; top: -4px; width: 4px; height: 16px; margin-left: -2px; background: var(--text); border-radius: 2px; }
+details { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; } details > summary { cursor: pointer; font-weight: 600; color: var(--text); }
+details > summary::marker { color: var(--muted); }
+.wts summary { font-weight: 500; color: var(--muted); font-size: calc(12.5px * var(--fs)); }
+.wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 16px; margin: 8px 0; } .wgrid label { display: grid; grid-template-columns: 1fr 110px 44px; align-items: center; gap: 6px; font-size: calc(12.5px * var(--fs)); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 10px 0; }
+.filters input[type=search], .filters select, .picker input, .vform input { background: var(--surface-1); color: var(--text); border: 1px solid var(--line-strong); border-radius: 6px; padding: 6px 8px; font-family: var(--font); font-size: calc(13px * var(--fs)); }
+.chk { font-size: calc(12.5px * var(--fs)); white-space: nowrap; } .picker { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; } .picker input { min-width: min(360px, 100%); }
+.eqhead { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; }
+.kpis > div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.kpis span { color: var(--muted); font-size: calc(11.5px * var(--fs)); } .kpis b { font-size: calc(18px * var(--fs)); font-variant-numeric: tabular-nums; } .kpis small { color: var(--muted); font-size: calc(11px * var(--fs)); }
+.fbars { display: grid; gap: 5px; margin: 6px 0 12px; max-width: 640px; } .fb { display: grid; grid-template-columns: 140px 1fr 34px 40px; gap: 8px; align-items: center; font-size: calc(12.5px * var(--fs)); }
+.fb .bar { height: 8px; background: rgba(127,127,127,.15); border-radius: 4px; overflow: hidden; } .fb .bar i { display: block; height: 100%; background: var(--muted); }
+.fb .bar i.pos { background: var(--up); } .fb .bar i.neg { background: var(--down); } .fb .bar i.mid { background: var(--s1); }
+.fblock { margin-bottom: 12px; }
+.vform { display: grid; gap: 6px; margin: 8px 0; } .vform label { display: grid; grid-template-columns: 1fr 90px 18px; gap: 6px; align-items: center; font-size: calc(12.5px * var(--fs)); }
+.vform label small { grid-column: 1 / -1; color: var(--muted); margin-top: -4px; font-size: calc(11px * var(--fs)); }
+.sens td, .sens th { padding: 4px 6px; }
+.eqc { width: 100%; height: auto; margin-top: 8px; } .eqc .ax { fill: var(--muted); font-size: 11px; font-family: var(--font); }
+.lg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: calc(12px * var(--fs)); color: var(--muted); } .lg i { display: inline-block; width: 12px; height: 3px; margin-right: 5px; vertical-align: middle; }
+.spk { width: 120px; height: 28px; }
+.rhist { display: flex; height: 18px; border-radius: 4px; overflow: hidden; margin: 6px 0; } .rhist i { flex: 1; }
+.nk { margin-top: 8px; }
+@media print { .areanav, header.top, .ticker, .search { display: none; } }
 /* ---------- App-Modus (Handy) ---------- */
 .appnav { display: none; }
 body.app .wrap { padding-bottom: 86px; }
@@ -434,7 +519,6 @@ section.panel.folded { padding-bottom: 6px; }
 section.panel.moved { animation: cardin .3s ease-out; }
 body.app .pctl .grip, body.app .pctl .mv { display: none; }
 body.dragmode, body.dragmode * { user-select: none; }
-body.app section.panel:not(.active) { display: none; }
 body.app header.top .brand small { display: none; }
 body.app .appnav { display: grid; grid-template-columns: repeat(7, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
   background: rgba(0,6,2,.97); border-top: 1px solid var(--line-strong); padding: 4px 2px calc(4px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(0,0,0,.7); }
@@ -478,7 +562,7 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 
 <div class="wrap">
   <header class="top">
-    <div class="brand">TRADEBOT // KOMMANDOZENTRALE<small>GLOBAL MARKET SURVEILLANCE</small></div>
+    <div class="brand"><span class="b-m">TRADEBOT // KOMMANDOZENTRALE<small>GLOBAL MARKET SURVEILLANCE</small></span><span class="b-p">TradeBot Research<small>Investment Intelligence · keine Anlageberatung</small></span></div>
     <div class="status">
       <span>UTC <b id="clockUtc">--:--:--</b></span>
       <span>BERLIN <b id="clockBer">--:--:--</b></span>
@@ -486,16 +570,63 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
       <span class="pill" id="regime">–</span>
       <span class="seg" role="group" aria-label="Schriftgröße"><button class="tbtn" id="fsDown" type="button" aria-label="Schrift kleiner">A−</button><button class="tbtn" id="fsUp" type="button" aria-label="Schrift größer">A+</button></span>
       <button class="tbtn" id="refreshBtn" type="button" title="Bot jetzt starten und neueste Daten laden">⟳ AKTUALISIEREN</button>
+      <button class="tbtn" id="themeBtn" type="button" title="Zwischen ruhigem Profi-Design und Matrix-Look wechseln">◐ DESIGN</button>
       <button class="tbtn" id="layoutBtn" type="button" title="Anordnung und eingeklappte Blöcke zurücksetzen">⟲ LAYOUT</button>
       <button class="tbtn" id="appBtn" type="button" title="Zwischen App-Ansicht (Handy) und Desktop umschalten">📱 APP</button>
       <button class="tbtn" id="rainBtn" type="button" aria-pressed="true">RAIN: AN</button>
     </div>
   </header>
+  <nav class="areanav" id="areanav" aria-label="Hauptbereiche"></nav>
   <div class="search" role="search">
     <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="🔎  Aktie, WKN oder Symbol suchen – oder klicken für alle Werte  (Taste /)" aria-label="Aktie suchen" aria-controls="qres">
     <div class="qres" id="qres" role="listbox"></div>
   </div>
   <div class="ticker" aria-label="Tagesveränderungen"><div class="track" id="ticker"></div></div>
+
+  <section class="panel" aria-labelledby="h-regime">
+    <h2 id="h-regime">Marktregime<span class="sub">In welchem Marktumfeld befinden wir uns? – Indikator-Abstimmung statt Scheinpräzision</span></h2>
+    <div id="rgBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-ovsum">
+    <h2 id="h-ovsum">Überblick<span class="sub">Makro-Kennzahlen, Branchenranking, Chancen, Risiken, Katalysatoren</span></h2>
+    <div id="ovBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-sint">
+    <h2 id="h-sint">Sector Intelligence<span class="sub">Branchenranking aus sechs Faktoren · Gewichte einstellbar</span></h2>
+    <div id="siW"></div><div id="siBody"><div id="siTable"></div></div>
+  </section>
+  <section class="panel" aria-labelledby="h-bt">
+    <h2 id="h-bt">Modellvalidierung<span class="sub">Backtest der Branchenrotation (nur kursbasierte Faktoren, inkl. Kosten)</span></h2>
+    <div id="btBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-scr">
+    <h2 id="h-scr">Stock Screener<span class="sub">Opportunity Score aus Qualität, Bewertung, Wachstum, Revisionen, Stärke und Risiko</span></h2>
+    <div id="scW"></div><div id="scBody"><div id="scFilter"></div><div id="scTable"></div></div>
+  </section>
+  <section class="panel" aria-labelledby="h-eq">
+    <h2 id="h-eq">Equity Research<span class="sub">Unternehmensanalyse mit These, Gegenargumenten und Quellen</span></h2>
+    <div id="eqPick"></div><div id="eqBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-val">
+    <h2 id="h-val">Valuation<span class="sub">Fair Value: DCF bzw. Residual Income · Bear / Base / Bull · alle Annahmen editierbar</span></h2>
+    <div id="vaPick"></div><div id="vaBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-risk">
+    <h2 id="h-risk">Risk Monitor<span class="sub">Red Flags mit Regel, Wert und Quelle</span></h2>
+    <div id="rkBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-macro">
+    <h2 id="h-macro">Macro Intelligence<span class="sub">Zinsen, Inflation, Arbeitsmarkt, Kredit, Liquidität – und was das für Branchen bedeutet</span></h2>
+    <div id="maBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-cat">
+    <h2 id="h-cat">Katalysatoren<span class="sub">Termine, Analystenaktionen und KI-Einordnung der Nachrichten</span></h2>
+    <div id="caBody"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-wl">
+    <h2 id="h-wl">Watchlist-Analyse<span class="sub">Depot und Favoriten mit Score, Bewertung und Risiken</span></h2>
+    <div id="wlBody"></div>
+  </section>
 
   <section class="panel" aria-labelledby="h-news">
     <h2 id="h-news">// Kritische Lage<span class="sub">News mit dem größten Einfluss auf die Kurse</span></h2>
@@ -617,10 +748,14 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
     <div class="log" id="log"></div>
   </section>
 
+  <section class="panel" aria-labelledby="h-src">
+    <h2 id="h-src">Quellen & Methodik<span class="sub">Woher die Daten kommen und wie aktuell sie sind</span></h2>
+    <div id="srcBody"></div>
+  </section>
+
   <footer>Daten: Yahoo Finance, Google News · Aktualisierung mehrmals täglich durch den TradeBot · Keine Anlageberatung. Vergangene Entwicklung ist keine Garantie.</footer>
 </div>
 
-<nav class="appnav" id="appnav" aria-label="Bereiche"></nav>
 <div id="refreshDlg" class="refresh-dlg" role="dialog" aria-modal="true" aria-label="Daten aktualisieren" hidden>
   <div class="sheet" style="max-width:560px">
     <button class="x" type="button" id="refreshX" aria-label="Schließen">✕</button>
@@ -737,15 +872,17 @@ else {
   addEventListener("keydown", endIntro, { once: true });
 }
 }
-startIntro();
+const MATRIX = document.documentElement.dataset.theme === "matrix";
+if (MATRIX) startIntro(); else intro.remove();
 
-const bg = reduced ? null : rain(document.getElementById("rain"), { size: 16, fps: 14, fade: 0.12, speed: 0.6 });
+const bg = reduced || !MATRIX ? null : rain(document.getElementById("rain"), { size: 16, fps: 14, fade: 0.12, speed: 0.6 });
 const rainBtn = document.getElementById("rainBtn");
 function setRain(on) {
   rainBtn.textContent = "RAIN: " + (on ? "AN" : "AUS"); rainBtn.setAttribute("aria-pressed", on);
   if (bg) bg.pause(!on); store.set("rain", on ? "1" : "0");
 }
 rainBtn.addEventListener("click", () => setRain(rainBtn.getAttribute("aria-pressed") !== "true"));
+document.getElementById("themeBtn").addEventListener("click", () => { store.set("theme", MATRIX ? "pro" : "matrix"); location.reload(); });
 setRain(store.get("rain") !== "0");
 
 /* ================= Uhr ================= */
@@ -1056,11 +1193,11 @@ function renderComCards() {
     if (!sc) return "";
     const parts = [["bull", "var(--up)"], ["basis", "var(--s1)"], ["bear", "var(--down)"]];
     return `<div class="scen" aria-hidden="true">${parts.map(([k, c]) => `<span style="flex:${sc[k].wahrscheinlichkeit_prozent};background:${c}"></span>`).join("")}</div>` +
-      parts.map(([k]) => `${k[0].toUpperCase() + k.slice(1)} <b>${sc[k].kursziel_prozent > 0 ? "+" : ""}${nf(sc[k].kursziel_prozent, 0)} %</b> (${nf(sc[k].wahrscheinlichkeit_prozent, 0)} %)`).join(" · ");
+      parts.map(([k]) => `${k[0].toUpperCase() + k.slice(1)} <b>${sc[k].kursziel_prozent > 0 ? "+" : ""}${nf(sc[k].kursziel_prozent, 0)} %</b> (${nf(sc[k].wahrscheinlichkeit_prozent, 0)} %)`).join(" · ") + ' <span class="muted" title="Wahrscheinlichkeiten stammen aus der KI-Einschätzung, nicht aus einem statistisch validierten Modell">(qualitative KI-Einschätzung)</span>';
   };
   document.getElementById("pPositions").innerHTML = P.positions.map((p, i) => {
     const up = p.target / p.ref_close - 1, dn = p.stop / p.ref_close - 1;
-    const call = p.strategy === "ki" ? `<div class="call">${p.branche ? `<b>${esc(p.branche)}</b> · ` : ""}Horizont <b>${esc(p.horizon || "")}</b>${p.ev_pct != null ? ` · Erwartungswert <b class="${cls(p.ev_pct)}">${p.ev_pct > 0 ? "+" : ""}${nf(p.ev_pct, 1)} %</b>` : ""}
+    const call = p.strategy === "ki" ? `<div class="call">${p.branche ? `<b>${esc(p.branche)}</b> · ` : ""}Horizont <b>${esc(p.horizon || "")}</b>${p.ev_pct != null ? ` · KI-Erwartungswert <b class="${cls(p.ev_pct)}">${p.ev_pct > 0 ? "+" : ""}${nf(p.ev_pct, 1)} %</b> <span class="muted">(qualitativ)</span>` : ""}
       ${p.these ? `<p><b>These:</b> ${esc(p.these)}</p>` : ""}${p.warum_jetzt ? `<p><b>Warum jetzt:</b> ${esc(p.warum_jetzt)}</p>` : ""}
       ${scen(p.szenarien)}${p.risiken && p.risiken.length ? `<p><b>Risiken:</b> ${esc(p.risiken.join(" · "))}</p>` : ""}</div>` : "";
     return row(i + 1, p, `<span class="up">Ziel +${nf(up * 100, 0)}%</span><br><span class="down">Stop ${nf(dn * 100, 0)}%</span>`,
@@ -2140,6 +2277,7 @@ function renderComCards() {
       <div>${esc(p.call.these || "")}</div><div class="note">Horizont ${esc(p.call.horizon || "")} · Ziel ${nf(p.call.target)} · Stop ${nf(p.call.stop)}${p.call.ev_pct != null ? " · Erwartungswert " + nf(p.call.ev_pct, 1) + " %" : ""}</div></div>` : "";
     sheet.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button>
       <h3>${esc(p.n)}<button type="button" class="star" id="favBtn" title="Favorit">${FAV.has(p.t) ? "★" : "☆"}</button></h3>
+      ${window.RX && window.RX.has(p.t) ? `<button type="button" class="tbtn" data-rx="${esc(p.t)}" style="margin:-4px 0 8px">Equity Research & Fair Value →</button>` : ""}
       <div class="meta"><b>${esc(p.t)}</b>${p.w ? ` · WKN <b>${esc(p.w)}</b>` : ` · <a href="${esc(p.s)}" target="_blank" rel="noopener noreferrer">WKN suchen ↗</a>`} · ${esc(p.k)}${p.sec ? " · " + esc(p.sec) : ""}${p.ind ? " / " + esc(p.ind) : ""}${p.land ? " · " + esc(p.land) : ""}${p.ex ? " · Börse " + esc(p.ex) : ""}</div>
       <div class="px"><span class="big">${nf(T.last)} ${esc(p.cur || "")}</span><span class="${cls(T.d1)}">${pct(T.d1)} heute</span></div>
       <div class="perfrow">${perf}</div>
@@ -2450,7 +2588,8 @@ function renderAll() { main.build(); renderCom(); }
   const keyOf = sec => sec.getAttribute("aria-labelledby");
   const DEFAULT = panels().map(keyOf);
   const fold = new Set(JSON.parse(store.get("panelFold") || "[]"));
-  const save = () => { store.set("panelOrder", JSON.stringify(panels().map(keyOf))); store.set("panelFold", JSON.stringify([...fold])); };
+  const vis = () => panels().filter(p => !p.classList.contains("area-hidden"));
+  const save = () => { store.set("panelOrder2", JSON.stringify(panels().map(keyOf))); store.set("panelFold", JSON.stringify([...fold])); };
   const refresh = () => setTimeout(() => { dispatchEvent(new Event("resize")); try { renderAll(); } catch (e) {} }, 30);
   function apply(order) {
     const byKey = Object.fromEntries(panels().map(p => [keyOf(p), p]));
@@ -2458,7 +2597,7 @@ function renderAll() { main.build(); renderCom(); }
   }
   function flash(sec) { sec.classList.remove("moved"); void sec.offsetWidth; sec.classList.add("moved"); }
   function move(sec, dir) {
-    const list = panels(), i = list.indexOf(sec), j = i + dir; if (j < 0 || j >= list.length) return;
+    const list = vis(), i = list.indexOf(sec), j = i + dir; if (j < 0 || j >= list.length) return;
     dir < 0 ? box.insertBefore(sec, list[j]) : box.insertBefore(sec, list[j].nextSibling);
     save(); flash(sec); refresh(); sec.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
@@ -2486,7 +2625,7 @@ function renderAll() { main.build(); renderCom(); }
       let target = null, after = false, y = e.clientY, raf = 0;
       const mark = () => { panels().forEach(p => p.classList.remove("drop-before", "drop-after")); if (target) target.classList.add(after ? "drop-after" : "drop-before"); };
       const find = () => {
-        const others = panels().filter(p => p !== sec); let hit = null;
+        const others = vis().filter(p => p !== sec); let hit = null;
         for (const p of others) { const r = p.getBoundingClientRect(); if (y >= r.top && y <= r.bottom) { hit = p; after = y > r.top + r.height / 2; break; } }
         if (!hit && others.length) { const f = others[0].getBoundingClientRect(), l = others[others.length - 1].getBoundingClientRect();
           if (y < f.top) { hit = others[0]; after = false; } else if (y > l.bottom) { hit = others[others.length - 1]; after = true; } }
@@ -2505,33 +2644,23 @@ function renderAll() { main.build(); renderCom(); }
       grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
     });
   });
-  try { const o = JSON.parse(store.get("panelOrder") || "null"); if (Array.isArray(o)) apply(o); } catch (e) {}
+  try { const o = JSON.parse(store.get("panelOrder2") || "null"); if (Array.isArray(o)) apply(o); } catch (e) {}
   panels().forEach(sec => fold.has(keyOf(sec)) && setFold(sec, true));
   document.getElementById("layoutBtn").addEventListener("click", () => {
     apply(DEFAULT); fold.clear(); panels().forEach(sec => setFold(sec, false)); save(); refresh(); scrollTo({ top: 0, behavior: "smooth" });
   });
 })();
-(function appMode() {
-  const T = [["h-news", "📰", "Lage"], ["h-main", "📈", "Märkte"], ["h-depot", "💼", "Depot"], ["h-picks", "🔥", "Picks"], ["h-world", "🌍", "Welt"], ["h-sec", "🏭", "Branchen"], ["h-log", "📜", "Log"]];
-  const nav = document.getElementById("appnav"), btn = document.getElementById("appBtn");
-  const sec = id => document.getElementById(id) && document.getElementById(id).closest("section");
-  nav.innerHTML = T.map(([id, ic, l]) => `<button type="button" data-s="${id}" aria-selected="false"><span>${ic}</span>${l}</button>`).join("");
-  function show(id) {
-    document.querySelectorAll("section.panel").forEach(s => s.classList.remove("active"));
-    const want = [sec(id)]; if (id === "h-main") want.push(sec("h-com"));
-    want.forEach(s => s && s.classList.add("active"));
-    nav.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", b.dataset.s === id));
-    store.set("appTab", id); scrollTo(0, 0); setTimeout(() => { dispatchEvent(new Event("resize")); renderAll(); }, 40);
-  }
-  nav.addEventListener("click", e => { const b = e.target.closest("button[data-s]"); if (b) show(b.dataset.s); });
+(function appMode() {   // App-Ansicht: Navigation unten, größere Touch-Flächen; Bereiche steuert research-ui.js
+  const btn = document.getElementById("appBtn");
   function set(on) {
     document.body.classList.toggle("app", on); btn.textContent = on ? "🖥 DESKTOP" : "📱 APP"; store.set("appMode", on ? "1" : "0");
-    if (on) show(store.get("appTab") || "h-news"); else { document.querySelectorAll("section.panel").forEach(s => s.classList.remove("active")); setTimeout(() => { dispatchEvent(new Event("resize")); renderAll(); }, 40); }
+    setTimeout(() => { dispatchEvent(new Event("resize")); renderAll(); }, 40);
   }
   btn.addEventListener("click", () => set(!document.body.classList.contains("app")));
   const saved = store.get("appMode");
   set(saved ? saved === "1" : innerWidth < 760);
 })();
+window.TB_renderAll = renderAll;
 addEventListener("keydown", e => {
   if (["INPUT", "TEXTAREA"].includes(e.target.tagName) || document.body.classList.contains("modal-open")) return;
   if (e.key === "ArrowRight") mainRange.step(1);
@@ -2544,5 +2673,6 @@ if (comLinked()) comRange.set(mainRange.i0, mainRange.i1, mainRange.preset, true
 renderCom();
 })();
 </script>
+<script src="research-ui.js"></script>
 </body>
 </html>
