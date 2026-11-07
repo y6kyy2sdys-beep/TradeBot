@@ -361,6 +361,12 @@ def statements_metrics(stm: dict | None) -> dict:
     m["da_pct"] = avg(lambda i: ratio(keys["da"], rev, i))
     m["nwc_pct"] = clip(avg(lambda i: (-at(keys["cwc"], i) / at(rev, i)) if at(keys["cwc"], i) is not None and at(rev, i) else None), -0.05, 0.1)
     m["roe_avg3"] = avg(lambda i: ratio(ni, eq, i))
+    # Reinvestition je zusätzlichem Umsatz (3 GJ): Wachstums-Capex (Capex − Abschreibungen) und Working Capital
+    drev = sum((at(rev, i) - at(rev, i + 1)) for i in range(min(3, n - 1)) if at(rev, i) is not None and at(rev, i + 1) is not None)
+    gcap = [abs(at(capex, i)) - at(keys["da"], i) for i in range(min(3, n - 1)) if at(capex, i) is not None and at(keys["da"], i) is not None]
+    gwc = [-at(keys["cwc"], i) for i in range(min(3, n - 1)) if at(keys["cwc"], i) is not None]
+    m["reinv_capex"] = clip(sum(gcap) / drev, 0.0, 2.0) if drev > 0 and gcap else None
+    m["reinv_nwc"] = clip(sum(gwc) / drev, -0.5, 1.0) if drev > 0 and gwc else None
     m["intrate"] = clip(i0 / d0, 0.0, 0.15) if i0 and d0 and d0 > 0 else None
     return m
 

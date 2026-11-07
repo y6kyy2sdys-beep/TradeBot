@@ -28,6 +28,7 @@ class Statements(unittest.TestCase):
         self.assertAlmostEqual(m["rev_yoy_fy"], 100 / 90 - 1)
         self.assertAlmostEqual(m["cash_conv"], 1.0)
         self.assertAlmostEqual(m["dilution"], 0.0)
+        self.assertIsNone(m["reinv_capex"])        # ohne Abschreibungen keine Wachstums-Capex-Quote
 
     def test_flags(self):
         sm = S.statements_metrics(stm(rev=(80, 100), ebit=(4, 15), debt=(200, 100), ebitda=(20, 25), intexp=(3, 2), fcf=(-5, 3), shares=(11, 10)))

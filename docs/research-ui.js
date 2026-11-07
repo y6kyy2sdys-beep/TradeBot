@@ -116,21 +116,24 @@ function dcfValue(v, a) {
   let rev = v.rev, pv = 0, fcf = 0;
   const path = growthPath(a.g1, a.g2, a.tg), rows = [];
   for (let t = 1; t <= 10; t++) {
-    rev *= 1 + path[t - 1];
+    const prev = rev; rev *= 1 + path[t - 1];
     const ebit = rev * a.margin;
-    fcf = ebit * (1 - a.tax) + rev * a.da - rev * a.capex - rev * a.nwc;
+    fcf = ebit * (1 - a.tax) - a.reinv * (rev - prev);    // NOPAT − Reinvestition je zusätzlichem Umsatz
     pv += fcf / Math.pow(1 + a.wacc, t);
     rows.push({ t, g: path[t - 1], rev, ebit, fcf });
   }
-  const tv = fcf * (1 + a.tg) / (a.wacc - a.tg), pvtv = tv / Math.pow(1 + a.wacc, 10);
+  const fcfT = rev * (1 + a.tg) * a.margin * (1 - a.tax) - a.reinv * rev * a.tg;   // Endwert-Jahr: Reinvestition nur für ewiges Wachstum
+  const tv = fcfT / (a.wacc - a.tg), pvtv = tv / Math.pow(1 + a.wacc, 10);
   const ev = pv + pvtv, eq = ev - (v.net_debt || 0);
   return { fv: eq / v.shares, ev, eq, pv, pvtv, tvShare: pvtv / ev, rows };
 }
 function dcfAssumptions(v, ov = {}) {
   const W = waccOf(v, ov);
   const g1 = ov.g1 ?? v.g0 ?? v.g_cagr3 ?? 0.03, g2 = ov.g2 ?? v.g1 ?? g1;
-  return { g1: clamp(g1, -0.3, 0.6), g2: clamp(g2, -0.3, 0.6), margin: ov.margin ?? v.opm ?? v.opm_last, tax: ov.tax ?? v.tax ?? 0.25,
-    da: ov.da ?? v.da ?? 0, capex: ov.capex ?? v.capex ?? 0, nwc: ov.nwc ?? v.nwc ?? 0, tg: ov.tg ?? v.tg, wacc: Math.max(W.wacc, (ov.tg ?? v.tg) + 0.02), W };
+  const m0 = v.opm != null && v.opm_last != null ? (v.opm + v.opm_last) / 2 : v.opm ?? v.opm_last;
+  const reinvDefault = v.ri_capex != null || v.ri_nwc != null ? clamp((v.ri_capex || 0) + (v.ri_nwc || 0), 0, 2) : 0.5;
+  return { g1: clamp(g1, -0.3, 0.6), g2: clamp(g2, -0.3, 0.6), margin: ov.margin ?? m0, tax: ov.tax ?? v.tax ?? 0.25,
+    reinv: ov.reinv ?? reinvDefault, reinvDefault: !(v.ri_capex != null || v.ri_nwc != null), tg: ov.tg ?? v.tg, wacc: Math.max(W.wacc, (ov.tg ?? v.tg) + 0.02), W };
 }
 function dcfReady(v) {
   if (!v) return "Keine Bewertungsdaten";
@@ -578,14 +581,14 @@ function renderValuation() {
     <div class="g2"><div><b>Annahmen</b> <span class="muted small">(editierbar · leer = Standard aus Daten)</span><div class="vform">
       ${fin ? `${field("roe", "ROE (Ø 3 J)", o.roe ?? v.roe)}`
         : `${field("g1", "Umsatzwachstum Jahr 1", base ? base.g1 : v.g0, 0.5, "Konsens lfd. GJ: " + pc(v.g0))}${field("g2", "Umsatzwachstum Jahr 2", base ? base.g2 : v.g1, 0.5, "Konsens nächstes GJ: " + pc(v.g1))}
-           ${field("margin", "Operative Marge", base ? base.margin : v.opm, 0.5, "Ø 3 GJ: " + pc(v.opm, 1, false))}${field("tax", "Steuerquote", base ? base.tax : v.tax)}
-           ${field("capex", "Capex in % Umsatz", base ? base.capex : v.capex)}${field("da", "Abschreibungen in % Umsatz", base ? base.da : v.da)}${field("nwc", "Working-Capital-Bedarf in % Umsatz", base ? base.nwc : v.nwc)}`}
+           ${field("margin", "Operative Marge", base ? base.margin : v.opm, 0.5, `Mittel aus Ø 3 GJ (${pc(v.opm, 1, false)}) und letztem GJ (${pc(v.opm_last, 1, false)})`)}${field("tax", "Steuerquote", base ? base.tax : v.tax)}
+           ${field("reinv", "Reinvestition je zusätzlichem Umsatz", base ? base.reinv : null, 5, base && base.reinvDefault ? "Annahme 50 % (keine auswertbare Historie)" : `Ø 3 GJ: Wachstums-Capex ${pc(v.ri_capex, 0, false)} + Working Capital ${pc(v.ri_nwc, 0, false)} je Umsatz-Zuwachs`)}`}
       ${field("rf", "Risikofreier Zins", o.rf ?? v.rf, 0.1, esc(v.rf_src || ""))}${field("erp", "Aktienrisikoprämie", o.erp ?? v.erp, 0.25, "Annahme")}
       <label>Beta (angepasst)<input type="number" step="0.05" data-k="beta" data-raw="1" value="${(o.beta ?? W.beta).toFixed(2)}"><span></span><small>Yahoo-Beta ${nf(v.beta, 2)} → Blume-Anpassung</small></label>
       ${field("tg", "Ewiges Wachstum", o.tg ?? v.tg, 0.25)}${fin ? "" : field("wacc", "WACC (überschreiben)", o.wacc ?? (base ? base.wacc : W.wacc), 0.25, `berechnet: Eigenkapital ${pc(W.ke, 1, false)}, Fremdkapital ${pc(W.kd, 1, false)}`)}
       </div><button type="button" class="tbtn" id="vaReset">Annahmen zurücksetzen</button></div>
       <div><b>Ergebnis</b>${scenHtml(s, f.error ? null : f)}${!f.error && !fin ? sensitivity(v, f.base.a) + dcfRows(f.base, v) : ""}</div></div>
-    <p class="small muted">Ein Fair Value ist eine modellabhängige Schätzung, kein objektiv garantierter Kurs. Basis: letztes Geschäftsjahr ${esc(v.fy || "–")} (Ist, ${esc(s.fcur)}${s.fcur !== v.cur ? " → umgerechnet in " + esc(v.cur) : ""}). Wachstum Jahr 3–10 läuft linear auf das ewige Wachstum zu. Bear/Bull: Wachstum ∓, Marge ×0,85/×1,10, WACC +1/−0,5 pp. Nettoverschuldung ${big(v.net_debt, v.cur)} · Aktien ${big(v.shares)}</p>`;
+    <p class="small muted">Ein Fair Value ist eine modellabhängige Schätzung, kein objektiv garantierter Kurs. Basis: letztes Geschäftsjahr ${esc(v.fy || "–")} (Ist, ${esc(s.fcur)}${s.fcur !== v.cur ? " → umgerechnet in " + esc(v.cur) : ""}). Wachstum Jahr 3–10 läuft linear auf das ewige Wachstum zu. FCF = operatives Ergebnis nach Steuern − Reinvestition × Umsatzzuwachs. Bear/Bull: Wachstum ∓, Marge ×0,85/×1,10, WACC +1/−0,5 pp. Nettoverschuldung ${big(v.net_debt, v.cur)} · Aktien ${big(v.shares)}</p>`;
   box("vaBody").querySelectorAll("input[data-k]").forEach(i => i.addEventListener("change", () => {
     const k = i.dataset.k; if (i.value === "") delete o[k]; else o[k] = i.dataset.raw ? +i.value : +i.value / 100; delete valCache[s.t]; renderValuation(); }));
   box("vaReset").addEventListener("click", () => { delete ovr[s.t]; delete valCache[s.t]; renderValuation(); });
@@ -598,7 +601,7 @@ function sensitivity(v, a) {
 function dcfRows(b, v) {
   return `<details><summary class="small">Cashflow-Projektion Base Case (Endwert-Anteil ${pc(b.tvShare, 0, false)})</summary><div class="tscroll"><table class="dt num"><tr><th>Jahr</th>${b.rows.map(r => `<th>${r.t}</th>`).join("")}</tr>
     <tr><td>Wachstum</td>${b.rows.map(r => `<td>${pc(r.g, 1)}</td>`).join("")}</tr><tr><td>Umsatz</td>${b.rows.map(r => `<td>${big(r.rev)}</td>`).join("")}</tr>
-    <tr><td>EBIT</td>${b.rows.map(r => `<td>${big(r.ebit)}</td>`).join("")}</tr><tr><td>FCFF</td>${b.rows.map(r => `<td>${big(r.fcf)}</td>`).join("")}</tr></table></div>
+    <tr><td>EBIT</td>${b.rows.map(r => `<td>${big(r.ebit)}</td>`).join("")}</tr><tr><td>Free Cashflow (FCFF)</td>${b.rows.map(r => `<td>${big(r.fcf)}</td>`).join("")}</tr></table></div>
     <div class="muted small">Unternehmenswert ${big(b.ev, v.cur)} − Nettoverschuldung ${big(v.net_debt, v.cur)} = Eigenkapital ${big(b.eq, v.cur)}. Ein Endwert-Anteil über 75 % macht das Ergebnis stark annahmeabhängig.</div></details>`;
 }
 

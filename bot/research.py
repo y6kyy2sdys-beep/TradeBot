@@ -221,15 +221,13 @@ def growth_inputs(est: dict, sm: dict):
     rev0 = S._v((sm.get("hist") or {}).get("rev"))
     own = avg0 / rev0 - 1 if avg0 and rev0 and rev0 > 0 else None
     note, g0 = None, g_y0
-    if g_y0 is not None and own is not None and abs(own - g_y0) > 0.15:
-        if abs(g_y0) <= 0.6 and abs(own) > 0.6:
-            g0 = g_y0                      # Abweichung durch Währung/Einheit des Abschlusses
-        elif abs(g_y0) > 0.6 and abs(own) <= 0.6:
+    if own is not None and abs(own) < 0.03 and g_y1 is not None:
+        g0, g_y1 = g_y1, None          # „laufendes“ Konsensjahr ist bereits abgeschlossen → Jahr 1 = nächstes GJ
+    elif g_y0 is not None and abs(g_y0) > 0.6:
+        if own is not None and abs(own) <= 0.6:
             g0, note = own, f"Konsens-Wachstum laut Yahoo {g_y0:+.0%} unplausibel – ersetzt durch Konsensumsatz ÷ letzter Jahresumsatz ({own:+.0%})"
-        else:
-            g0, note = None, f"Konsens-Wachstum widersprüchlich (Yahoo {g_y0:+.0%}, eigene Rechnung {own:+.0%}) – nicht verwendet"
-    elif g_y0 is not None and abs(g_y0) > 0.8:
-        g0, note = None, f"Konsens-Wachstum {g_y0:+.0%} unplausibel – nicht verwendet"
+        elif own is None or abs(own) > 0.8:
+            g0, note = None, f"Konsens-Wachstum {g_y0:+.0%} nicht plausibel prüfbar – nicht verwendet"
     if g_y1 is not None and abs(g_y1) > 0.8:
         g_y1 = None
     return g0, g_y1, note
@@ -299,11 +297,11 @@ def stock_block(store, P, F, fx) -> dict:
             "net_debt": r(conv((S._v(hist.get("debt")) or 0) - (S._v(hist.get("cash")) or 0)) if hist.get("debt") or hist.get("cash") else None, 6),
             "equity": r(conv(S._v(hist.get("eq"))), 6), "ni": r(conv(S._v(hist.get("ni"))), 6), "debt": r(conv(S._v(hist.get("debt"))), 6),
             "opm": r(sm.get("opm_avg3")), "opm_last": r(sm.get("op_m_fy")), "tax": r(sm.get("tax_rate")), "capex": r(sm.get("capex_pct")),
-            "da": r(sm.get("da_pct")), "nwc": r(sm.get("nwc_pct")), "g_cagr3": r(sm.get("rev_cagr3")),
+            "da": r(sm.get("da_pct")), "nwc": r(sm.get("nwc_pct")), "ri_capex": r(sm.get("reinv_capex")), "ri_nwc": r(sm.get("reinv_nwc")), "g_cagr3": r(sm.get("rev_cagr3")),
             "g0": r(S.clip(g0, -0.3, 0.6)), "g1": r(S.clip(g1, -0.3, 0.6)), "g_note": g_note,
             "roe": r(sm.get("roe_avg3")), "intrate": r(sm.get("intrate")),
             "beta": r(S.num(info.get("beta"))), "rf": r(rf), "rf_src": rf_src, "rf_note": rf_note,
-            "tg": 0.025 if qcur == "USD" else 0.02, "erp": 0.05,
+            "tg": 0.025 if qcur == "USD" else 0.02, "erp": 0.045,
             "method": "residual_income" if is_fin else "dcf", "fx_note": fx_note, "fy": fy,
         }
         cons = {k: S.num(info.get(k)) for k in ("targetMeanPrice", "targetMedianPrice", "targetHighPrice", "targetLowPrice", "numberOfAnalystOpinions", "recommendationMean")}
