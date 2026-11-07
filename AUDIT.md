@@ -76,15 +76,15 @@ Kurs-/Rohstoff-Charts mit Zeitraumwahl, Suche mit Steckbrief, Depot & Favoriten,
 | Phase | Inhalt | Datenbasis | Status |
 |---|---|---|---|
 | 1 Audit | dieses Dokument | – | ✔ |
-| 2 Daten | FRED-Makroreihen; Finanzberichte, Schätzungen, Revisionen je Aktie (Cache 7 Tage); Metadaten je Datensatz (Quelle, Stand, Typ, Währung, Periode) | FRED, Yahoo | in Arbeit |
-| 3 Sector Intelligence | 25 Branchen über liquide ETFs (GICS-nahe Abgrenzung); Faktoren A–F (Bewertung, Fundamentaldaten, Gewinnrevisionen, relative Stärke, Makro-Sensitivität per Regression, Risiko); Z-Scores, konfigurierbare Gewichte im Browser, Klassen „Strongly Attractive … Avoid“ | ETF-Kurse, ETF-Bewertung, Top-Positionen, FRED | in Arbeit |
-| 4 Equity Research | Detailseite: Kopfkennzahlen, 4 Jahre Finanzhistorie, Margen/Rendite/Bilanz, Konsens, Branchenvergleich, These *mit* Gegenargumenten, Quellen | Yahoo | in Arbeit |
-| 5 Valuation | DCF (Bear/Base/Bull, Sensitivität WACC × Wachstum, alle Annahmen editierbar); Banken/Versicherer: Residual-Income-Ansatz (P/B vs. ROE) | Finanzberichte, FRED-Zins | in Arbeit |
-| 6 Risk Monitor | Red Flags mit Regel, Wert, Quelle; Klassen „Confirmed / Potential / Data Quality Warning“ | Finanzberichte, Kurse | in Arbeit |
-| 7 Redesign | Hauptnavigation mit 9 Bereichen, ruhiges Profi-Design als Standard (Matrix-Look optional), Market Overview als Startseite | – | in Arbeit |
-| 8 Backtesting | Branchenrotation mit rein kursbasierten Faktoren (nur diese sind point-in-time verfügbar), monatlich, Kosten + Slippage, gegen S&P 500; CAGR, Sharpe, Sortino, Max DD, Alpha/Beta, IR, Trefferquote, Profit Factor, Turnover, Ergebnis je Regime | ETF-Kurse (Total Return) | in Arbeit |
-| 9 QS | Unit-Tests der Berechnungen, Browser-Tests aller Bereiche | – | offen |
-| 10 Deployment | eigener Workflow `research.yml` (täglich + manuell), schreibt `docs/research.js` | – | offen |
+| 2 Daten | FRED-Makroreihen; Finanzberichte, Schätzungen, Revisionen je Aktie (Cache 7 Tage); Metadaten je Datensatz (Quelle, Stand, Typ, Währung, Periode) | FRED, Yahoo | ✔ umgesetzt (`bot/fred.py`, `bot/fundamentals.py`) |
+| 3 Sector Intelligence | 25 Branchen über liquide ETFs (GICS-nahe Abgrenzung); Faktoren A–F (Bewertung, Fundamentaldaten, Gewinnrevisionen, relative Stärke, Makro-Sensitivität per Regression, Risiko); Z-Scores, konfigurierbare Gewichte im Browser, Klassen „Strongly Attractive … Avoid“ | ETF-Kurse, ETF-Bewertung, Top-Positionen, FRED | ✔ umgesetzt (`bot/scoring.py`, Bereich „Sector Intelligence“) |
+| 4 Equity Research | Detailseite: Kopfkennzahlen, 4 Jahre Finanzhistorie, Margen/Rendite/Bilanz, Konsens, Branchenvergleich, These *mit* Gegenargumenten, Quellen | Yahoo | ✔ umgesetzt (Bereich „Equity Research“, Research Report) |
+| 5 Valuation | DCF (Bear/Base/Bull, Sensitivität WACC × Wachstum, alle Annahmen editierbar); Banken/Versicherer: Residual-Income-Ansatz (P/B vs. ROE) | Finanzberichte, FRED-Zins | ✔ umgesetzt (Bereich „Valuation“, inkl. Reverse-DCF) |
+| 6 Risk Monitor | Red Flags mit Regel, Wert, Quelle; Klassen „Confirmed / Potential / Data Quality Warning“ | Finanzberichte, Kurse | ✔ umgesetzt (Bereich „Risk Monitor“) |
+| 7 Redesign | Hauptnavigation mit 9 Bereichen, ruhiges Profi-Design als Standard (Matrix-Look optional), Market Overview als Startseite | – | ✔ umgesetzt (Matrix-Look per Knopf „Design“) |
+| 8 Backtesting | Branchenrotation mit rein kursbasierten Faktoren (nur diese sind point-in-time verfügbar), monatlich, Kosten + Slippage, gegen S&P 500; CAGR, Sharpe, Sortino, Max DD, Alpha/Beta, IR, Trefferquote, Profit Factor, Turnover, Ergebnis je Regime | ETF-Kurse (Total Return) | ✔ umgesetzt (`bot/backtest_sectors.py`, Bereich „Sector Intelligence“) |
+| 9 QS | Unit-Tests der Berechnungen, Browser-Tests aller Bereiche | – | ✔ `tests/test_calcs.py` läuft vor jedem Research-Lauf |
+| 10 Deployment | eigener Workflow `research.yml` (täglich + manuell), schreibt `docs/research.js` | – | ✔ |
 
 ### Methodische Leitplanken
 - Fehlt ein Wert, steht „Keine belastbare Datengrundlage vorhanden.“ – es wird nichts geschätzt oder aufgefüllt.
@@ -93,3 +93,11 @@ Kurs-/Rohstoff-Charts mit Zeitraumwahl, Suche mit Steckbrief, Depot & Favoriten,
 - Fundamentaldaten sind **nicht** point-in-time verfügbar → das Fundamental-Scoring wird **nicht** rückgetestet; das steht im UI.
 - Fair Values sind Modellschätzungen mit sichtbaren Annahmen, keine Kursziele.
 - Keine automatischen Kaufempfehlungen: Scanner liefert Rangfolge + Begründung + Gegenargumente.
+
+## 6. Bekannte Grenzen (bewusst offen)
+- Kein Point-in-Time-Fundamentalarchiv → Fundamental-Scoring nicht rückgetestet.
+- Kostenlose Jahresabschlüsse reichen 4–5 Jahre zurück, nicht 10.
+- Keine Earnings-Call-Transkripte, keine strukturierten Governance-/Rechtsdaten, kein ISM/PMI.
+- Gesamtscores sind **relativ** (Perzentil im Universum bzw. unter 25 Branchen).
+- Datenzugriff über Yahoo ist inoffiziell; bei Ausfällen bleiben Werte leer statt geschätzt.
+- Anbindung lizenzierter Anbieter möglich, aber nur mit eigenem, nicht öffentlichem Backend (Lizenzbedingungen).
