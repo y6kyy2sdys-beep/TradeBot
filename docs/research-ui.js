@@ -702,7 +702,7 @@ const RENDER = {
 function renderArea(a) { try { (RENDER[a] || (() => {}))(); } catch (e) { console.error(e); } }
 const RX = window.RX = {
   open(t, area = "research") { if (!R || !BY[t]) { alert("Für " + t + " liegen (noch) keine Research-Daten vor."); return; } sel = t; store.set("rxSel", t); try { window.TB && window.TB.close && window.TB.close(); } catch (e) {} show(area); },
-  has: t => !!(R && BY[t]), show,
+  has: t => !!(R && BY[t]), show, _t: { dcfValue, impliedGrowth, riScen, waccOf },
 };
 show(current, { keepScroll: true });
 loadData();
