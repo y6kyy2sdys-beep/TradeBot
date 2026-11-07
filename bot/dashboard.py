@@ -24,7 +24,8 @@ INDICES = {
     "^GSPC": "S&P 500", "^NDX": "Nasdaq 100", "^STOXX50E": "Euro Stoxx 50", "^GDAXI": "DAX",
     "^FTSE": "FTSE 100", "^N225": "Nikkei 225", "000001.SS": "Shanghai Composite", "^HSI": "Hang Seng",
 }
-INDICES_EXTRA = {"^DJI": "Dow Jones", "^FCHI": "CAC 40", "^BSESN": "Sensex (Indien)", "^KS11": "KOSPI (Korea)"}
+INDICES_EXTRA = {"URTH": "MSCI World (ETF)", "EEM": "MSCI Emerging Markets (ETF)", "^STOXX": "STOXX Europe 600", "^RUT": "Russell 2000",
+                 "^DJI": "Dow Jones", "^FCHI": "CAC 40", "^BSESN": "Sensex (Indien)", "^KS11": "KOSPI (Korea)", "BTC-USD": "Bitcoin"}
 COMMODITY_GROUPS = {
     "Energie": {"BZ=F": "Brent-Öl", "CL=F": "WTI-Öl", "NG=F": "Erdgas USA", "TTF=F": "Erdgas Europa (TTF)",
                 "HO=F": "Heizöl", "RB=F": "Benzin"},
