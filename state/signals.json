@@ -2,7 +2,7 @@
   "open": [],
   "closed": [],
   "alerts": {
-    "move:BZ=F:down": "2026-11-05T13:29+00:00",
+    "move:BZ=F:down": "2026-11-10T00:15+00:00",
     "scenario:iran": "2026-11-09T14:21+00:00",
     "scenario:russia": "2026-11-09T14:21+00:00",
     "scenario:tariffs": "2026-11-09T14:21+00:00",
@@ -98,6 +98,11 @@
       "time": "2026-11-09T14:21+00:00",
       "kind": "macro",
       "title": "Szenario: Handelskonflikt / Zölle"
+    },
+    {
+      "time": "2026-11-10T00:15+00:00",
+      "kind": "macro",
+      "title": "Brent-Öl -6.1% an einem Tag"
     }
   ]
 }
