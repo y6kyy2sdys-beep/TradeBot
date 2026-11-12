@@ -12,7 +12,8 @@
     "scenario:taiwan": "2026-11-12T13:59+00:00",
     "warn:vix": "2026-11-05T21:28+00:00",
     "move:BZ=F:up": "2026-11-05T21:28+00:00",
-    "move:NG=F:up": "2026-11-10T13:46+00:00"
+    "move:NG=F:up": "2026-11-10T13:46+00:00",
+    "move:TTF=F:up": "2026-11-12T21:50+00:00"
   },
   "alert_log": [
     {
@@ -134,6 +135,11 @@
       "time": "2026-11-12T15:06+00:00",
       "kind": "macro",
       "title": "Szenario: Handelskonflikt / Zölle"
+    },
+    {
+      "time": "2026-11-12T21:50+00:00",
+      "kind": "macro",
+      "title": "Erdgas Europa (TTF) +8.1% an einem Tag"
     }
   ]
 }
