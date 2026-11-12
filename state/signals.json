@@ -3,9 +3,9 @@
   "closed": [],
   "alerts": {
     "move:BZ=F:down": "2026-11-10T00:15+00:00",
-    "scenario:iran": "2026-11-09T14:21+00:00",
-    "scenario:russia": "2026-11-09T14:21+00:00",
-    "scenario:tariffs": "2026-11-09T14:21+00:00",
+    "scenario:iran": "2026-11-12T15:06+00:00",
+    "scenario:russia": "2026-11-12T15:06+00:00",
+    "scenario:tariffs": "2026-11-12T15:06+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
     "scenario:fed": "2026-11-10T15:44+00:00",
     "move:GC=F:up": "2026-11-04T22:14+00:00",
@@ -119,6 +119,21 @@
       "time": "2026-11-12T13:59+00:00",
       "kind": "macro",
       "title": "Szenario: Spannungen China / Taiwan"
+    },
+    {
+      "time": "2026-11-12T15:06+00:00",
+      "kind": "macro",
+      "title": "Szenario: Eskalation Nahost / Iran"
+    },
+    {
+      "time": "2026-11-12T15:06+00:00",
+      "kind": "macro",
+      "title": "Szenario: Russland / Ukraine / NATO"
+    },
+    {
+      "time": "2026-11-12T15:06+00:00",
+      "kind": "macro",
+      "title": "Szenario: Handelskonflikt / Zölle"
     }
   ]
 }
