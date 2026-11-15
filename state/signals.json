@@ -3,8 +3,8 @@
   "closed": [],
   "alerts": {
     "move:BZ=F:down": "2026-11-10T00:15+00:00",
-    "scenario:iran": "2026-11-12T15:06+00:00",
-    "scenario:russia": "2026-11-12T15:06+00:00",
+    "scenario:iran": "2026-11-15T16:20+00:00",
+    "scenario:russia": "2026-11-15T16:20+00:00",
     "scenario:tariffs": "2026-11-12T15:06+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
     "scenario:fed": "2026-11-13T21:24+00:00",
@@ -145,6 +145,16 @@
       "time": "2026-11-13T21:24+00:00",
       "kind": "macro",
       "title": "Szenario: Zinsentscheid / Notenbank"
+    },
+    {
+      "time": "2026-11-15T16:20+00:00",
+      "kind": "macro",
+      "title": "Szenario: Eskalation Nahost / Iran"
+    },
+    {
+      "time": "2026-11-15T16:20+00:00",
+      "kind": "macro",
+      "title": "Szenario: Russland / Ukraine / NATO"
     }
   ]
 }
