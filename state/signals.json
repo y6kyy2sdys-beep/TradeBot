@@ -7,7 +7,7 @@
     "scenario:russia": "2026-11-15T16:20+00:00",
     "scenario:tariffs": "2026-11-16T17:20+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
-    "scenario:fed": "2026-11-13T21:24+00:00",
+    "scenario:fed": "2026-11-17T00:30+00:00",
     "move:GC=F:up": "2026-11-04T22:14+00:00",
     "scenario:taiwan": "2026-11-12T13:59+00:00",
     "warn:vix": "2026-11-05T21:28+00:00",
@@ -160,6 +160,11 @@
       "time": "2026-11-16T17:20+00:00",
       "kind": "macro",
       "title": "Szenario: Handelskonflikt / Zölle"
+    },
+    {
+      "time": "2026-11-17T00:30+00:00",
+      "kind": "macro",
+      "title": "Szenario: Zinsentscheid / Notenbank"
     }
   ]
 }
