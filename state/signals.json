@@ -10,11 +10,12 @@
     "scenario:fed": "2026-11-17T00:30+00:00",
     "move:GC=F:up": "2026-11-04T22:14+00:00",
     "scenario:taiwan": "2026-11-17T03:59+00:00",
-    "warn:vix": "2026-11-05T21:28+00:00",
+    "warn:vix": "2026-11-17T23:30+00:00",
     "move:BZ=F:up": "2026-11-05T21:28+00:00",
     "move:NG=F:up": "2026-11-10T13:46+00:00",
     "move:TTF=F:up": "2026-11-12T21:50+00:00",
-    "depot:15d9a80b33": "2026-11-17T15:56+00:00"
+    "depot:15d9a80b33": "2026-11-17T15:56+00:00",
+    "warn:spx_trend": "2026-11-17T23:30+00:00"
   },
   "alert_log": [
     {
@@ -176,6 +177,16 @@
       "time": "2026-11-17T03:59+00:00",
       "kind": "macro",
       "title": "Szenario: Spannungen China / Taiwan"
+    },
+    {
+      "time": "2026-11-17T23:30+00:00",
+      "kind": "warning",
+      "title": "Angstindex VIX erhöht: 25.5"
+    },
+    {
+      "time": "2026-11-17T23:30+00:00",
+      "kind": "warning",
+      "title": "S&P 500 unter seiner 200-Tage-Linie"
     }
   ]
 }
