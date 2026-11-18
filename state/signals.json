@@ -15,7 +15,8 @@
     "move:NG=F:up": "2026-11-10T13:46+00:00",
     "move:TTF=F:up": "2026-11-12T21:50+00:00",
     "depot:15d9a80b33": "2026-11-17T15:56+00:00",
-    "warn:spx_trend": "2026-11-17T23:30+00:00"
+    "warn:spx_trend": "2026-11-17T23:30+00:00",
+    "move:HG=F:down": "2026-11-18T22:56+00:00"
   },
   "alert_log": [
     {
@@ -197,6 +198,11 @@
       "time": "2026-11-18T16:41+00:00",
       "kind": "macro",
       "title": "Szenario: Russland / Ukraine / NATO"
+    },
+    {
+      "time": "2026-11-18T22:56+00:00",
+      "kind": "macro",
+      "title": "Kupfer -5.2% an einem Tag"
     }
   ]
 }
