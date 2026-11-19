@@ -5,7 +5,7 @@
     "move:BZ=F:down": "2026-11-17T03:59+00:00",
     "scenario:iran": "2026-11-18T16:41+00:00",
     "scenario:russia": "2026-11-18T16:41+00:00",
-    "scenario:tariffs": "2026-11-16T17:20+00:00",
+    "scenario:tariffs": "2026-11-19T23:15+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
     "scenario:fed": "2026-11-17T00:30+00:00",
     "move:GC=F:up": "2026-11-04T22:14+00:00",
@@ -203,6 +203,11 @@
       "time": "2026-11-18T22:56+00:00",
       "kind": "macro",
       "title": "Kupfer -5.2% an einem Tag"
+    },
+    {
+      "time": "2026-11-19T23:15+00:00",
+      "kind": "macro",
+      "title": "Szenario: Handelskonflikt / Zölle"
     }
   ]
 }
