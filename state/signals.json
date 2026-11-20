@@ -12,12 +12,13 @@
     "scenario:taiwan": "2026-11-20T14:21+00:00",
     "warn:vix": "2026-11-17T23:30+00:00",
     "move:BZ=F:up": "2026-11-05T21:28+00:00",
-    "move:NG=F:up": "2026-11-10T13:46+00:00",
+    "move:NG=F:up": "2026-11-20T22:39+00:00",
     "move:TTF=F:up": "2026-11-12T21:50+00:00",
     "depot:15d9a80b33": "2026-11-17T15:56+00:00",
     "warn:spx_trend": "2026-11-17T23:30+00:00",
     "move:HG=F:down": "2026-11-18T22:56+00:00",
-    "depot:130fe81e27": "2026-11-20T14:21+00:00"
+    "depot:130fe81e27": "2026-11-20T14:21+00:00",
+    "warn:spx_dd": "2026-11-20T22:39+00:00"
   },
   "alert_log": [
     {
@@ -219,6 +220,16 @@
       "time": "2026-11-20T14:21+00:00",
       "kind": "macro",
       "title": "Szenario: Spannungen China / Taiwan"
+    },
+    {
+      "time": "2026-11-20T22:39+00:00",
+      "kind": "warning",
+      "title": "S&P 500 -12% unter Jahreshoch – Korrektur"
+    },
+    {
+      "time": "2026-11-20T22:39+00:00",
+      "kind": "macro",
+      "title": "Erdgas USA +16.0% an einem Tag"
     }
   ]
 }
