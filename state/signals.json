@@ -3,8 +3,8 @@
   "closed": [],
   "alerts": {
     "move:BZ=F:down": "2026-11-17T03:59+00:00",
-    "scenario:iran": "2026-11-18T16:41+00:00",
-    "scenario:russia": "2026-11-18T16:41+00:00",
+    "scenario:iran": "2026-11-21T16:46+00:00",
+    "scenario:russia": "2026-11-21T16:46+00:00",
     "scenario:tariffs": "2026-11-19T23:15+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
     "scenario:fed": "2026-11-20T02:25+00:00",
@@ -230,6 +230,16 @@
       "time": "2026-11-20T22:39+00:00",
       "kind": "macro",
       "title": "Erdgas USA +16.0% an einem Tag"
+    },
+    {
+      "time": "2026-11-21T16:46+00:00",
+      "kind": "macro",
+      "title": "Szenario: Eskalation Nahost / Iran"
+    },
+    {
+      "time": "2026-11-21T16:46+00:00",
+      "kind": "macro",
+      "title": "Szenario: Russland / Ukraine / NATO"
     }
   ]
 }
