@@ -5,17 +5,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          O="Origin: https://y6kyy2sdys-beep.github.io"
-          for u in \
-            "https://query1.finance.yahoo.com/v8/finance/chart/SAP.DE?range=1d&interval=1m" \
-            "https://query2.finance.yahoo.com/v8/finance/chart/AAPL?range=1d&interval=1m" \
-            "https://api.onvista.de/api/v1/instruments/query?searchValue=DE0007164600" \
-            "https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?instrumentId=43763&marketId=1&quotetype=mid&series=intraday" \
-            "https://finnhub.io/api/v1/quote?symbol=AAPL&token=x" \
-            "https://api.twelvedata.com/price?symbol=AAPL&apikey=demo" \
-            "https://stooq.com/q/l/?s=sap.de&f=sd2t2ohlc&h&e=csv" \
-            "https://api.coinbase.com/v2/prices/BTC-EUR/spot" ; do
-            echo "=== $u"
-            curl -s -m 20 -D - -o body.txt -H "$O" -A "Mozilla/5.0" "$u" | grep -iE "^HTTP|access-control-allow-origin|content-type" || true
-            head -c 400 body.txt; echo
+          B=https://api.onvista.de/api/v1
+          for q in DE0007164600 US0378331005 US67066G1040; do
+            curl -s "$B/instruments/query?searchValue=$q" | jq -c '.list[0] | {entityType, entityValue, name, isin, wkn, symbol, urls}'
           done
+          curl -s "$B/instruments/query?searchValue=SAP" | jq -c '[.list[] | {entityType, entityValue, name, isin}] | .[:4]'
+          ID=$(curl -s "$B/instruments/query?searchValue=DE0007164600" | jq -r '.list[0].entityValue')
+          echo "ID=$ID"
+          curl -s "$B/instruments/STOCK/$ID/snapshot" > snap.json
+          jq -c 'keys' snap.json
+          jq -c '.quote | {last, datetimeLast, idNotation, market, currency: .isoCurrency, performancePct}' snap.json
+          jq -c '[.quoteList.list[]? | {name: .market.name, code: .market.codeExchange, idNotation, last, datetimeLast, unitType, isoCurrency, volume}]' snap.json | head -c 4000; echo
+          N=$(jq -r '.quote.idNotation' snap.json)
+          curl -s "$B/instruments/STOCK/$ID/chart_history?endDate=2026-11-23&idNotation=$N&resolution=1D&startDate=2026-10-01" | head -c 800; echo
+          curl -s "$B/instruments/STOCK/$ID/eod_history?idNotation=$N&range=Y1&startDate=2025-11-23" | head -c 800; echo
+          curl -s -D - -o /dev/null -H "Origin: https://y6kyy2sdys-beep.github.io" "$B/instruments/STOCK/$ID/snapshot" | grep -i "access-control"
