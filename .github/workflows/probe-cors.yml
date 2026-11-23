@@ -1,0 +1,21 @@
+name: Quellen-Test (temporär)
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          O="Origin: https://y6kyy2sdys-beep.github.io"
+          for u in \
+            "https://query1.finance.yahoo.com/v8/finance/chart/SAP.DE?range=1d&interval=1m" \
+            "https://query2.finance.yahoo.com/v8/finance/chart/AAPL?range=1d&interval=1m" \
+            "https://api.onvista.de/api/v1/instruments/query?searchValue=DE0007164600" \
+            "https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?instrumentId=43763&marketId=1&quotetype=mid&series=intraday" \
+            "https://finnhub.io/api/v1/quote?symbol=AAPL&token=x" \
+            "https://api.twelvedata.com/price?symbol=AAPL&apikey=demo" \
+            "https://stooq.com/q/l/?s=sap.de&f=sd2t2ohlc&h&e=csv" \
+            "https://api.coinbase.com/v2/prices/BTC-EUR/spot" ; do
+            echo "=== $u"
+            curl -s -m 20 -D - -o body.txt -H "$O" -A "Mozilla/5.0" "$u" | grep -iE "^HTTP|access-control-allow-origin|content-type" || true
+            head -c 400 body.txt; echo
+          done
