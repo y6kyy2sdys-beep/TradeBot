@@ -6,17 +6,13 @@ jobs:
     steps:
       - run: |
           B=https://api.onvista.de/api/v1
-          for q in DE0007164600 US0378331005 US67066G1040; do
-            curl -s "$B/instruments/query?searchValue=$q" | jq -c '.list[0] | {entityType, entityValue, name, isin, wkn, symbol, urls}'
-          done
-          curl -s "$B/instruments/query?searchValue=SAP" | jq -c '[.list[] | {entityType, entityValue, name, isin}] | .[:4]'
-          ID=$(curl -s "$B/instruments/query?searchValue=DE0007164600" | jq -r '.list[0].entityValue')
-          echo "ID=$ID"
-          curl -s "$B/instruments/STOCK/$ID/snapshot" > snap.json
-          jq -c 'keys' snap.json
-          jq -c '.quote | {last, datetimeLast, idNotation, market, currency: .isoCurrency, performancePct}' snap.json
-          jq -c '[.quoteList.list[]? | {name: .market.name, code: .market.codeExchange, idNotation, last, datetimeLast, unitType, isoCurrency, volume}]' snap.json | head -c 4000; echo
-          N=$(jq -r '.quote.idNotation' snap.json)
-          curl -s "$B/instruments/STOCK/$ID/chart_history?endDate=2026-11-23&idNotation=$N&resolution=1D&startDate=2026-10-01" | head -c 800; echo
-          curl -s "$B/instruments/STOCK/$ID/eod_history?idNotation=$N&range=Y1&startDate=2025-11-23" | head -c 800; echo
-          curl -s -D - -o /dev/null -H "Origin: https://y6kyy2sdys-beep.github.io" "$B/instruments/STOCK/$ID/snapshot" | grep -i "access-control"
+          curl -s "$B/instruments/STOCK/82849/snapshot" > snap.json
+          jq -c '[.quoteList.list[] | {n: .market.name, id: .market.idNotation}] | .[:12]' snap.json
+          jq -c '.chart | keys?' snap.json; jq -c '.chart' snap.json | head -c 600; echo
+          N=$(jq -r '[.quoteList.list[] | select(.market.codeExchange=="LSX")][0].market.idNotation' snap.json); echo "LSX=$N"
+          for u in "chart_history?endDate=2026-11-23&idNotation=$N&resolution=1D&startDate=2025-11-01" \
+                   "eod_history?idNotation=$N&range=Y1&startDate=2025-11-23" \
+                   "chart_history?idNotation=$N&range=Y1" "chart_history?idNotation=$N&chartType=PRICE&range=D1&resolution=1M" ; do
+            echo "== $u"; curl -s "$B/instruments/STOCK/82849/$u" | head -c 500; echo; done
+          echo "== gettex Apple"; curl -s "$B/instruments/STOCK/86627/snapshot" | jq -c '[.quoteList.list[] | select(.market.codeExchange=="LSX" or .market.codeExchange=="GAT") | {n: .market.name, id: .market.idNotation, last, datetimeLast, isoCurrency}]'
+          echo "== ETF"; curl -s "$B/instruments/query?searchValue=IE00B4L5Y983" | jq -c '.list[0] | {entityType, entityValue, name}'
