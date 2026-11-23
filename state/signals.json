@@ -5,9 +5,9 @@
     "move:BZ=F:down": "2026-11-17T03:59+00:00",
     "scenario:iran": "2026-11-21T16:46+00:00",
     "scenario:russia": "2026-11-21T16:46+00:00",
-    "scenario:tariffs": "2026-11-19T23:15+00:00",
+    "scenario:tariffs": "2026-11-23T16:28+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
-    "scenario:fed": "2026-11-20T02:25+00:00",
+    "scenario:fed": "2026-11-23T16:28+00:00",
     "move:GC=F:up": "2026-11-04T22:14+00:00",
     "scenario:taiwan": "2026-11-20T14:21+00:00",
     "warn:vix": "2026-11-22T23:35+00:00",
@@ -255,6 +255,16 @@
       "time": "2026-11-22T23:35+00:00",
       "kind": "warning",
       "title": "S&P 500 unter seiner 200-Tage-Linie"
+    },
+    {
+      "time": "2026-11-23T16:28+00:00",
+      "kind": "macro",
+      "title": "Szenario: Handelskonflikt / Zölle"
+    },
+    {
+      "time": "2026-11-23T16:28+00:00",
+      "kind": "macro",
+      "title": "Szenario: Zinsentscheid / Notenbank"
     }
   ]
 }
