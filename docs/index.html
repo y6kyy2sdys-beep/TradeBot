@@ -367,6 +367,20 @@ body.modal-open { overflow: hidden; }
 .pos .kv2 { display: grid; grid-template-columns: auto auto; gap: 2px 12px; }
 .pos .kv2 span:nth-child(odd) { color: var(--muted); }
 .pos .act { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+/* Positions-Grafik mit Live-Kurs */
+.pchart { grid-column: 1 / -1; border-top: 1px dashed var(--line); padding-top: 10px; }
+.pchart .ph { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; }
+.pchart .ph b { font-size: calc(20px * var(--fs)); color: var(--text); font-weight: normal; }
+.pchart .ph .big { font-size: calc(24px * var(--fs)); }
+.pchart .ph .lbl { color: var(--muted); font-size: calc(12px * var(--fs)); display: block; }
+.pchart .rng { display: flex; gap: 4px; flex-wrap: wrap; margin: 8px 0 4px; }
+.pchart .rng button { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 3px 9px; cursor: pointer; font-family: var(--font); font-size: calc(12px * var(--fs)); }
+.pchart .rng button[aria-pressed="true"] { color: #001a06; background: var(--matrix); border-color: var(--matrix); }
+.pchart svg { width: 100%; height: auto; display: block; }
+.pchart svg text { font-family: var(--font); fill: var(--muted); }
+.pchart .src { color: var(--muted); font-size: calc(11.5px * var(--fs)); margin-top: 4px; }
+.pchart .src input { background: #000; color: var(--text); border: 1px solid var(--line); font-family: var(--font); padding: 2px 6px; width: 150px; }
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--up); margin-right: 5px; animation: blink 1.6s steps(1) infinite; }
 .fan { position: relative; height: 22px; margin: 6px 0 4px; background: rgba(255,255,255,.04); }
 .fan .z { position: absolute; top: -3px; bottom: -3px; width: 1px; background: rgba(201,247,211,.5); }
 .fan .band { position: absolute; top: 6px; height: 10px; border-radius: 2px; }
@@ -2221,6 +2235,141 @@ function renderComCards() {
   const nameInp = document.getElementById("dName"), dl = document.getElementById("dList"), msg = document.getElementById("dMsg");
   const hr = document.getElementById("hRange"); hr.value = +(store.get("hold") ?? 7);
   const label = p => `${p.n} · ${p.t}${p.w ? " · WKN " + p.w : ""}`;
+
+  /* ---------- Positions-Grafik: Live-Kurs (onvista, Handelsplatz LS Exchange = Trade Republic) + Einstieg markiert ---------- */
+  const openCharts = new Set((() => { try { return JSON.parse(store.get("pcharts") || "[]"); } catch { return []; } })());
+  const LIVE = (() => {
+    const OV = "https://api.onvista.de/api/v1";
+    const VENUES = ["LSX", "@DE", "GAT", "TRO", "GER"];            // LS Exchange zuerst (dort handelt Trade Republic)
+    const map = (() => { try { return JSON.parse(store.get("ovmap") || "{}"); } catch { return {}; } })();
+    const hist = {}, ranges = {};
+    let timer = null;
+    const getJ = async u => { const r = await fetch(u, { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
+    const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9äöü]/g, "");
+    async function find(x, p) {
+      if (map[x.t]) return map[x.t];
+      const tries = [p && p.w, p && p.n, x.t.replace(/\..*$/, "")].filter(Boolean);
+      let failed = 0;
+      for (const q of tries) {
+        let r; try { r = await getJ(`${OV}/instruments/query?searchValue=${encodeURIComponent(q)}`); } catch { failed++; continue; }
+        const L = (r.list || []).filter(i => ["STOCK", "FUND"].includes(i.entityType));
+        const first = norm(p && p.n).slice(0, 5);
+        const hit = L.find(i => p && p.w && i.wkn === p.w) || L.find(i => first && norm(i.name).startsWith(first)) || (q === (p && p.w) ? L[0] : null);
+        if (hit) { map[x.t] = { type: hit.entityType, id: hit.entityValue, name: hit.name, isin: hit.isin, wkn: hit.wkn }; store.set("ovmap", JSON.stringify(map)); return map[x.t]; }
+      }
+      if (failed === tries.length) throw new Error("onvista gerade nicht erreichbar");
+      return null;
+    }
+    async function quote(ins) {
+      const s = await getJ(`${OV}/instruments/${ins.type}/${ins.id}/snapshot`);
+      const L = ((s.quoteList || {}).list || []).filter(q => q.isoCurrency === "EUR" && q.last != null);
+      let q = null;
+      for (const v of VENUES) { q = L.find(z => (z.market || {}).codeExchange === v); if (q) break; }
+      if (!q) q = L.sort((a, b) => new Date(b.datetimeLast) - new Date(a.datetimeLast))[0];
+      if (!q) throw new Error("kein Euro-Kurs");
+      return { last: q.last, time: q.datetimeLast, venue: q.market.name, idNotation: q.market.idNotation, pct: q.performancePct ?? (s.quote || {}).performancePct };
+    }
+    async function history(ins, idNotation, since) {
+      const key = ins.id + ":" + idNotation; if (hist[key]) return hist[key];
+      const yrs = (Date.now() - since) / 3.156e10, range = yrs <= 1 ? "Y1" : yrs <= 3 ? "Y3" : yrs <= 5 ? "Y5" : "MAX";
+      const d = await getJ(`${OV}/instruments/${ins.type}/${ins.id}/eod_history?idNotation=${idNotation}&range=${range}&startDate=${new Date(since).toISOString().slice(0, 10)}`);
+      const t = d.datetimeLast || [], v = d.last || d.close || [];
+      const out = t.map((ts, i) => [ts * 1000, v[i]]).filter(z => z[1] != null);
+      if (out.length < 5) throw new Error("keine Historie");
+      return hist[key] = out;
+    }
+    function profileHistory(p) {     // Ausweichlösung: Tagesschlusskurse des Bots, mit heutigem Wechselkurs in Euro
+      if (!p || !p.px) return null;
+      const days = [p.d0]; for (const ch of p.g) days.push(days[days.length - 1] + +ch);
+      const f = p.cur === "EUR" ? 1 : FX[p.cur]; if (!f) return null;
+      return p.px.map((v, i) => [days[i] * 864e5, v * f]);
+    }
+    const fmtD = ms => new Date(ms).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" });
+    function svg(series, x, live, rangeKey) {
+      const buyT = x.date ? new Date(x.date + "T12:00:00").getTime() : null, now = Date.now();
+      const spans = { kauf: buyT ? Math.max(20 * 864e5, (now - buyT) * 1.08) : 182 * 864e5, M1: 31 * 864e5, M6: 183 * 864e5, Y1: 366 * 864e5, MAX: Infinity };
+      const t0 = now - spans[rangeKey];
+      let pts = series.filter(z => z[0] >= t0);
+      if (live) pts = pts.filter(z => z[0] < new Date(live.time).setHours(0, 0, 0, 0)).concat([[new Date(live.time).getTime(), live.last]]);
+      if (pts.length < 2) return '<div class="muted">Zu wenig Kursdaten für diesen Zeitraum.</div>';
+      const W = 860, H = 260, l = 58, r = 165, t = 14, b = 26;
+      const xs0 = pts[0][0], xs1 = pts[pts.length - 1][0];
+      const vals = pts.map(z => z[1]).concat([x.buy]); let mn = Math.min(...vals), mx = Math.max(...vals); const pad = (mx - mn) * 0.08 || mx * 0.02; mn -= pad; mx += pad;
+      const X = ms => l + (ms - xs0) / (xs1 - xs0 || 1) * (W - l - r), Y = v => t + (1 - (v - mn) / (mx - mn)) * (H - t - b);
+      const line = pts.map(z => `${X(z[0]).toFixed(1)},${Y(z[1]).toFixed(1)}`).join(" ");
+      const by = Y(x.buy), area = `${X(xs0)},${by} ${line} ${X(xs1)},${by}`;
+      const id = "c" + Math.random().toString(36).slice(2, 8);
+      const cur = pts[pts.length - 1][1], pnl = cur / x.buy - 1, col = pnl >= 0 ? css("--up") : css("--down");
+      const ticks = [0, 1, 2, 3].map(k => mn + (mx - mn) * (k + 0.5) / 4);
+      const inView = buyT && buyT >= xs0 && buyT <= xs1;
+      return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kursverlauf mit Einstieg und aktuellem Kurs">
+        <defs><clipPath id="${id}u"><rect x="0" y="0" width="${W}" height="${by}"/></clipPath><clipPath id="${id}d"><rect x="0" y="${by}" width="${W}" height="${H}"/></clipPath></defs>
+        ${ticks.map(v => `<line x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css("--grid")}"/><text x="${l - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="12">${nf(v)}</text>`).join("")}
+        ${[xs0, (xs0 + xs1) / 2, xs1].map((ms, k) => `<text x="${X(ms)}" y="${H - 6}" text-anchor="${["start", "middle", "end"][k]}" font-size="12">${fmtD(ms)}</text>`).join("")}
+        <polygon points="${area}" fill="${css("--up")}" opacity=".16" clip-path="url(#${id}u)"/><polygon points="${area}" fill="${css("--down")}" opacity=".16" clip-path="url(#${id}d)"/>
+        <line x1="${l}" x2="${W - r}" y1="${by}" y2="${by}" stroke="${css("--warn")}" stroke-dasharray="6 4" stroke-width="1.5"/>
+        <text x="${W - r + 6}" y="${by + 4}" font-size="12" style="fill:${css("--warn")}">Einstand ${nf(x.buy)} €</text>
+        <polyline points="${line}" fill="none" stroke="${css("--text")}" stroke-width="1.8"/>
+        ${inView ? `<line x1="${X(buyT)}" x2="${X(buyT)}" y1="${t}" y2="${H - b}" stroke="${css("--warn")}" stroke-width="1" opacity=".7"/>
+          <circle cx="${X(buyT)}" cy="${by}" r="6" fill="${css("--warn")}" stroke="#000" stroke-width="2"/>
+          <text x="${X(buyT) + 8}" y="${t + 12}" font-size="12" style="fill:${css("--warn")}">▼ Einstieg ${fmtD(buyT)}</text>` : ""}
+        <circle cx="${X(xs1)}" cy="${Y(cur)}" r="6" fill="${col}" stroke="#000" stroke-width="2"/>
+        <text x="${W - r + 6}" y="${Y(cur) + (Math.abs(Y(cur) - by) < 16 ? (Y(cur) < by ? -6 : 18) : 4)}" font-size="13" style="fill:${col}">${nf(cur)} € (${pnl > 0 ? "+" : ""}${nf(pnl * 100, 1)} %)</text>
+      </svg>`;
+    }
+    async function draw(el, x, p) {
+      const crypto = p && p.k === "Krypto";
+      let live = null, series = null, ins = null, err = "", srcHist = "";
+      try {
+        if (crypto) {
+          const j = await getJ(`https://api.coinbase.com/v2/prices/${x.t.replace(/-USD$/, "")}-EUR/spot`);
+          live = { last: +j.data.amount, time: new Date().toISOString(), venue: "Coinbase (Spot)", pct: null };
+        } else {
+          ins = await find(x, p);
+          if (!ins) throw new Error("Wertpapier bei onvista nicht gefunden");
+          live = await quote(ins);
+          try { series = await history(ins, live.idNotation, Math.min(x.date ? new Date(x.date).getTime() - 40 * 864e5 : Infinity, Date.now() - 400 * 864e5)); srcHist = `Tagesschlusskurse ${live.venue} (onvista)`; } catch { series = null; }
+        }
+      } catch (e) { err = e.message || String(e); }
+      if (!series) { series = profileHistory(p); srcHist = series ? "Tagesschlusskurse des Bots (Yahoo Finance), in Euro umgerechnet" : ""; }
+      if (!el.isConnected) return;
+      if (!series && !live) { el.innerHTML = `<div class="warnline">Kein Kurs verfügbar (${esc(err || "keine Daten")}).</div>${fixHtml(x)}`; bindFix(el, x, p); return; }
+      const cur = live ? live.last : series[series.length - 1][1], pnl = cur / x.buy - 1, eur = (cur - x.buy) * x.qty;
+      const rk = ranges[x.t] || (x.date ? "kauf" : "M6");
+      const age = live ? Math.round((Date.now() - new Date(live.time)) / 1000) : null;
+      el.innerHTML = `<div class="ph">
+          <div><span class="lbl">${live ? `<span class="live-dot"></span>LIVE · ${esc(live.venue)}` : "Letzter Schlusskurs"}</span><b class="big">${nf(cur)} €</b>${live && live.pct != null ? ` <span class="${cls(live.pct)}">${live.pct > 0 ? "+" : ""}${nf(live.pct, 2)} % heute</span>` : ""}</div>
+          <div><span class="lbl">Einstandskurs${x.date ? " · " + new Date(x.date).toLocaleDateString("de-DE") : ""}</span><b>${nf(x.buy)} €</b></div>
+          <div><span class="lbl">Seit Einstieg</span><b class="${cls(pnl)}">${pnl > 0 ? "+" : ""}${nf(pnl * 100, 2)} %</b></div>
+          <div><span class="lbl">Gewinn/Verlust (${nf(x.qty, x.qty % 1 ? 4 : 0)} Stk.)</span><b class="${cls(eur)}">${eur > 0 ? "+" : ""}${nf(eur)} €</b></div></div>
+        <div class="rng">${[["kauf", "SEIT KAUF"], ["M1", "1M"], ["M6", "6M"], ["Y1", "1J"], ["MAX", "MAX"]].map(([k, l]) => `<button type="button" data-r="${k}" aria-pressed="${k === rk}">${l}</button>`).join("")}</div>
+        ${series ? svg(series, x, live, rk) : ""}
+        <div class="src">${live ? `Live-Kurs: ${esc(live.venue)} via onvista, Stand ${new Date(live.time).toLocaleString("de-DE")}${age != null && age > 900 ? " (Börse geschlossen oder kein Handel – letzter Kurs)" : ""} · aktualisiert alle 15 s` : `Live-Kurs nicht erreichbar${err ? " (" + esc(err) + ")" : ""} – angezeigt wird der letzte Bot-Kurs`}
+          ${srcHist ? " · Verlauf: " + esc(srcHist) : ""}${ins ? ` · Wertpapier: ${esc(ins.name)} (${esc(ins.isin || "")})` : ""}${x.date ? "" : " · <b>Kaufdatum fehlt</b> – über BEARBEITEN eintragen, dann wird der Einstieg markiert"}
+          ${fixHtml(x)}</div>`;
+      el.querySelectorAll("[data-r]").forEach(b => b.addEventListener("click", () => { ranges[x.t] = b.dataset.r; draw(el, x, p); }));
+      bindFix(el, x, p);
+    }
+    const fixHtml = x => `<details style="display:inline-block;margin-left:6px"><summary style="cursor:pointer">falsches Wertpapier?</summary> ISIN/WKN: <input data-fix placeholder="z. B. DE0007164600"> <button type="button" class="dbtn" data-fixgo>ÜBERNEHMEN</button></details>`;
+    function bindFix(el, x, p) {
+      const go = el.querySelector("[data-fixgo]"); if (!go) return;
+      go.addEventListener("click", async () => {
+        const v = el.querySelector("[data-fix]").value.trim(); if (!v) return;
+        try { const r = await getJ(`${OV}/instruments/query?searchValue=${encodeURIComponent(v)}`); const h = (r.list || []).find(i => ["STOCK", "FUND"].includes(i.entityType));
+          if (!h) throw 0; map[x.t] = { type: h.entityType, id: h.entityValue, name: h.name, isin: h.isin, wkn: h.wkn }; store.set("ovmap", JSON.stringify(map)); draw(el, x, p);
+        } catch { alert("Nicht gefunden – bitte ISIN oder WKN prüfen."); }
+      });
+    }
+    function mount(el, x, p) {
+      draw(el, x, p);
+      clearInterval(timer);
+      timer = setInterval(() => {
+        if (document.hidden) return;
+        document.querySelectorAll("[data-pc]").forEach(e => { const l = read(), it = l[+e.dataset.pc]; if (it && !e.querySelector("details[open]")) draw(e, it, byT[it.t]); });
+      }, 15000);
+    }
+    return { mount };
+  })();
   function lookup(v) {
     const t = String(v || "").trim().toLowerCase(); if (!t || !P) return null;
     return P.find(p => label(p).toLowerCase() === t) || P.find(p => p.t.toLowerCase() === t || (p.w || "").toLowerCase() === t)
@@ -2308,13 +2457,13 @@ function renderComCards() {
           ${p ? `<div style="margin-top:4px"><span class="vtag ${p.v.kurz.label.startsWith("interessant") ? "g" : p.v.kurz.label.startsWith("neutral") ? "n" : "b"}">kurz: ${esc(p.v.kurz.label)}</span>
             <span class="vtag ${p.v.mittel.label.startsWith("interessant") ? "g" : p.v.mittel.label.startsWith("neutral") ? "n" : "b"}">mittel: ${esc(p.v.mittel.label)}</span></div>` : ""}
           ${warn.length ? `<div class="warnline">⚠️ ${esc(warn.join(" · "))}</div>` : ""}
-          <div class="act"><button type="button" class="dbtn" data-edit="${i}">BEARBEITEN</button><button type="button" class="dbtn" data-del="${i}">ENTFERNEN</button></div></div>
+          <div class="act"><button type="button" class="dbtn" data-chart="${esc(x.t)}" aria-expanded="${openCharts.has(x.t)}">${openCharts.has(x.t) ? "▲ GRAFIK" : "📈 GRAFIK & LIVE-KURS"}</button><button type="button" class="dbtn" data-edit="${i}">BEARBEITEN</button><button type="button" class="dbtn" data-del="${i}">ENTFERNEN</button></div></div>
         <div class="kv2"><span>Stück</span><span>${nf(x.qty, x.qty % 1 ? 4 : 0)}</span>
           <span>Kaufkurs</span><span>${nf(x.buy)} €</span>
           <span>Aktuell</span><span>${price != null ? nf(price) + " €" : "–"} ${p ? `<span class="${cls(p.tech.d1)}">(${pct(p.tech.d1)})</span>` : ""}</span>
           <span>Wert</span><span>${value != null ? nf(value) + " €" : "–"}</span>
           <span>Gewinn/Verlust</span><span class="${cls(pnl)}">${pnl != null ? `${pnl > 0 ? "+" : ""}${nf(pnl)} € (${pnlP > 0 ? "+" : ""}${nf(pnlP * 100, 1)} %)` : "–"}</span></div>
-        <div>${fc}</div></div>`);
+        <div>${fc}</div>${openCharts.has(x.t) ? `<div class="pchart" data-pc="${i}"><div class="muted">Lade Live-Kurs …</div></div>` : ""}</div>`);
     }
     box.innerHTML = rows.join("") + `<div class="note">Prognose = statistisches Modell aus der Schwankung der letzten 2 Jahre; der Trend wird zur Hälfte auf die langfristige
       Aktienrendite von ~7 % p. a. zurückgeführt, damit kurze Hypes nicht endlos fortgeschrieben werden. Ereignisse (Zahlen, Krisen) kann es nicht vorhersehen.
@@ -2326,6 +2475,11 @@ function renderComCards() {
     document.getElementById("hTotal").innerHTML = `Erwarteter Gewinn gesamt (Summe der Mediane): <b class="${cls(expSum)}" style="font-size:1em">${expSum > 0 ? "+" : ""}${nf(expSum)} €</b>`;
     document.getElementById("dCode").textContent = list.map(x => `${x.t}:${x.qty}:${x.buy}`).join(";");
     box.querySelectorAll("[data-t]").forEach(el => el.addEventListener("click", () => TB.openTicker(el.dataset.t)));
+    box.querySelectorAll("[data-chart]").forEach(b => b.addEventListener("click", () => {
+      const t = b.dataset.chart; openCharts.has(t) ? openCharts.delete(t) : openCharts.add(t);
+      store.set("pcharts", JSON.stringify([...openCharts])); render();
+    }));
+    box.querySelectorAll("[data-pc]").forEach(el => LIVE.mount(el, list[+el.dataset.pc], byT[list[+el.dataset.pc].t]));
     box.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
       const l = read(); const [gone] = l.splice(+b.dataset.del, 1);
       if (confirm(`${gone.t} wirklich aus dem Depot entfernen?`)) { write(l); render(); }
