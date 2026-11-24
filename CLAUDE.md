@@ -8,7 +8,7 @@ Diese Regeln gelten dauerhaft für jede Arbeit an diesem Repository.
 - Das Matrix-Design, alle Animationen, der Globus, die Flugzeug- und Frontlinien-Ebenen, das Depot,
   die News-Analyse, die KI-Signale und die Telegram-Meldungen bleiben erhalten.
 - Kein Neubau, keine Framework-Migration (kein React/Vue/Build-Schritt), keine zweite Kartenbibliothek.
-- Vor sichtbaren Änderungen: Git-Tag als Sicherung setzen (z. B. `design-matrix-v1`).
+- Vor sichtbaren Änderungen: Sicherungs-Branch anlegen (z. B. `backup/design-matrix-v1`).
 
 ## Arbeitsweise
 - Entwicklung auf einem eigenen Branch (aktuell `alfred-dev`). `master` ist produktiv:

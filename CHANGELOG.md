@@ -5,7 +5,7 @@ Nur Dokumentation, keine Änderung an Code, Daten oder der Live-Seite.
 - Neu: CLAUDE.md, PROJECT_ALFRED.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, ROADMAP.md,
   INSTALLATION_GUIDE_MACOS.md, SECURITY.md, DATA_SOURCES.md, TEST_PLAN.md, CHANGELOG.md,
   `.mcp.json.example` (deaktivierte MCP-Vorlage, Versionen gepinnt).
-- Sicherung: Git-Tag `design-matrix-v1` auf dem aktuellen master-Stand (Design vor ALFRED).
+- Sicherung: Branch `backup/design-matrix-v1` (master-Stand 555ccc5, Design vor ALFRED). Git-Tags lassen sich aus der Arbeitsumgebung nicht hochladen.
 - Sicherheitsbefund S1 dokumentiert (Depot-Rückschluss über öffentliche Alarm-Hashes) – Behebung wartet auf Freigabe.
 
 ## master – bisherige Entwicklung (Auszug)

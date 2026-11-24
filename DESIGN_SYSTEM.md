@@ -1,7 +1,7 @@
 # DESIGN_SYSTEM.md – Matrix × Batcomputer
 
 **Gewichtung:** 80 % bestehendes Matrix-Design · 15 % Batcomputer · 5 % Wayne-Eleganz.
-Sicherung des heutigen Designs: Git-Tag `design-matrix-v1` (Stand vor allen ALFRED-Änderungen).
+Sicherung des heutigen Designs: Branch `backup/design-matrix-v1` (Stand vor allen ALFRED-Änderungen).
 
 ## Bestand (bleibt unverändert)
 | Token | Wert | Verwendung |
