@@ -1,0 +1,15 @@
+{
+  "_hinweis": "DEAKTIVIERTE VORLAGE. Wird von Claude nicht automatisch geladen (Dateiname .example). Nur nach Freigabe in die Claude-Desktop-Konfiguration übernehmen. Versionen fest gepinnt, Stand 24.11.2026.",
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@0.0.86", "--isolated"]
+    }
+  },
+  "_optional_nicht_aktiv": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@1.14.0", "--isolated"]
+    }
+  }
+}
