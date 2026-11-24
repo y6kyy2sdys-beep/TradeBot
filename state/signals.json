@@ -3,8 +3,8 @@
   "closed": [],
   "alerts": {
     "move:BZ=F:down": "2026-11-24T03:04+00:00",
-    "scenario:iran": "2026-11-21T16:46+00:00",
-    "scenario:russia": "2026-11-21T16:46+00:00",
+    "scenario:iran": "2026-11-24T17:36+00:00",
+    "scenario:russia": "2026-11-24T17:36+00:00",
     "scenario:tariffs": "2026-11-23T16:28+00:00",
     "move:TTF=F:down": "2026-11-03T13:03+00:00",
     "scenario:fed": "2026-11-23T16:28+00:00",
@@ -280,6 +280,16 @@
       "time": "2026-11-24T03:04+00:00",
       "kind": "macro",
       "title": "Gold +3.5% an einem Tag"
+    },
+    {
+      "time": "2026-11-24T17:36+00:00",
+      "kind": "macro",
+      "title": "Szenario: Eskalation Nahost / Iran"
+    },
+    {
+      "time": "2026-11-24T17:36+00:00",
+      "kind": "macro",
+      "title": "Szenario: Russland / Ukraine / NATO"
     }
   ]
 }
