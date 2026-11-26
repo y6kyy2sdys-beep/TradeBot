@@ -18,7 +18,8 @@
     "warn:spx_trend": "2026-11-22T23:35+00:00",
     "move:HG=F:down": "2026-11-25T16:02+00:00",
     "depot:130fe81e27": "2026-11-20T14:21+00:00",
-    "warn:spx_dd": "2026-11-20T22:39+00:00"
+    "warn:spx_dd": "2026-11-20T22:39+00:00",
+    "scenario:opec": "2026-11-26T15:46+00:00"
   },
   "alert_log": [
     {
@@ -300,6 +301,11 @@
       "time": "2026-11-25T16:02+00:00",
       "kind": "macro",
       "title": "Kupfer -4.7% an einem Tag"
+    },
+    {
+      "time": "2026-11-26T15:46+00:00",
+      "kind": "macro",
+      "title": "Szenario: OPEC-Förderentscheidung"
     }
   ]
 }
