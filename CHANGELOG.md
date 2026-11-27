@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [alfred-dev] – 27.11.2026 – Sicherheits-Sofortmaßnahme S1
+Behebt den Depot-Rückschluss über öffentliche Alarm-Sperren in `state/signals.json`.
+- `bot/depot.py`: Sperr-Schlüssel jetzt HMAC-SHA256 mit Geheimnis (Secret `DEPOT_SALT`, ersatzweise Inhalt von `DEPOT`)
+  statt ungesalzenem SHA-1 → ohne Geheimnis nicht per Wörterbuch auflösbar.
+- `bot/depot.py`: Der Bot löscht beim nächsten Lauf alte 10-stellige `depot:`-Einträge aus dem öffentlichen Zustand.
+- `.github/workflows/signals.yml`: optionales Secret `DEPOT_SALT` wird an den Bot übergeben (leer = Ersatz aus `DEPOT`).
+- Test: Offline-Test (11 Prüfungen, ohne Netz/Telegram) bestanden. Live-Lauf in GitHub Actions: ausstehend (erst nach Merge auf master).
+- Nicht enthalten: Bereinigung der Git-Historie (alte Einträge bleiben dort sichtbar) – gesonderte Entscheidung.
+
 ## [alfred-dev] – 24.11.2026 – PROJECT A.L.F.R.E.D. Phase 0 + 1
 Nur Dokumentation, keine Änderung an Code, Daten oder der Live-Seite.
 - Neu: CLAUDE.md, PROJECT_ALFRED.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, ROADMAP.md,

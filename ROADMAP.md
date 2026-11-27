@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 | Repository-Analyse, Funktionen, Architektur, Datenquellen, Risiken | ✔ erledigt (24.11.2026) |
 | 1 | Dokumentation, ALFRED-Konzept und -Architektur | ✔ erledigt (24.11.2026), Branch `alfred-dev` |
-| **S** | **Sicherheits-Sofortmaßnahme S1** (Depot-Hashes salzen, öffentliche Einträge entfernen) | ⏳ wartet auf Freigabe – **empfohlen vor allen anderen Phasen** |
+| **S** | **Sicherheits-Sofortmaßnahme S1** (Depot-Hashes salzen, öffentliche Einträge entfernen) | ✔ umgesetzt auf `alfred-dev` (27.11.2026) – wartet auf Merge nach master; Git-Historie offen |
 | 2 | Designentwurf Matrix × Batcomputer (nur Tokens/Rahmen/Status-Pillen, siehe DESIGN_SYSTEM.md) | ⏳ Freigabe |
 | 3 | Flugroute im bestehenden Globus | ⏳ Freigabe |
 | 4 | Global-Risk-Ebenen, Camera Wall, Portfolio Risk Center (Architektur + Module mit vorhandenen Daten) | ⏳ Freigabe |

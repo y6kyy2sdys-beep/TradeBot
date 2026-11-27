@@ -18,6 +18,8 @@ welche Aktie im Depot liegt und dass sie stark gefallen bzw. über 10 % im Verlu
 **Vorschlag (Freigabe nötig):** Schlüssel mit HMAC und geheimem Salz (neues Secret, z. B. `DEPOT_SALT`) bilden
 und die vorhandenen `depot:`-Einträge löschen. Hinweis: Die Git-Historie enthält die alten Einträge weiterhin;
 vollständiges Entfernen bräuchte ein Umschreiben der Historie (Force-Push auf master) – gesonderte Entscheidung.
+**Status (27.11.2026):** Auf `alfred-dev` behoben (HMAC-SHA256, Secret `DEPOT_SALT` optional, Ersatz: Inhalt von `DEPOT`;
+alte Einträge werden beim nächsten Bot-Lauf gelöscht). Wirksam erst nach Merge auf master. Git-Historie: offen.
 
 ### 🟠 S2 – GitHub-Token im Browser (`localStorage.ghToken`)
 Für den Aktualisieren-Knopf. Risiko bei einer künftigen XSS-Lücke oder fremdem Gerätezugriff.
