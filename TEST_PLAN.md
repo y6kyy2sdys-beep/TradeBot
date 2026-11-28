@@ -22,6 +22,18 @@
 | Performance | Lighthouse (in Chrome DevTools eingebaut) | lokal | ausstehend |
 | Sicherheit | Muster-Suche nach Schlüsseln, Prüfung `state/` auf Depot-Rückschlüsse, Abhängigkeits-Audit (`pip-audit`) | Actions | ausstehend |
 
+## Country Intelligence & Camera Wall (verbindlich, P2/P4)
+| Prüfung | Werkzeug | Phase | Status |
+|---|---|---|---|
+| Kein Netzwerkabruf zu Kamera-/Stream-Hosts, solange Länderfenster bzw. Reiter LAGEBILD geschlossen ist | Playwright (Netzwerk-Mitschnitt) | P2 + P4 | ausstehend |
+| Beim Schließen, Reiter- oder Länderwechsel werden alle Einbettungen entfernt | Playwright | P2 + P4 | ausstehend |
+| Leerzustand: Land ohne Quelle zeigt UNAVAILABLE mit Grund; bestehende Reiter ÜBERBLICK/DETAILS unverändert | Playwright | P2 | ausstehend |
+| Raster 1/2/2×2, Handy einspaltig, Vollbild + Esc | Playwright (Geräteprofile) | P2 | ausstehend |
+| Statuslogik LIVE/DELAYED/OFFLINE/UNAVAILABLE + „Stand unbekannt“ aus Beispieldaten | Playwright mit festen Beispiel-Einträgen | P4 | ausstehend |
+| Katalog-Regelprüfung: Pflichtfelder, Einbett-Beleg, `geprueft_am`, Konfliktzonen nur Art „Nachrichten“/zeitversetzt, keine privaten Hosts | `unittest` auf `docs/cameras.js` | P4 | ausstehend |
+| Einbettung: `sandbox`, `referrerpolicy=no-referrer`, Ton aus, kein Autoplay vor dem Öffnen | Playwright (DOM-Prüfung) | P4 | ausstehend |
+| Bestehende Funktionen (Globus, Länderklick, Flugzeuge, Doomsday, Depot) unverändert | Playwright-Basistest | P2 + P4 | ausstehend |
+
 ## Grundsatz
 Testergebnisse werden nur berichtet, wenn sie tatsächlich ausgeführt wurden; Fehlschläge werden mit Ausgabe dokumentiert.
 Externe Dienste werden in Tests durch gespeicherte Beispielantworten ersetzt (keine Live-Abrufe, keine Kosten).

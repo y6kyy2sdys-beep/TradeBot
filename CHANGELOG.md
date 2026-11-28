@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P1 (Teil 1)
+- `docs/index.html`: Matrix-Hintergrundregen bildschirmfüllend (`#rain` Breite/Höhe 100 %; vorher fest 300×150 px).
+  Geprüft mit Playwright über lokalen Server: Canvas = Fenstergröße, keine JS-Fehler (nur fehlendes favicon).
+- `.mcp.json.example`: Context7 als optionaler (nicht aktiver) Eintrag ergänzt.
+- Neue verbindliche Vorgabe „Country Intelligence & Camera Wall“ (Kameras im Länderfenster, Reiter LAGEBILD) in
+  PROJECT_ALFRED.md, ROADMAP.md (P2 UI-Gerüst, P4 Integration), DESIGN_SYSTEM.md und TEST_PLAN.md. Nur Dokumentation, kein Code.
+
+## [master] – 28.11.2026 – S1 live
+- Mit Freigabe des Eigentümers: S1-Code als `a47bb68` per Fast-Forward auf master (nur `bot/depot.py`, `signals.yml`).
+- Vor dem Push erneut getestet gegen den neuesten master-Zustand (11/11 Prüfungen). Rücknahme: `git revert a47bb68`.
+
 ## [alfred-dev] – 28.11.2026 – P0-Abschluss vorbereitet, Roadmap neu
 - Verifiziert: `alfred-dev` (43db660) auf GitHub, Secret `DEPOT_SALT` vorhanden, GitHub CLI mit `workflow`-Recht.
 - Lokaler Branch `release/s1-master`: aktueller master + nur der Code-Teil von S1 (`bot/depot.py`, Workflow); Offline-Test gegen

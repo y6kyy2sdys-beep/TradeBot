@@ -30,6 +30,20 @@ Sicherung des heutigen Designs: Branch `backup/design-matrix-v1` (Stand vor alle
 | Abstände | 4-px-Raster: 4 / 8 / 12 / 16 / 24 |
 | Branding | optional „WAYNE INTELLIGENCE · A.L.F.R.E.D.“ in `--muted`, klein, nur im Kopf; keine Batman-Logos |
 
+## Country Intelligence – Reiter LAGEBILD (verbindlich, ab P2)
+| Element | Regel |
+|---|---|
+| Reiter | dritter Reiter „LAGEBILD“ im bestehenden Länderfenster, gleiche Reiter-Optik wie ÜBERBLICK/DETAILS |
+| Raster | Umschalter 1 · 2 · 2×2 (Standard 1); Kacheln 16:9; Abstand 8 px; Handy (< 600 px) immer einspaltig |
+| Kachel | Rahmen 1 px `--line`, Eckwinkel wie Blöcke; Hintergrund `#000` (kein neues Panel-Grün); keine Überblendungen über dem Bild |
+| Kachelkopf | links Betreiber + Art in Versalien (`--muted`), rechts Status-Pille; zweite Zeile „Stand HH:MM“ bzw. „Stand unbekannt“ |
+| Kachelfuß | Links „QUELLE ↗“ und „LIZENZ ↗“ in `--muted`; Hinweis bei Konfliktzone: „Redaktionelles/zeitversetztes Lagebild“ |
+| Status-Pillen | Punkt + Text, Versalien: **LIVE** `--matrix` · **DELAYED** `--warn` · **OFFLINE** `--down` · **UNAVAILABLE** `--muted`; statisch, kein Blinken |
+| Vollbild | Knopf „⛶“ oben rechts in der Kachel; im Vollbild bleibt die Kopfzeile sichtbar; Esc beendet |
+| Leerzustand | Rahmen gestrichelt `--line`, Text „Keine geprüfte öffentliche Quelle für {Land}“ + Grund, Status UNAVAILABLE |
+| Ladehinweis | vor dem ersten Laden: „Beim Öffnen werden Daten an den Betreiber übertragen“, Knopf „LAGEBILD LADEN“ |
+| Wayne-Anteil | kein Gold in Kacheln; optional ein kleiner Radar-Strich im Reiterkopf (aus bei reduzierter Bewegung) |
+
 ## Verboten
 Comic-Elemente, Fledermaus-Symbole, zusätzliche Dauer-Animationen, neue Hintergrundfarben, Glassmorphism-Effekte,
 Schriftwechsel im Fließtext.

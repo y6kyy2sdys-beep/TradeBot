@@ -21,7 +21,8 @@ vollständiges Entfernen bräuchte ein Umschreiben der Historie (Force-Push auf 
 **Status (27.11.2026):** Auf `alfred-dev` behoben (HMAC-SHA256, Secret `DEPOT_SALT` optional, Ersatz: Inhalt von `DEPOT`;
 alte Einträge werden beim nächsten Bot-Lauf gelöscht). Wirksam erst nach Merge auf master. Git-Historie: offen.
 **Stand 28.11.2026:** Secret `DEPOT_SALT` hinterlegt. Übernahme vorbereitet im lokalen Branch `release/s1-master`
-(nur Code, getestet gegen den aktuellen master-Zustand); master enthält weiterhin 2 auflösbare Einträge bis zur Freigabe.
+(nur Code, getestet gegen den aktuellen master-Zustand).
+**Live seit 28.11.2026** (master `a47bb68`). Die 2 alten Einträge entfernt der erste Bot-Lauf danach. Git-Historie: weiterhin offen.
 
 ### 🟠 S2 – GitHub-Token im Browser (`localStorage.ghToken`)
 Für den Aktualisieren-Knopf. Risiko bei einer künftigen XSS-Lücke oder fremdem Gerätezugriff.
