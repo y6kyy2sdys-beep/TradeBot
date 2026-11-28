@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P1 abgeschlossen, P2 umgesetzt
+**P1**
+- `requirements.txt`: exakt die heute laufenden Versionen gepinnt (yfinance 1.7.0, pandas 3.1.1, numpy 2.5.5, requests 2.34.2, anthropic 2.4.0).
+- Workflows: `actions/checkout` und `actions/setup-python` auf Commit-SHA gepinnt (v4/v5, Kommentar mit Tag).
+**P2 – Design**
+- Taktische Eckmarken (oben rechts/unten links) an allen Blöcken, Hover-Rahmen, `tabular-nums` für Zahlen.
+- Kopfzeile: „◆ WAYNE INTELLIGENCE · A.L.F.R.E.D.“ (klein, `--muted`) und goldener Knopf „◆ ALFRED ⌘K“.
+- Status-Pillen (LIVE · BOT-STAND/DELAYED · VERALTET/OFFLINE · NICHT KONFIGURIERT/UNAVAILABLE), Radar-Strich (aus bei reduzierter Bewegung).
+**P2 – ALFRED** (`docs/alfred.js`)
+- Terminal-Fenster mit Begrüßung „Master Wayne“, Reitern LAGE · MARKT · SYSTEM · MELDUNGEN; nur vorhandene Daten mit Quelle und Stand.
+- Systemstatus je Datendatei (BOT-STAND/VERALTET), Funktionen sichtbar als „nicht konfiguriert“ (Spracheingabe, KI-Dialog, Lagebild-Quellen).
+- Sprachausgabe vorbereitet (Standard aus). Befehlsliste ⌘K/Strg+K: ALFRED, Bereiche, Doomsday, Suche, Ansicht, Länder, Lagebild je Land.
+**P2 – Country Intelligence** (`docs/camwall.js`, `docs/cameras.js`)
+- Reiter LAGEBILD im Länderfenster, Verweis aus dem WarMap-Hotspot-Fenster; Raster 1/2/2×2, Vollbild, Status-Pillen, Leerzustand UNAVAILABLE.
+- Lädt nichts ohne Zustimmung; entfernt Einbettungen bei Schließen/Reiter-/Länderwechsel; Konfliktgebiete nur Nachrichten/zeitversetzt.
+- Quellenkatalog leer (Freigabe in P4) → überall „UNAVAILABLE – Quellenkatalog noch nicht freigegeben“.
+- `index.html`: kleine Schnittstelle `window.TB_map` (Land öffnen, Namen); bestehende Funktionen unverändert.
+**Prüfung** (Playwright + Chrome DevTools, lokaler Server, siehe TEST_PLAN.md): keine neuen Konsolenfehler, Bildrate unverändert,
+Lade-/Aufräumlogik mit Testeinträgen bestätigt, Doomsday/Hotspots/Suche/Depot/Charts funktionieren, Handy ohne Querscrollen.
+Behoben während der Prüfung: Begrüßung nach Uhrzeit (Formatfehler), Raster 2×2 bei 3 Quellen, Fensterbreite für mehrere Kacheln.
+
 ## [alfred-dev] – 28.11.2026 – P1 (Teil 1)
 - `docs/index.html`: Matrix-Hintergrundregen bildschirmfüllend (`#rain` Breite/Höhe 100 %; vorher fest 300×150 px).
   Geprüft mit Playwright über lokalen Server: Canvas = Fenstergröße, keine JS-Fehler (nur fehlendes favicon).

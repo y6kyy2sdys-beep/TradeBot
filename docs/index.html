@@ -480,6 +480,124 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
   .ticker .track { animation: none; }
   #rain { display: none; }
 }
+
+/* ================= PROJECT A.L.F.R.E.D. – Batcomputer-Ergänzungen (Phase 2, siehe DESIGN_SYSTEM.md) ================= */
+:root { --gold: #c9a227; --gold-line: rgba(201,162,39,.55); }
+/* Taktische Rahmen: zusätzliche 6-px-Eckmarken oben rechts / unten links */
+section.panel {
+  background:
+    linear-gradient(var(--line-strong), var(--line-strong)) right top / 7px 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) right top / 1px 7px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) left bottom / 7px 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) left bottom / 1px 7px no-repeat,
+    var(--panel);
+  background-origin: border-box; transition: border-color .12s;
+}
+section.panel:hover { border-color: var(--line-strong); }
+.status b, table.det td, .card .v, .spill, .al-kv b { font-variant-numeric: tabular-nums; }
+.brand .wayne { display: block; margin-top: 3px; font-size: calc(10px * var(--fs)); letter-spacing: .32em; color: var(--muted); text-shadow: none; }
+.brand .wayne i { font-style: normal; color: var(--gold); margin-right: 6px; }
+.tbtn.alf { color: var(--gold); border-color: var(--gold-line); letter-spacing: .12em; }
+.tbtn.alf:hover { color: #ffe08a; border-color: var(--gold); }
+.tbtn.alf kbd { font-family: var(--font); color: var(--muted); margin-left: 6px; font-size: .85em; }
+
+/* Status-Pillen (feste Bedeutung) */
+.spill { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; border: 1px solid currentColor; border-radius: 999px;
+  font-size: calc(10.5px * var(--fs)); letter-spacing: .12em; text-transform: uppercase; line-height: 1.7; white-space: nowrap; }
+.spill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.spill.live { color: var(--matrix); }
+.spill.bot, .spill.delayed { color: var(--warn); }
+.spill.stale, .spill.offline { color: var(--down); }
+.spill.nc, .spill.unavailable { color: var(--muted); }
+.spill.nc::before, .spill.unavailable::before { box-shadow: none; }
+
+/* Radar-Strich (nur ALFRED- und LAGEBILD-Kopf) */
+.radar { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line-strong); position: relative; overflow: hidden; display: inline-block; vertical-align: -2px; flex: none; }
+.radar::after { content: ""; position: absolute; inset: 0; background: conic-gradient(from 0deg, rgba(0,255,65,.6), transparent 28%); animation: sweep 6s linear infinite; }
+@keyframes sweep { to { transform: rotate(360deg); } }
+
+/* ALFRED-Terminal */
+#alfred { position: fixed; right: 16px; bottom: 16px; z-index: 60; width: min(440px, calc(100vw - 24px)); max-height: min(78vh, 760px);
+  display: none; flex-direction: column; background: #000502; border: 1px solid var(--line-strong);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.8), 0 12px 40px rgba(0,0,0,.7), 0 0 26px rgba(0,255,65,.12); font-size: calc(13px * var(--fs)); }
+#alfred.open { display: flex; animation: cardin .25s ease-out; }
+#alfred::before, #alfred::after { content: ""; position: absolute; width: 12px; height: 12px; pointer-events: none; }
+#alfred::before { top: -1px; left: -1px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+#alfred::after { bottom: -1px; right: -1px; border-bottom: 2px solid var(--matrix); border-right: 2px solid var(--matrix); }
+.al-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.al-head .t { flex: 1; min-width: 0; }
+.al-head .t b { display: block; color: var(--gold); font-weight: normal; letter-spacing: .28em; font-size: calc(13px * var(--fs)); }
+.al-head .t small { display: block; color: var(--muted); letter-spacing: .14em; font-size: calc(10px * var(--fs)); text-transform: uppercase; }
+.al-head button { background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer; font-family: var(--font); padding: 2px 8px; }
+.al-head button:hover { color: var(--matrix); border-color: var(--line-strong); }
+.al-greet { padding: 10px 12px 2px; color: var(--text); line-height: 1.55; }
+.al-greet::before { content: "> "; color: var(--matrix); }
+#alfred .tabs { margin: 8px 12px 0; }
+#alfred .tabs button { padding: 4px 10px; font-size: calc(11.5px * var(--fs)); }
+.al-body { overflow: auto; padding: 4px 12px 12px; }
+.al-sec { margin: 10px 0 0; }
+.al-sec h5 { margin: 0 0 6px; font-weight: normal; color: var(--matrix); letter-spacing: .2em; font-size: calc(11px * var(--fs)); text-transform: uppercase; }
+.al-kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; }
+.al-kv span { color: var(--muted); }
+.al-kv b { font-weight: normal; color: var(--text); text-align: right; }
+.al-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px dotted var(--line); }
+.al-row .l { min-width: 0; }
+.al-row .l small { display: block; color: var(--muted); font-size: calc(10.5px * var(--fs)); }
+.al-src { margin-top: 8px; color: var(--muted); font-size: calc(10.5px * var(--fs)); line-height: 1.45; }
+.al-list { list-style: none; margin: 0; padding: 0; }
+.al-list li { padding: 5px 0; border-bottom: 1px dotted var(--line); }
+.al-list li small { color: var(--muted); display: block; font-size: calc(10.5px * var(--fs)); }
+.al-foot { border-top: 1px solid var(--line); padding: 6px 12px; color: var(--muted); font-size: calc(10.5px * var(--fs)); display: flex; justify-content: space-between; gap: 8px; }
+
+/* Befehlsliste ⌘K */
+#palette { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.62); display: none; align-items: flex-start; justify-content: center; padding-top: 12vh; }
+#palette.open { display: flex; }
+.pal-box { width: min(640px, calc(100vw - 24px)); background: rgba(0,6,2,.98); border: 1px solid var(--line-strong); box-shadow: 0 0 30px rgba(0,255,65,.16); position: relative; }
+.pal-box::before { content: ""; position: absolute; top: -1px; left: -1px; width: 12px; height: 12px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+.pal-box input { width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--line); color: var(--text); padding: 14px 16px; font-size: calc(15px * var(--fs)); outline: none; }
+.pal-box ul { list-style: none; margin: 0; padding: 6px 0; max-height: 52vh; overflow: auto; }
+.pal-box li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 16px; cursor: pointer; color: var(--text); }
+.pal-box li small { color: var(--muted); letter-spacing: .1em; text-transform: uppercase; font-size: calc(10.5px * var(--fs)); }
+.pal-box li[aria-selected="true"] { background: rgba(0,255,65,.1); box-shadow: inset 2px 0 0 var(--matrix); }
+.pal-hint { padding: 6px 16px 8px; color: var(--muted); font-size: calc(10.5px * var(--fs)); border-top: 1px solid var(--line); }
+
+/* Country Intelligence – Reiter LAGEBILD */
+.cw-head { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; }
+.cw-head .t { flex: 1; min-width: 0; color: var(--matrix); letter-spacing: .12em; font-size: calc(11px * var(--fs)); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cw-seg { display: inline-flex; border: 1px solid var(--line); }
+.cw-seg button { background: transparent; border: 0; border-right: 1px solid var(--line); color: var(--muted); padding: 2px 8px; cursor: pointer; font-family: var(--font); font-size: calc(11px * var(--fs)); }
+.cw-seg button:last-child { border-right: 0; }
+.cw-seg button[aria-pressed="true"] { color: #001a06; background: var(--matrix); }
+.cw-seg button:disabled { opacity: .4; cursor: default; }
+.cw-note { border: 1px solid var(--line); padding: 8px 10px; color: var(--muted); font-size: calc(11.5px * var(--fs)); line-height: 1.5; }
+.cw-note .dbtn { margin-top: 8px; }
+.cw-grid { display: grid; gap: 8px; margin-top: 8px; }
+.cw-grid.g1 { grid-template-columns: 1fr; }
+.cw-grid.g2, .cw-grid.g4 { grid-template-columns: 1fr 1fr; }
+.cw-tile { position: relative; border: 1px solid var(--line); background: #000; display: flex; flex-direction: column; min-width: 0; }
+.cw-tile::before { content: ""; position: absolute; top: -1px; left: -1px; width: 8px; height: 8px; border-top: 1px solid var(--matrix); border-left: 1px solid var(--matrix); }
+.cw-th { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 5px 7px; border-bottom: 1px solid var(--line); }
+.cw-th .who { min-width: 0; font-size: calc(10.5px * var(--fs)); color: var(--muted); letter-spacing: .1em; text-transform: uppercase; line-height: 1.35; }
+.cw-th .who b { display: block; color: var(--text); font-weight: normal; letter-spacing: .04em; text-transform: none; font-size: calc(11.5px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cw-th .r { display: flex; align-items: center; gap: 6px; flex: none; }
+.cw-fs { background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer; padding: 0 5px; font-size: calc(12px * var(--fs)); line-height: 1.5; }
+.cw-fs:hover { color: var(--matrix); border-color: var(--line-strong); }
+.cw-media { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.cw-media iframe, .cw-media img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+.cw-tf { display: flex; justify-content: space-between; gap: 8px; padding: 4px 7px; font-size: calc(10px * var(--fs)); color: var(--muted); }
+.cw-tf a { color: var(--muted); text-decoration: none; letter-spacing: .1em; }
+.cw-tf a:hover { color: var(--matrix); }
+.cw-empty { border: 1px dashed var(--line-strong); padding: 16px 12px; text-align: center; color: var(--muted); line-height: 1.5; }
+.cw-empty b { display: block; color: var(--text); font-weight: normal; margin: 8px 0 4px; }
+.cw-tile:fullscreen { border: 0; }
+.cw-tile:fullscreen .cw-media { flex: 1; aspect-ratio: auto; }
+.cw-link { display: inline-block; margin-top: 8px; }
+.mapcard.cam { max-height: calc(100% - 16px); overflow: auto; }
+.mapcard.camwide { width: min(760px, calc(100% - 16px)); }
+body.app .mapcard.cam { max-height: none; }
+@media (max-width: 600px) { .cw-grid.g2, .cw-grid.g4 { grid-template-columns: 1fr; } }
+body.app #alfred { right: 8px; left: 8px; bottom: 8px; width: auto; }
+@media (prefers-reduced-motion: reduce) { .radar::after { animation: none; } #alfred.open { animation: none; } }
 </style>
 </head>
 <body>
@@ -492,13 +610,14 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 
 <div class="wrap">
   <header class="top">
-    <div class="brand">TRADEBOT // KOMMANDOZENTRALE<small>GLOBAL MARKET SURVEILLANCE</small></div>
+    <div class="brand">TRADEBOT // KOMMANDOZENTRALE<small>GLOBAL MARKET SURVEILLANCE</small><span class="wayne"><i>◆</i>WAYNE INTELLIGENCE · A.L.F.R.E.D.</span></div>
     <div class="status">
       <span>UTC <b id="clockUtc">--:--:--</b></span>
       <span>BERLIN <b id="clockBer">--:--:--</b></span>
       <span>DATEN <b id="gen">–</b></span>
       <span class="pill" id="regime">–</span>
       <span class="seg" role="group" aria-label="Schriftgröße"><button class="tbtn" id="fsDown" type="button" aria-label="Schrift kleiner">A−</button><button class="tbtn" id="fsUp" type="button" aria-label="Schrift größer">A+</button></span>
+      <button class="tbtn alf" id="alfredBtn" type="button" title="ALFRED öffnen – Lage, Markt, Systemstatus (Befehlsliste: ⌘K / Strg+K)" aria-controls="alfred" aria-expanded="false">◆ ALFRED<kbd>⌘K</kbd></button>
       <button class="tbtn" id="refreshBtn" type="button" title="Bot jetzt starten und neueste Daten laden">⟳ AKTUALISIEREN</button>
       <button class="tbtn" id="layoutBtn" type="button" title="Anordnung und eingeklappte Blöcke zurücksetzen">⟲ LAYOUT</button>
       <button class="tbtn" id="appBtn" type="button" title="Zwischen App-Ansicht (Handy) und Desktop umschalten">📱 APP</button>
@@ -652,6 +771,8 @@ footer { margin-top: 22px; font-size: calc(12px * var(--fs)); color: var(--muted
 <script src="doomsday.js"></script>
 <script src="aircraft.js"></script>
 <script src="news.js"></script>
+<script src="cameras.js"></script>
+<script src="camwall.js"></script>
 <script>
 (() => {
 "use strict";
@@ -1466,6 +1587,7 @@ function renderComCards() {
       <div>Meldungsdichte <b>${h.level}/5</b> · ${Object.entries(h.counts).filter(([, n]) => n).map(([c, n]) => esc(CAT[c][1]) + " " + n).join(" · ") || "allgemeine Meldungen"}</div>
       <ul class="sumlist">${h.news.map(n => `<li>▸ <a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a> <span class="muted">${esc(n.source)} · ${esc(relTime(n.time))}</span></li>`).join("")}</ul>
       <div>${linkBtn(fr24Area(h.lat, h.lon), "✈ LUFTRAUM BEI FLIGHTRADAR24")}${linkBtn(`https://globe.adsbexchange.com/?lat=${h.lat}&lon=${h.lon}&zoom=6&mil=1`, "📡 MILITÄR BEI ADS-B EXCHANGE")}</div>
+      ${window.TB_camwall ? window.TB_camwall.hotspotLink(h.key, nameOf) : ""}
       <div class="doomnote">Meldungslage der letzten 48 Stunden – keine Positionsdaten von Truppen oder Schiffen.</div>`;
     card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
     card.classList.add("open");
@@ -1790,11 +1912,28 @@ function renderComCards() {
   }
   function showCard(iso) {
     card.classList.remove("wide");
+    const CW = window.TB_camwall, stufe = (W.escalation[iso] || {}).stufe || 0;
     card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button><h4 data-iso="${iso}">${esc(nameOf(iso))}</h4>${leadersHtml(iso)}
-      ${tabsHtml([["ov", "ÜBERBLICK", `<div class="dwrap">${dystoHtml(iso)}</div><div class="prose">${esc(prose(iso))}</div>${sumHtml(summary(iso), 0)}`], ["det", "DETAILS", detailTable(iso)]])}`;
+      ${tabsHtml([["ov", "ÜBERBLICK", `<div class="dwrap">${dystoHtml(iso)}</div><div class="prose">${esc(prose(iso))}</div>${sumHtml(summary(iso), 0)}`], ["det", "DETAILS", detailTable(iso)],
+        ...(CW ? [["cam", "LAGEBILD", CW.html(iso, nameOf(iso), stufe)]] : [])])}`;
     card.querySelector(".x").addEventListener("click", () => card.classList.remove("open"));
     card.classList.add("open");
+    if (CW) CW.bind(card, iso, nameOf(iso), stufe);
   }
+  // Kleine Schnittstelle für ALFRED und LAGEBILD (Land öffnen, Namen)
+  window.TB_map = {
+    open(iso, tab) {
+      if (!NAME[iso] && !SHORT[iso]) return false;
+      document.getElementById("worldMap").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      pick(iso);
+      if (tab) { const b = card.querySelector(`.tabs button[data-tab="${tab}"]`); if (b) b.click(); }
+      return true;
+    },
+    name: nameOf,
+    list: () => Object.keys(NAME).map(iso => [iso, nameOf(iso)]).sort((a, b) => a[1].localeCompare(b[1], "de")),
+    escalation: iso => W.escalation[iso] || null,
+  };
+  card.addEventListener("click", e => { const b = e.target.closest("[data-cam-iso]"); if (b) window.TB_map.open(b.dataset.camIso, "cam"); });
 
   // ---- Länderdetail mit Kaufkraft und BIP-Verlauf bis 2050
   function detail() {
@@ -2779,5 +2918,6 @@ if (comLinked()) comRange.set(mainRange.i0, mainRange.i1, mainRange.preset, true
 renderCom();
 })();
 </script>
+<script src="alfred.js"></script>
 </body>
 </html>

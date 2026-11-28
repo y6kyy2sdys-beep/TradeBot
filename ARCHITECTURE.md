@@ -49,6 +49,10 @@ Beides liegt **öffentlich** im Repository.
 Beide nutzen `concurrency: signals`, Actions `actions/checkout@v4`, `actions/setup-python@v5` (Tag, nicht SHA-gepinnt).
 
 ## Frontend (`docs/index.html`)
+**Ergänzt in P2 (28.11.2026, `alfred-dev`):** `docs/cameras.js` (Quellenkatalog `window.CAMS`, leer bis Freigabe) und
+`docs/camwall.js` (`window.TB_camwall`, Reiter LAGEBILD) werden vor dem Haupt-Skript geladen, `docs/alfred.js`
+(`window.TB_alfred`, ALFRED + Befehlsliste) danach. `index.html` stellt dafür `window.TB_map` bereit (Land öffnen, Namen, Eskalation).
+
 Eine Datei, CSS inline, JavaScript in einer IIFE, Module als benannte Funktionen:
 
 | Modul | Inhalt |

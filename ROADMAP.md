@@ -14,13 +14,13 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 | S1 – alte Einträge in der Git-Historie | – | eigene Entscheidung (Umschreiben = Force-Push) |
 | S2 Token · S3 Lieferkette · S4 Schrift/Datenschutz | ☐ | siehe SECURITY.md |
 | Matrix-Design | ✔ | live; Regen-Korrektur (bildschirmfüllend) auf `alfred-dev` |
-| Batcomputer-/Wayne-Ergänzungen | ☐ | DESIGN_SYSTEM.md, kein Code |
-| ALFRED-Assistent | ☐ | PROJECT_ALFRED.md, kein Code |
+| Batcomputer-/Wayne-Ergänzungen | ◐ | P2 auf `alfred-dev`: Eckmarken, Status-Pillen, Kopfzeile, Radar; nicht live |
+| ALFRED-Assistent | ◐ | P2 auf `alfred-dev`: Berichte, Systemstatus, Meldungen, ⌘K; Portfolio-Bericht folgt mit P4; nicht live |
 | Globus, Militärflugzeuge, Frontlinien, Hotspots | ✔ | live (Live-Abruf adsb.lol im Browser per CORS blockiert → Bot-Stand) |
 | Flugrouten beim Anklicken | ☐ | Plan unten, kein Code |
 | Global Risk Layer | ☐ | Schnittstelle in PROJECT_ALFRED.md |
 | Portfolio Risk Center | ☐ | Kennzahlen festgelegt, kein Code |
-| Country Intelligence & Camera Wall (im Länderfenster) | ☐ | verbindliche Vorgaben in PROJECT_ALFRED.md (28.11.2026); UI in P2, Integration in P4 |
+| Country Intelligence & Camera Wall (im Länderfenster) | ◐ | UI (Reiter LAGEBILD) auf `alfred-dev`; Quellenrecherche läuft, Katalog wartet auf Freigabe (P4) |
 | Automatische Tests | ◐ | `tests/test_depot_keys.py` (S1); Rest TEST_PLAN.md ausstehend |
 
 ## Priorisierte Reihenfolge
@@ -34,10 +34,11 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 ### P1 – Kleine Korrekturen und Grundlagen (`alfred-dev`)
 4. ✔ Matrix-Regen bildschirmfüllend (auf `alfred-dev`, noch nicht live).
 5. ✔ `.playwright-mcp/` ignorieren · ✔ MCP-Vorlage um Context7 ergänzt.
-6. S3: Python-Abhängigkeiten und Actions-Versionen pinnen.
-7. Playwright-Basistest: Seite ohne JS-Fehler, Globus, Infofenster, Esc.
+6. ✔ S3: Python-Abhängigkeiten und Actions-Versionen gepinnt (wirksam erst nach Übernahme auf master).
+7. ◐ Playwright-Basistest manuell durchgeführt (TEST_PLAN.md); als automatischer Test in Actions noch offen.
 
 ### P2 – Phase 2 Design + ALFRED-Kern
+✔ 8.–10a. umgesetzt auf `alfred-dev` (28.11.2026), Übernahme auf master nur mit Freigabe.
 8. Design-Tokens und Status-Pillen (LIVE · BOT-STAND · VERALTET · NICHT KONFIGURIERT), Gold-Akzent max. 1–2 Stellen,
    taktische Eckrahmen, Kopfzeile „WAYNE INTELLIGENCE · A.L.F.R.E.D.“ (klein, `--muted`). Keine Logos, kein Comic.
 9. ALFRED-Modul `docs/alfred.js` über kleine Schnittstelle `window.TB`: Begrüßung, Systemstatus (Alter je Datendatei),

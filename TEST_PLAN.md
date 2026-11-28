@@ -22,6 +22,22 @@
 | Performance | Lighthouse (in Chrome DevTools eingebaut) | lokal | ausstehend |
 | Sicherheit | Muster-Suche nach Schlüsseln, Prüfung `state/` auf Depot-Rückschlüsse, Abhängigkeits-Audit (`pip-audit`) | Actions | ausstehend |
 
+## Ergebnisse P2 (28.11.2026, manuell mit Playwright-MCP und Chrome-DevTools-MCP, lokaler Server 127.0.0.1)
+| Prüfung | Ergebnis |
+|---|---|
+| Konsole beim Laden | nur bekannte Fehler (favicon 404, adsb.lol CORS) – keine neuen |
+| LAGEBILD ohne Zustimmung | 0 iframes, keine Verbindungen zu Kamera-Hosts (nur bestehende Wikimedia-Porträts) |
+| Nach „LAGEBILD LADEN“ (Testeinträge auf 127.0.0.1:1) | iframes mit `sandbox`, `referrerpolicy=no-referrer` |
+| Reiter DETAILS / Fenster schließen | Einbettungen entfernt (0 iframes); Rückkehr lädt nach Sitzungs-Zustimmung erneut |
+| Raster 2×2, Status-Pillen | 2 Spalten, Fenster verbreitert; STAND UNBEKANNT / DELAYED / LIVE / OFFLINE korrekt |
+| Konfliktgebiet (UKR) | Panorama ausgefiltert, nur zugelassener Nachrichten-Eintrag |
+| Land ohne Quelle | UNAVAILABLE mit Grund |
+| Befehlsliste | ⌘K/Strg+K öffnet, Suche „lagebild schweiz“ → Enter öffnet Land + Reiter, Esc schließt |
+| Bestehende Funktionen | Doomsday an (echter Klick), Hotspots + neuer Verweis, Aktiensuche, Depot-Block, Charts |
+| Handy 390 px (App-Ansicht) | kein Querscrollen, ALFRED volle Breite |
+| Leistung (DevTools) | Bildrate 145 → 143 fps mit ALFRED + LAGEBILD offen; neue Dateien ≈ 25 KB |
+Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenreader.
+
 ## Country Intelligence & Camera Wall (verbindlich, P2/P4)
 | Prüfung | Werkzeug | Phase | Status |
 |---|---|---|---|
