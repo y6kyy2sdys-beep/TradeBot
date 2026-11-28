@@ -1,0 +1,61 @@
+name: Tests
+
+# Läuft nur bei Code-Änderungen – nicht bei den Daten-Commits der Bots (docs/data.js, news.js, world.js,
+# doomsday.js, profiles.js, aircraft.js, streamstatus.js, climate.js), damit die Bot-Läufe keine Tests auslösen.
+on:
+  push:
+    branches: [master, alfred-dev]
+    paths:
+      - "bot/**"
+      - "catalog/**"
+      - "tests/**"
+      - "requirements.txt"
+      - "docs/index.html"
+      - "docs/alfred.js"
+      - "docs/cameras.js"
+      - "docs/camwall.js"
+      - "docs/chronos.js"
+      - "docs/globe3d.js"
+      - "docs/risk.js"
+      - "docs/risklayer.js"
+      - ".github/workflows/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read            # nur lesen – dieser Workflow schreibt und veröffentlicht nichts
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Python-Pakete (feste Versionen)
+        run: pip install -r requirements.txt
+      - name: Python-Tests
+        run: python -m unittest discover -s tests -v
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - name: JavaScript-Tests
+        run: node --test tests/*.test.js
+      - name: Syntaxprüfung der Module
+        run: for f in docs/*.js; do node --check "$f" || exit 1; done
+      - name: Syntaxprüfung der Inline-Skripte in index.html
+        run: |
+          node -e '
+            const h = require("fs").readFileSync("docs/index.html", "utf8");
+            const s = [...h.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+            if (!s.length) throw new Error("kein Inline-Skript gefunden");
+            s.forEach((m, i) => { try { new Function(m[1]); } catch (e) { console.error("Inline-Skript " + (i + 1) + ": " + e.message); process.exit(1); } });
+            console.log(s.length + " Inline-Skript(e) syntaktisch in Ordnung");'
