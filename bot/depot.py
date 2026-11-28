@@ -3,11 +3,13 @@
 Die Positionen kommen ausschließlich aus dem GitHub-Secret DEPOT (nie aus dem Repo), Format:
     SAP.DE:10:180.50;NVDA:3:120
     = Symbol : Stückzahl : Kaufkurs in Euro, mehrere Positionen mit ; getrennt.
-Damit nichts Persönliches im öffentlichen Repo landet, werden Duplikat-Schlüssel gehasht und
-Depot-Meldungen nicht ins öffentliche Signal-Protokoll geschrieben.
+Damit nichts Persönliches im öffentlichen Repo landet, werden Duplikat-Schlüssel per HMAC mit einem
+Geheimnis gebildet (Secret DEPOT_SALT, ersatzweise der Inhalt von DEPOT) und Depot-Meldungen nicht ins
+öffentliche Signal-Protokoll geschrieben. Ohne das Geheimnis lassen sich die Schlüssel nicht zurückrechnen.
 """
 
 import hashlib
+import hmac
 import json
 import os
 from pathlib import Path
@@ -64,14 +66,34 @@ def currency_of(ticker: str) -> str:
         return "USD"
 
 
-def _key(ticker: str, kind: str) -> str:
-    return "depot:" + hashlib.sha1(f"{ticker}:{kind}".encode()).hexdigest()[:10]
+KEY_PREFIX = "depot:"
+KEY_HEX = 16  # Länge des HMAC-Anteils; alte, ungesalzene Schlüssel hatten 10 Zeichen
+
+
+def _secret() -> bytes:
+    return (os.getenv("DEPOT_SALT") or os.getenv("DEPOT") or "").encode()
+
+
+def _key(ticker: str, kind: str, secret: bytes) -> str:
+    return KEY_PREFIX + hmac.new(secret, f"{ticker}:{kind}".encode(), hashlib.sha256).hexdigest()[:KEY_HEX]
+
+
+def purge_legacy_keys(state: dict) -> int:
+    """Entfernt alte, per Wörterbuch auflösbare Sperr-Schlüssel (ungesalzener SHA-1) aus dem öffentlichen Zustand."""
+    alerts = state.get("alerts", {})
+    old = [k for k in alerts if k.startswith(KEY_PREFIX) and len(k) != len(KEY_PREFIX) + KEY_HEX]
+    for k in old:
+        del alerts[k]
+    return len(old)
 
 
 def watch(state: dict, send, esc, alert_due, dry_run: bool) -> None:
+    if purge_legacy_keys(state):
+        print("Depot-Wächter: alte Sperr-Schlüssel entfernt")
     positions = parse(os.getenv("DEPOT", ""))
     if not positions:
         return
+    secret = _secret()
     tickers = [p["t"] for p in positions]
     raw = yf.download(tickers, period="1y", interval="1d", group_by="ticker", progress=False, auto_adjust=True)
     fx = fx_rates()
@@ -105,7 +127,7 @@ def watch(state: dict, send, esc, alert_due, dry_run: bool) -> None:
         if pnl >= 0.20:
             checks.append(("gain20", f"🎯 <b>DEPOT: Gewinn über 20 %</b>\n{head}\nÜberlege, einen Teil zu verkaufen oder einen Stop-Loss knapp unter dem aktuellen Kurs zu setzen, um den Gewinn zu sichern."))
         for kind, text in checks:
-            key = _key(p["t"], kind)
+            key = _key(p["t"], kind, secret)
             if alert_due(state, key):
                 send(text + "\n\n<i>Keine Anlageberatung.</i>", dry_run)
                 state["alerts"][key] = now  # bewusst nicht ins öffentliche Protokoll
