@@ -5,6 +5,8 @@
 - Bisher geprüft wurde manuell bzw. in der Claude-Cloud-Umgebung mit Playwright (vorinstalliert dort, nicht im Repo)
   und nachgebildeten Datenquellen. Diese Ergebnisse sind nicht reproduzierbar abgelegt.
 - In Phase 0/1 wurden **keine** Tests ausgeführt (nur Analyse und Dokumentation).
+- 24.11.2026: MCP-Funktionstest (Playwright, Chrome DevTools) gegen die Live-Seite: keine JS-Fehler; Befunde in ROADMAP.md.
+- 28.11.2026: `tests/test_depot_keys.py` (S1) – lokal: `python3 -m unittest discover -s tests`. Läuft noch nicht in Actions.
 
 ## Geplante Test-Ebenen
 | Ebene | Werkzeug (Vorschlag) | Läuft wo | Status |

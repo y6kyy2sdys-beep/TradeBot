@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P0-Abschluss vorbereitet, Roadmap neu
+- Verifiziert: `alfred-dev` (43db660) auf GitHub, Secret `DEPOT_SALT` vorhanden, GitHub CLI mit `workflow`-Recht.
+- Lokaler Branch `release/s1-master`: aktueller master + nur der Code-Teil von S1 (`bot/depot.py`, Workflow); Offline-Test gegen
+  den aktuellen Live-Zustand bestanden. **Nicht gepusht, master unverändert** – wartet auf Freigabe.
+- Neu: `tests/test_depot_keys.py` (unittest, ohne Netz/Telegram).
+- `.gitignore`: `.playwright-mcp/` (Ausgabeordner des Playwright-MCP).
+- ROADMAP.md neu: Gesamtstatus und Prioritäten P0–P5; SECURITY.md und TEST_PLAN.md nachgeführt.
+
 ## [alfred-dev] – 27.11.2026 – Sicherheits-Sofortmaßnahme S1
 Behebt den Depot-Rückschluss über öffentliche Alarm-Sperren in `state/signals.json`.
 - `bot/depot.py`: Sperr-Schlüssel jetzt HMAC-SHA256 mit Geheimnis (Secret `DEPOT_SALT`, ersatzweise Inhalt von `DEPOT`)

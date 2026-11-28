@@ -20,6 +20,8 @@ und die vorhandenen `depot:`-Einträge löschen. Hinweis: Die Git-Historie enth�
 vollständiges Entfernen bräuchte ein Umschreiben der Historie (Force-Push auf master) – gesonderte Entscheidung.
 **Status (27.11.2026):** Auf `alfred-dev` behoben (HMAC-SHA256, Secret `DEPOT_SALT` optional, Ersatz: Inhalt von `DEPOT`;
 alte Einträge werden beim nächsten Bot-Lauf gelöscht). Wirksam erst nach Merge auf master. Git-Historie: offen.
+**Stand 28.11.2026:** Secret `DEPOT_SALT` hinterlegt. Übernahme vorbereitet im lokalen Branch `release/s1-master`
+(nur Code, getestet gegen den aktuellen master-Zustand); master enthält weiterhin 2 auflösbare Einträge bis zur Freigabe.
 
 ### 🟠 S2 – GitHub-Token im Browser (`localStorage.ghToken`)
 Für den Aktualisieren-Knopf. Risiko bei einer künftigen XSS-Lücke oder fremdem Gerätezugriff.
