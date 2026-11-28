@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P4: Camera Wall eingebunden
+- `docs/cameras.js` wird aus dem freigegebenen Katalog erzeugt (`catalog/build_cameras.py`): 58 Quellen, 28 Länder,
+  Kennzeichnung staatsnaher Sender, Quellenangaben (NASA, EUMETSAT, NOAA, JMA, HKO), SkylineWebcams als Vorschau mit Link.
+- `camwall.js`: Vorlagen `{YYYY-MM-DD}` (NASA GIBS, Vortag UTC) und `{HHMM}` (JMA Himawari), Status ehrlich:
+  Bilder mit berechnetem Zeitpunkt/Verzögerung = DELAYED, nicht abrufbar = OFFLINE, YouTube = STAND UNBEKANNT
+  (Livestatus ohne Player-API nicht feststellbar). Sortierung Nachrichten → Wetter → Satellit → Panorama.
+- YouTube-Einbettung mit `referrerpolicy="strict-origin"` (nur Herkunft, kein Pfad) – YouTube verweigert sonst die Wiedergabe;
+  alle anderen Quellen weiter ohne Referrer.
+- Neu: `tests/test_camera_catalog.py` (7 Regelprüfungen, offline). Prüfung mit Playwright: siehe TEST_PLAN.md.
+
 ## [alfred-dev] – 28.11.2026 – Quellenkatalog freigegeben, Konfliktregel
 - Quellenrecherche Camera Wall: 58 Einträge aus 28 Ländern (27 Nachrichten, 14 zeitversetzt/Satellit, 10 Panorama, 7 Wetter),
   Ausschlussliste mit Gründen. Vom Eigentümer freigegeben (alle vier Gruppen, mit Auflagen) → `catalog/kamera_katalog_2026-11-28.{json,md}`.

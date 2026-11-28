@@ -29,25 +29,49 @@
   function sourcesFor(iso) {
     const all = approved().filter(c => c.iso === iso);
     const conflict = isConflict(iso);
-    const ok = all.filter(c => !conflict || (CONFLICT_ART.has(c.art) && c.konfliktzone_zulaessig === true));
+    const ok = all.filter(c => !conflict || (CONFLICT_ART.has(c.art) && c.konfliktzone_zulaessig === true))
+      .sort((a, b) => (ART_ORDER[a.art] ?? 9) - (ART_ORDER[b.art] ?? 9));
     return { all, ok, conflict, blocked: all.length - ok.length };
   }
-  // Status nur aus belegten Angaben: Katalogprüfung (status_pruefung) oder erklärte Verzögerung – sonst „unbekannt“
+  // URL-Vorlagen: {YYYY-MM-DD} = Vortag in UTC (NASA GIBS Tagesbild, heute oft noch leer),
+  // {HHMM} = UTC-Zeit 30 Min. zurück, auf 10 Min. abgerundet (JMA Himawari, rollierender Dateisatz)
+  const pad = n => String(n).padStart(2, "0");
+  function resolve(c) {
+    let url = c.embed.url, zeit = null, tag = false;
+    if (url.includes("{YYYY-MM-DD}")) {
+      const d = new Date(Date.now() - 864e5), s = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+      url = url.split("{YYYY-MM-DD}").join(s); zeit = s + "T12:00:00Z"; tag = true;
+    }
+    if (url.includes("{HHMM}")) {
+      const d = new Date(Date.now() - 30 * 6e4); d.setUTCMinutes(Math.floor(d.getUTCMinutes() / 10) * 10, 0, 0);
+      url = url.split("{HHMM}").join(pad(d.getUTCHours()) + pad(d.getUTCMinutes())); zeit = d.toISOString();
+    }
+    return { url, zeit, tag };
+  }
+  // Status nur aus belegten Angaben: Katalogprüfung, berechneter Bildzeitpunkt oder erklärte Verzögerung – sonst „unbekannt“.
+  // OFFLINE setzt die Kachel selbst, wenn ein Bild nicht abrufbar ist. YouTube-Livestatus ist ohne Player-API nicht feststellbar.
   function statusOf(c) {
     const chk = c.status_pruefung;
     if (chk && STATUS[chk.status]) return { s: chk.status, zeit: chk.zeit || null };
+    const r = resolve(c);
+    if (r.zeit) return { s: "delayed", zeit: r.zeit, tag: r.tag };
     if (c.verzoegerung_min > 0) return { s: "delayed", zeit: null };
     return { s: null, zeit: null };
   }
+  const ART_ORDER = { nachrichten: 0, wetter: 1, zeitversetzt: 2, panorama: 3 };
   const pill = s => s ? `<span class="spill ${s}">${STATUS[s]}</span>` : `<span class="spill nc" title="Status nicht feststellbar">STAND UNBEKANNT</span>`;
   const hhmm = iso => { const d = new Date(iso); return isNaN(d) ? null : d.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); };
 
+  const day = iso => new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
   function tileHtml(c, i) {
-    const st = statusOf(c), when = st.zeit ? "Stand " + hhmm(st.zeit) : c.verzoegerung_min > 0 ? `verzögert ca. ${c.verzoegerung_min} Min.` : "Stand unbekannt";
+    const st = statusOf(c);
+    const when = st.tag ? "Tagesbild " + day(st.zeit) + " (UTC)" : st.zeit ? "Stand " + hhmm(st.zeit)
+      : c.verzoegerung_min > 0 ? `verzögert ca. ${c.verzoegerung_min} Min.` : c.embed.typ === "skyline" ? "Vorschau · Stand unbekannt" : "Stand unbekannt";
     return `<div class="cw-tile" data-i="${i}">
-      <div class="cw-th"><div class="who">${esc(ART[c.art] || c.art)}<b title="${esc(c.betreiber)} · ${esc(c.ort || "")}">${esc(c.betreiber)}${c.ort ? " · " + esc(c.ort) : ""}</b>${esc(when)}</div>
-        <div class="r">${pill(st.s)}<button type="button" class="cw-fs" data-fs="${i}" title="Vollbild (Esc beendet)" aria-label="Vollbild">⛶</button></div></div>
+      <div class="cw-th"><div class="who">${esc(ART[c.art] || c.art)}${c.kennzeichnung ? ` <span class="cw-tag">${esc(c.kennzeichnung)}</span>` : ""}<b title="${esc(c.betreiber)} · ${esc(c.ort || "")}">${esc(c.betreiber)}${c.ort ? " · " + esc(c.ort) : ""}</b>${esc(when)}</div>
+        <div class="r"><span data-pill>${pill(st.s)}</span><button type="button" class="cw-fs" data-fs="${i}" title="Vollbild (Esc beendet)" aria-label="Vollbild">⛶</button></div></div>
       <div class="cw-media"></div>
+      ${c.credit ? `<div class="cw-credit">${esc(c.credit)}</div>` : ""}
       <div class="cw-tf"><a href="${esc(c.quelle_url)}" target="_blank" rel="noopener noreferrer">QUELLE ↗</a><a href="${esc(c.lizenz_url)}" target="_blank" rel="noopener noreferrer">LIZENZ ↗</a></div>
     </div>`;
   }
@@ -79,17 +103,32 @@
     if (c.embed.typ === "youtube") u += (u.includes("?") ? "&" : "?") + "autoplay=1&mute=1&playsinline=1&rel=0";
     return u;
   }
+  function markOffline(tile, msg) {
+    const p = tile.querySelector("[data-pill]"); if (p) p.innerHTML = pill("offline");
+    const m = tile.querySelector(".cw-media");
+    if (m) m.innerHTML = `<div class="cw-off">${esc(msg)}</div>`;
+  }
+  function imgEl(c, tile) {
+    const img = document.createElement("img");
+    img.alt = `${ART[c.art] || ""} ${c.betreiber} ${c.ort || ""}`.trim(); img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+    img.addEventListener("error", () => markOffline(tile, "Bild derzeit nicht abrufbar"), { once: true });
+    img.src = resolve(c).url;
+    return img;
+  }
   function mountTile(tile, c) {
     const m = tile.querySelector(".cw-media"); if (!m || m.firstChild) return;
-    let el;
-    if (c.embed.typ === "bild") {
-      el = document.createElement("img"); el.alt = `${ART[c.art] || ""} ${c.betreiber} ${c.ort || ""}`.trim(); el.loading = "lazy";
-    } else {
-      el = document.createElement("iframe"); el.title = `${c.betreiber} – ${ART[c.art] || c.art}`; el.loading = "lazy";
-      el.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
-      el.setAttribute("allow", "fullscreen; picture-in-picture");
+    if (c.embed.typ === "skyline") {
+      // Auflage SkylineWebcams: unveränderter Original-Embed = Vorschaubild, verlinkt auf die Kameraseite
+      const a = document.createElement("a"); a.href = c.quelle_url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.title = "Kamera bei SkylineWebcams öffnen"; a.appendChild(imgEl(c, tile)); m.appendChild(a); return;
     }
-    el.referrerPolicy = "no-referrer"; el.src = c.embed.typ === "bild" ? c.embed.url : embedUrl(c);
+    if (c.embed.typ === "bild") { m.appendChild(imgEl(c, tile)); return; }
+    const el = document.createElement("iframe"); el.title = `${c.betreiber} – ${ART[c.art] || c.art}`; el.loading = "lazy";
+    el.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
+    el.setAttribute("allow", "fullscreen; picture-in-picture");
+    // YouTube-Player verlangen einen Referrer (sonst Fehler 153) – nur die Herkunft, kein Pfad; andere Einbettungen ohne Referrer
+    el.referrerPolicy = c.embed.typ === "youtube" ? "strict-origin" : "no-referrer";
+    el.src = embedUrl(c);
     m.appendChild(el);
   }
   function unmountAll(root) { root.querySelectorAll(".cw-media").forEach(m => m.replaceChildren()); }

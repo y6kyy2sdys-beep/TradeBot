@@ -1,11 +1,1219 @@
 /* PROJECT A.L.F.R.E.D. – Quellenkatalog Country Intelligence / Camera Wall.
-   Von Hand gepflegt. Einträge nur nach Freigabe durch den Eigentümer (siehe PROJECT_ALFRED.md),
-   jeder Eintrag mit "freigegeben": true und allen Pflichtfeldern. Keine automatische Suche, kein Scraping.
-   Freigegebener Entwurf (28.11.2026): catalog/kamera_katalog_2026-11-28.json – Übernahme in "items" erfolgt in Phase 4. */
+   ERZEUGT von catalog/build_cameras.py aus catalog/kamera_katalog_2026-11-28.json – nicht von Hand ändern.
+   Nur vom Eigentümer freigegebene Quellen; neue Quellen brauchen eine neue Freigabe. Keine automatische Suche. */
 window.CAMS = {
-  "stand": null,
-  "hinweis": "Einträge folgen mit Phase 4 (Katalog freigegeben am 28.11.2026).",
-  // Konfliktgebiete: nur Nachrichten-Streams und zeitversetzte Satellitenbilder. Zusätzlich gilt jeder WarMap-Hotspot ab Stufe 3.
-  "konfliktzonen": ["UKR", "RUS", "ISR", "PSE", "LBN", "SYR", "YEM", "SDN", "IRN", "SAU", "ARE"],
-  "items": []
+ "stand": "2026-11-28",
+ "hinweis": "Freigegebener Quellenkatalog vom 2026-11-28 (58 Einträge).",
+ "konfliktzonen": [
+  "UKR",
+  "RUS",
+  "ISR",
+  "PSE",
+  "LBN",
+  "SYR",
+  "YEM",
+  "SDN",
+  "IRN",
+  "SAU",
+  "ARE"
+ ],
+ "items": [
+  {
+   "id": "deu-dw-news",
+   "iso": "DEU",
+   "ort": "Berlin",
+   "art": "nachrichten",
+   "betreiber": "Deutsche Welle (DW News)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg"
+   },
+   "quelle_url": "https://www.youtube.com/@dwnews",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "deu-phoenix",
+   "iso": "DEU",
+   "ort": "Bonn/Berlin",
+   "art": "nachrichten",
+   "betreiber": "phoenix (ARD/ZDF)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCwyiPnNlT8UABRmGmU0T9jg"
+   },
+   "quelle_url": "https://www.youtube.com/@phoenix",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "de",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "fra-france24-en",
+   "iso": "FRA",
+   "ort": "Paris",
+   "art": "nachrichten",
+   "betreiber": "France 24 (English)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCQfwfsi5VrQ8yKZ-UWmAEFg"
+   },
+   "quelle_url": "https://www.youtube.com/@france24_en",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "fra-france24-ar",
+   "iso": "FRA",
+   "ort": "Paris",
+   "art": "nachrichten",
+   "betreiber": "France 24 (Arabic)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCdTyuXgmJkG_O8_75eqej-w"
+   },
+   "quelle_url": "https://www.youtube.com/@france24_ar",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "ar",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "fra-euronews-en",
+   "iso": "FRA",
+   "ort": "Lyon/Brüssel",
+   "art": "nachrichten",
+   "betreiber": "Euronews (English)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCSrZ3UV4jOidv8ppoVuvW9Q"
+   },
+   "quelle_url": "https://www.youtube.com/@euronews",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "gbr-sky-news",
+   "iso": "GBR",
+   "ort": "London",
+   "art": "nachrichten",
+   "betreiber": "Sky News",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCoMdktPbSTixAyNGwb-UYkQ"
+   },
+   "quelle_url": "https://www.youtube.com/@SkyNews",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "usa-abc-news-live",
+   "iso": "USA",
+   "ort": "New York",
+   "art": "nachrichten",
+   "betreiber": "ABC News (ABC News Live)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCBi2mrWuNuyYy4gbM6fU18Q"
+   },
+   "quelle_url": "https://www.youtube.com/@ABCNews",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "usa-bloomberg-tv",
+   "iso": "USA",
+   "ort": "New York",
+   "art": "nachrichten",
+   "betreiber": "Bloomberg Television",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg"
+   },
+   "quelle_url": "https://www.youtube.com/@markets",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "can-cbc-news",
+   "iso": "CAN",
+   "ort": "Toronto",
+   "art": "nachrichten",
+   "betreiber": "CBC News",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCuFFtHWoLl5fauMMD5Ww2jA"
+   },
+   "quelle_url": "https://www.youtube.com/@cbcnews",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "aus-abc-news-au",
+   "iso": "AUS",
+   "ort": "Sydney",
+   "art": "nachrichten",
+   "betreiber": "ABC News (Australia)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCVgO39Bk5sMo66-6o6Spn6Q"
+   },
+   "quelle_url": "https://www.youtube.com/@abcnewsaustralia",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "jpn-nhk-world",
+   "iso": "JPN",
+   "ort": "Tokio",
+   "art": "nachrichten",
+   "betreiber": "NHK WORLD-JAPAN",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCSPEjw8F2nQDtmUKPFNF7_A"
+   },
+   "quelle_url": "https://www.youtube.com/@NHKWORLDJAPAN",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "jpn-ann-news",
+   "iso": "JPN",
+   "ort": "Tokio",
+   "art": "nachrichten",
+   "betreiber": "TV Asahi / ANN (ANNnewsCH)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCGCZAYq5Xxojl_tSXcVJhiQ"
+   },
+   "quelle_url": "https://www.youtube.com/@ANNnewsCH",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "ja",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "chn-cgtn",
+   "iso": "CHN",
+   "ort": "Peking",
+   "art": "nachrichten",
+   "betreiber": "CGTN (China Global Television Network)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCgrNz-aDmcr2uuto8_DL2jg"
+   },
+   "quelle_url": "https://www.youtube.com/@CGTN",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "Staatssender (China)"
+  },
+  {
+   "id": "twn-tvbs",
+   "iso": "TWN",
+   "ort": "Taipeh",
+   "art": "nachrichten",
+   "betreiber": "TVBS 新聞台",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UC5nwNW4KdC0SzrhF9BXEYOQ"
+   },
+   "quelle_url": "https://www.youtube.com/@TVBSNEWS01",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "zh",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "kor-ytn",
+   "iso": "KOR",
+   "ort": "Seoul",
+   "art": "nachrichten",
+   "betreiber": "YTN",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UChlgI3UHCOnwUGzWzbJ3H5w"
+   },
+   "quelle_url": "https://www.youtube.com/@YTNnews24",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "ko",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "sgp-cna",
+   "iso": "SGP",
+   "ort": "Singapur",
+   "art": "nachrichten",
+   "betreiber": "CNA (Mediacorp)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UC83jt4dlz1Gjl58fzQrrKZg"
+   },
+   "quelle_url": "https://www.youtube.com/@channelnewsasia",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "ind-wion",
+   "iso": "IND",
+   "ort": "Neu-Delhi",
+   "art": "nachrichten",
+   "betreiber": "WION",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UC_gUM8rL-Lrg6O3adPW9K1g"
+   },
+   "quelle_url": "https://www.youtube.com/@WION",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "ind-ndtv",
+   "iso": "IND",
+   "ort": "Neu-Delhi",
+   "art": "nachrichten",
+   "betreiber": "NDTV",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCZFMm1mMw0F81Z37aaEzTUA"
+   },
+   "quelle_url": "https://www.youtube.com/@ndtv",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "bra-cnn-brasil",
+   "iso": "BRA",
+   "ort": "São Paulo",
+   "art": "nachrichten",
+   "betreiber": "CNN Brasil",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCvdwhh_fDyWccR42-rReZLw"
+   },
+   "quelle_url": "https://www.youtube.com/@CNNbrasil",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "pt",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "sau-al-arabiya",
+   "iso": "SAU",
+   "ort": "Riad/Dubai",
+   "art": "nachrichten",
+   "betreiber": "Al Arabiya (العربية)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCahpxixMCwoANAftn6IxkTg"
+   },
+   "quelle_url": "https://www.youtube.com/@AlArabiya",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "ar",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "staatsnah (Saudi-Arabien)"
+  },
+  {
+   "id": "are-sky-news-arabia",
+   "iso": "ARE",
+   "ort": "Abu Dhabi",
+   "art": "nachrichten",
+   "betreiber": "Sky News Arabia (سكاي نيوز عربية)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCIJXOvggjKtCagMfxvcCzAA"
+   },
+   "quelle_url": "https://www.youtube.com/@SkyNewsArabia",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "ar",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "staatsnah (VAE)"
+  },
+  {
+   "id": "qat-aljazeera-en",
+   "iso": "QAT",
+   "ort": "Doha",
+   "art": "nachrichten",
+   "betreiber": "Al Jazeera English",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJj3l8Bg"
+   },
+   "quelle_url": "https://www.youtube.com/@aljazeeraenglish",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "staatlich finanziert (Katar)"
+  },
+  {
+   "id": "qat-aljazeera-ar",
+   "iso": "QAT",
+   "ort": "Doha",
+   "art": "nachrichten",
+   "betreiber": "Al Jazeera Arabic (قناة الجزيرة)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCfiwzLy-8yKzIbsmZTzxDgw"
+   },
+   "quelle_url": "https://www.youtube.com/@aljazeera",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "ar",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "staatlich finanziert (Katar)"
+  },
+  {
+   "id": "tur-trt-world",
+   "iso": "TUR",
+   "ort": "Istanbul",
+   "art": "nachrichten",
+   "betreiber": "TRT World",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UC7fWeaHhqgM4Ry-RMpM2YYw"
+   },
+   "quelle_url": "https://www.youtube.com/@trtworld",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "en",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "Staatssender (Türkei)"
+  },
+  {
+   "id": "ukr-tsn",
+   "iso": "UKR",
+   "ort": "Kyjiw",
+   "art": "nachrichten",
+   "betreiber": "TSN / 1+1 Media (ТСН)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCXoJ8kY9zpLBEz-8saaT3ew"
+   },
+   "quelle_url": "https://www.youtube.com/@tsn",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "uk",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "irn-iran-international",
+   "iso": "IRN",
+   "ort": "London (Exil-Sender)",
+   "art": "nachrichten",
+   "betreiber": "Iran International",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCat6bC0Wrqq9Bcq7EkH_yQw"
+   },
+   "quelle_url": "https://www.youtube.com/@IranIntl",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "fa",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "kennzeichnung": "Exilsender (London)"
+  },
+  {
+   "id": "ven-ntn24",
+   "iso": "VEN",
+   "ort": "Bogotá (Kolumbien)",
+   "art": "nachrichten",
+   "betreiber": "NTN24",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCEJs1fTF3KszRJGxJY14VrA"
+   },
+   "quelle_url": "https://www.youtube.com/@NTN24",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": true,
+   "sprache": "es",
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "fra-paris-skyline",
+   "iso": "FRA",
+   "ort": "Paris",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/2490.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/france/ile-de-france/paris/paris-tour-eiffel.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "chn-shanghai-skyline",
+   "iso": "CHN",
+   "ort": "Shanghai (Pudong)",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/5216.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/china/shanghai/shanghai/skyline-of-shanghai.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "bra-brasilia-panorama",
+   "iso": "BRA",
+   "ort": "Brasília",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/5737.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/brasil/distrito-federal/brasilia/brasilia.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "usa-boston-panorama",
+   "iso": "USA",
+   "ort": "Boston",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/2041.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/united-states/massachusetts/boston/boston.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "can-toronto-waterfront",
+   "iso": "CAN",
+   "ort": "Toronto",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/5882.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/canada/ontario/toronto/cn-tower.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "aus-sydney-harbour",
+   "iso": "AUS",
+   "ort": "Sydney",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/1765.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/australia/new-south-wales/sydney/sydney.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "che-interlaken",
+   "iso": "CHE",
+   "ort": "Interlaken",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/5727.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/schweiz/canton-of-bern/oberland/interlaken.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "che-st-moritz",
+   "iso": "CHE",
+   "ort": "St. Moritz",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/5968.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/schweiz/graubunden/st-moritz/panorama-st-moritz.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "deu-koeln-rhein",
+   "iso": "DEU",
+   "ort": "Köln (Rheinufer)",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/1230.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/deutschland/north-rhine-westphalia/cologne/cologne.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "gbr-st-ives-coast",
+   "iso": "GBR",
+   "ort": "St Ives (Cornwall)",
+   "art": "panorama",
+   "betreiber": "SkylineWebcams (VisioRay)",
+   "embed": {
+    "typ": "skyline",
+    "url": "https://embed.skylinewebcams.com/img/5910.jpg"
+   },
+   "quelle_url": "https://www.skylinewebcams.com/en/webcam/united-kingdom/england/st-ives/coastal-view.html",
+   "lizenz_url": "https://www.skylinewebcams.com/en/terms-of-use.html",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "niedrig",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "SkylineWebcams – Vorschau, kein Live-Player"
+  },
+  {
+   "id": "hkg-hko-central-pier",
+   "iso": "HKG",
+   "ort": "Hongkong, Central Pier (Victoria Harbour)",
+   "art": "wetter",
+   "betreiber": "Hong Kong Observatory (HKSAR-Regierung)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://www.hko.gov.hk/wxinfo/aws/hko_mica/cp1/latest_CP1.jpg"
+   },
+   "quelle_url": "https://www.hko.gov.hk/en/wxinfo/ts/index_webcam.htm",
+   "lizenz_url": "https://www.hko.gov.hk/en/publica/non-commercialuse.htm",
+   "verzoegerung_min": 10,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Quelle: Hong Kong Observatory – nicht-kommerzielle Nutzung, Hinweis und Bedingungen des HKO gelten"
+  },
+  {
+   "id": "hkg-hko-icc",
+   "iso": "HKG",
+   "ort": "Hongkong, International Commerce Centre (Blick Südost)",
+   "art": "wetter",
+   "betreiber": "Hong Kong Observatory (HKSAR-Regierung)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://www.hko.gov.hk/wxinfo/aws/hko_mica/ic1/latest_IC1.jpg"
+   },
+   "quelle_url": "https://www.hko.gov.hk/en/wxinfo/ts/index_webcam.htm",
+   "lizenz_url": "https://www.hko.gov.hk/en/publica/non-commercialuse.htm",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": false,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Quelle: Hong Kong Observatory – nicht-kommerzielle Nutzung, Hinweis und Bedingungen des HKO gelten"
+  },
+  {
+   "id": "jpn-weathernews-live",
+   "iso": "JPN",
+   "ort": "Tokio/Chiba",
+   "art": "wetter",
+   "betreiber": "Weathernews Inc. (ウェザーニュース)",
+   "embed": {
+    "typ": "youtube",
+    "url": "https://www.youtube-nocookie.com/embed/live_stream?channel=UCNsidkYpIAQ4QaufptQBPHQ"
+   },
+   "quelle_url": "https://www.youtube.com/@weathernews",
+   "lizenz_url": "https://www.youtube.com/t/terms",
+   "verzoegerung_min": 0,
+   "konfliktzone_zulaessig": false,
+   "sprache": "ja",
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28"
+  },
+  {
+   "id": "jpn-jma-himawari",
+   "iso": "JPN",
+   "ort": "Japan (Satellit Himawari)",
+   "art": "wetter",
+   "betreiber": "Japan Meteorological Agency (JMA/MSC)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://www.data.jma.go.jp/mscweb/data/himawari/img/jpn/jpn_trm_{HHMM}.jpg"
+   },
+   "quelle_url": "https://www.data.jma.go.jp/mscweb/data/himawari/sat_img.php?area=jpn",
+   "lizenz_url": "https://www.jma.go.jp/jma/en/copyright.html",
+   "verzoegerung_min": 15,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Source: Japan Meteorological Agency website"
+  },
+  {
+   "id": "usa-goes-conus",
+   "iso": "USA",
+   "ort": "USA (CONUS)",
+   "art": "wetter",
+   "betreiber": "NOAA/NESDIS STAR (GOES-19)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/GEOCOLOR/1250x750.jpg"
+   },
+   "quelle_url": "https://www.star.nesdis.noaa.gov/GOES/index.php",
+   "lizenz_url": "https://www.usa.gov/government-copyright",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "NOAA/NESDIS STAR – GOES-19"
+  },
+  {
+   "id": "can-goes-canada",
+   "iso": "CAN",
+   "ort": "Kanada (Sektor 'can')",
+   "art": "wetter",
+   "betreiber": "NOAA/NESDIS STAR (GOES-19)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/can/GEOCOLOR/1125x560.jpg"
+   },
+   "quelle_url": "https://www.star.nesdis.noaa.gov/GOES/index.php",
+   "lizenz_url": "https://www.usa.gov/government-copyright",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "NOAA/NESDIS STAR – GOES-19"
+  },
+  {
+   "id": "deu-eumetsat-mitteleuropa",
+   "iso": "DEU",
+   "ort": "Mitteleuropa",
+   "art": "wetter",
+   "betreiber": "EUMETSAT (EUMETView, MTG-I GeoColour 0°)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://view.eumetsat.int/geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=mtg_fd:rgb_geocolour&STYLES=&SRS=EPSG:4326&BBOX=2,45,18,56&WIDTH=800&HEIGHT=550&FORMAT=image/jpeg"
+   },
+   "quelle_url": "https://view.eumetsat.int/",
+   "lizenz_url": "https://www-cdn.eumetsat.int/files/2026-01/45173%20-%20Data_Policy.pdf",
+   "verzoegerung_min": 40,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "© EUMETSAT 2026"
+  },
+  {
+   "id": "ukr-gibs",
+   "iso": "UKR",
+   "ort": "Ukraine (gesamt)",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=22,44,40,53&WIDTH=900&HEIGHT=450&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "rus-gibs-west",
+   "iso": "RUS",
+   "ort": "Westrussland/Moskau",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=30,50,50,60&WIDTH=900&HEIGHT=450&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "isr-gibs",
+   "iso": "ISR",
+   "ort": "Israel/Palästinensische Gebiete",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=32,29,38,34&WIDTH=720&HEIGHT=600&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "pse-gibs",
+   "iso": "PSE",
+   "ort": "Gaza/Westjordanland",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=32,29,38,34&WIDTH=720&HEIGHT=600&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "lbn-gibs",
+   "iso": "LBN",
+   "ort": "Libanon",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=34.5,33,37,35&WIDTH=625&HEIGHT=500&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "irn-gibs",
+   "iso": "IRN",
+   "ort": "Iran",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=43,24,64,40&WIDTH=840&HEIGHT=640&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "yem-gibs-rotes-meer",
+   "iso": "YEM",
+   "ort": "Jemen/Rotes Meer/Bab el-Mandeb",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=32,11,56,24&WIDTH=960&HEIGHT=520&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "sau-gibs",
+   "iso": "SAU",
+   "ort": "Saudi-Arabien",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=34,16,56,33&WIDTH=880&HEIGHT=680&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "twn-gibs-strasse",
+   "iso": "TWN",
+   "ort": "Taiwan/Taiwanstraße",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=116,21,124,27&WIDTH=800&HEIGHT=600&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "sdn-gibs",
+   "iso": "SDN",
+   "ort": "Sudan",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=21,8,39,23&WIDTH=720&HEIGHT=600&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "ven-gibs",
+   "iso": "VEN",
+   "ort": "Venezuela",
+   "art": "zeitversetzt",
+   "betreiber": "NASA EOSDIS GIBS (VIIRS NOAA-20 Corrected Reflectance)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&SRS=EPSG:4326&BBOX=-74,0,-59,13&WIDTH=750&HEIGHT=650&FORMAT=image/jpeg&TIME={YYYY-MM-DD}"
+   },
+   "quelle_url": "https://nasa-gibs.github.io/gibs-api-docs/access-basics/",
+   "lizenz_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "hoch",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "Imagery: NASA EOSDIS GIBS (VIIRS NOAA-20)"
+  },
+  {
+   "id": "ukr-eumetsat",
+   "iso": "UKR",
+   "ort": "Ukraine (geostationär)",
+   "art": "zeitversetzt",
+   "betreiber": "EUMETSAT (EUMETView, MTG-I GeoColour 0°)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://view.eumetsat.int/geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=mtg_fd:rgb_geocolour&STYLES=&SRS=EPSG:4326&BBOX=22,44,40,53&WIDTH=900&HEIGHT=450&FORMAT=image/jpeg"
+   },
+   "quelle_url": "https://view.eumetsat.int/",
+   "lizenz_url": "https://www-cdn.eumetsat.int/files/2026-01/45173%20-%20Data_Policy.pdf",
+   "verzoegerung_min": 40,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "© EUMETSAT 2026"
+  },
+  {
+   "id": "isr-eumetsat-levante",
+   "iso": "ISR",
+   "ort": "Levante (Israel/Libanon/Syrien)",
+   "art": "zeitversetzt",
+   "betreiber": "EUMETSAT (EUMETView, MTG-I GeoColour 0°)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://view.eumetsat.int/geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=mtg_fd:rgb_geocolour&STYLES=&SRS=EPSG:4326&BBOX=30,28,40,36&WIDTH=750&HEIGHT=600&FORMAT=image/jpeg"
+   },
+   "quelle_url": "https://view.eumetsat.int/",
+   "lizenz_url": "https://www-cdn.eumetsat.int/files/2026-01/45173%20-%20Data_Policy.pdf",
+   "verzoegerung_min": 40,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "© EUMETSAT 2026"
+  },
+  {
+   "id": "ven-goes-nsa",
+   "iso": "VEN",
+   "ort": "Nördliches Südamerika",
+   "art": "zeitversetzt",
+   "betreiber": "NOAA/NESDIS STAR (GOES-19)",
+   "embed": {
+    "typ": "bild",
+    "url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/nsa/GEOCOLOR/1800x1080.jpg"
+   },
+   "quelle_url": "https://www.star.nesdis.noaa.gov/GOES/index.php",
+   "lizenz_url": "https://www.usa.gov/government-copyright",
+   "verzoegerung_min": null,
+   "konfliktzone_zulaessig": true,
+   "sprache": null,
+   "vertrauen": "mittel",
+   "geprueft_am": "2026-11-28",
+   "freigegeben": true,
+   "freigabe_am": "2026-11-28",
+   "credit": "NOAA/NESDIS STAR – GOES-19"
+  }
+ ]
 };

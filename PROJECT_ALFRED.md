@@ -91,7 +91,8 @@ Ohne geeignete Quelle erscheint transparent: „Keine geprüfte öffentliche Que
 - **Verboten:** Kameras auf militärische Stellungen, Truppenbewegungen, Schutzräume, Grenzübergänge oder andere sensible Einrichtungen;
   private Kameras; Gesichtserkennung, Kennzeichenerkennung, Personenverfolgung; Umgehung von Zugriffsbeschränkungen (Geoblocking,
   Anmeldung, Paywall, Hotlink-Schutz); Aufzeichnung oder Speicherung von Streams.
-- Datenschutz: datensparsame Einbettung (z. B. `youtube-nocookie.com`), `referrerpolicy="no-referrer"`, `sandbox` so eng wie möglich,
+- Datenschutz: datensparsame Einbettung (z. B. `youtube-nocookie.com`), `referrerpolicy="no-referrer"` (Ausnahme YouTube:
+  `strict-origin` – nur die Herkunft, weil YouTube sonst nicht abspielt), `sandbox` so eng wie möglich,
   Ton standardmäßig aus, kein Autoplay vor dem Öffnen des Reiters. Hinweis im Reiter, dass beim Öffnen Daten an den Betreiber gehen.
 - Keine kostenpflichtigen Schnittstellen ohne Freigabe.
 

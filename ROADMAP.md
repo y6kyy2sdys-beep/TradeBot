@@ -20,7 +20,7 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 | Flugrouten beim Anklicken | ☐ | Plan unten, kein Code |
 | Global Risk Layer | ☐ | Schnittstelle in PROJECT_ALFRED.md |
 | Portfolio Risk Center | ☐ | Kennzahlen festgelegt, kein Code |
-| Country Intelligence & Camera Wall (im Länderfenster) | ◐ | UI (Reiter LAGEBILD) auf `alfred-dev`; Quellenrecherche läuft, Katalog wartet auf Freigabe (P4) |
+| Country Intelligence & Camera Wall (im Länderfenster) | ◐ | auf `alfred-dev` vollständig eingebunden (58 freigegebene Quellen); nicht live; Bot-Statusprüfung offen |
 | Automatische Tests | ◐ | `tests/test_depot_keys.py` (S1); Rest TEST_PLAN.md ausstehend |
 
 ## Priorisierte Reihenfolge
@@ -60,6 +60,8 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 17. Country Intelligence & Camera Wall (auf `alfred-dev`, Vorgaben PROJECT_ALFRED.md):
     a) ✔ Quellenrecherche + Freigabe (28.11.2026): 58 Einträge, alle vier Gruppen freigegeben, Auflagen in `catalog/kamera_katalog_2026-11-28.md`;
        Konfliktregel = feste Liste (inkl. VAE) + Hotspot ≥ 3 – bereits in `camwall.js` umgesetzt.
+    ✔ b)–d) umgesetzt am 28.11.2026 auf `alfred-dev` (58 Quellen eingebunden, getestet). Offen: e) Bot-Prüfung (braucht Bot-Änderung,
+       erst nach Freigabe für master sinnvoll) – würde YouTube-Status OFFLINE/LIVE täglich belegen (z. B. TSN derzeit „nicht verfügbar“).
     b) Katalog `docs/cameras.js` mit den freigegebenen Einträgen füllen (Feldformat anpassen, `freigegeben: true`).
        Technik: GIBS-Datum (Vortag, UTC) und JMA-Zeitvorlage `{HHMM}` zur Laufzeit einsetzen; Kennzeichnung „staatsnah“ und
        Skyline-„Vorschau, kein Live-Player“ in der Kachel.

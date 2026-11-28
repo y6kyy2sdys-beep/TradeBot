@@ -38,6 +38,18 @@
 | Leistung (DevTools) | Bildrate 145 → 143 fps mit ALFRED + LAGEBILD offen; neue Dateien ≈ 25 KB |
 Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenreader.
 
+## Ergebnisse P4 Camera Wall (28.11.2026, Playwright, echte Quellen)
+| Prüfung | Ergebnis |
+|---|---|
+| `tests/test_camera_catalog.py` (Pflichtfelder, HTTPS, nocookie, Konfliktgebiete, Auflagen, = freigegebener Katalog) | 7/7 bestanden |
+| Vor „LAGEBILD LADEN“ | 0 Verbindungen zu Kamera-/Stream-Hosts |
+| Alle 30 Bildquellen (inkl. GIBS-Vortag, JMA `{HHMM}`) | 30/30 abrufbar |
+| Deutschland 2×2 | DW live, phoenix nur angekündigter Stream (Status STAND UNBEKANNT), EUMETSAT DELAYED, Skyline-Vorschau |
+| Ukraine (Konfliktgebiet) | nur TSN + 2 Satellitenbilder mit Quellenangabe; TSN zeigt „Video nicht verfügbar“ (kein Livestream) |
+| Reiterwechsel / Schließen | 3 → 0 Einbettungen |
+| Schweiz | 2 Skyline-Vorschauen, Link unverändert auf Kameraseite |
+Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot-Prüfung (ROADMAP 17e).
+
 ## Country Intelligence & Camera Wall (verbindlich, P2/P4)
 | Prüfung | Werkzeug | Phase | Status |
 |---|---|---|---|
