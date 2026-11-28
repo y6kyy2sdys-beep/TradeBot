@@ -33,7 +33,7 @@ Lagezentrale „GLOBAL INTELLIGENCE NETWORK“ und PROJECT CHRONOS; Sicherung `b
 Szenariomodell der Weltkarte: als „SZENARIO-SPIEL (FIKTION)“ abgetrennt (28.11.2026, `alfred-dev`).
 
 ## Nächste Schritte (je mit Freigabe)
-0. ◐ Klimadaten CHRONOS auf `alfred-dev` (28.11.2026).
+0. ✔ Klimadaten CHRONOS live seit 28.11.2026 (CMIP6, World Bank CCKP).
 1. ✔ Stream-Prüfung live seit 28.11.2026 (alle 8 h, YouTube Data API); erster Lauf: 26 live, 2 ohne Livestream, 30 Bilder ok.
 2. ✔ P3 Flugspuren live seit 28.11.2026 (eigene Aufzeichnung); echte Routen nur mit adsb.lol-API-Schlüssel möglich.
 3. Entscheidung Git-Historie (alte S1-Einträge in früheren Commits).

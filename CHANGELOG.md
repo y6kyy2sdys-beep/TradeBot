@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [master] – 28.11.2026 – CHRONOS KLIMA live
+- Fast-Forward `097b6bd..858b022` mit Freigabe; Sicherung `backup/master-vor-klima` (`097b6bd`); kein Force-Push; 49 Tests grün.
+- Pages gebaut 14:41 UTC. Live-Prüfung: Klimadaten geladen, Deutschland 2040–2059 SSP2-4.5 +1,34 °C (Spanne +0,86 bis +2,37 °C), nur Favicon-Fehler.
+
 ## [alfred-dev] – 28.11.2026 – CHRONOS: Reiter KLIMA mit CMIP6-Projektionen
 - Quelle geprüft: World Bank Climate Change Knowledge Portal (CCKP), CMIP6 auf Länder umgerechnet; Lizenz CC BY 4.0 laut Nutzungsbedingungen
   des Portals; öffentliche Schnittstelle ohne Schlüssel; Bezugszeitraum 1995–2014 laut Metadaten (im Browser gelesen, da automatische Abrufe blockiert).
