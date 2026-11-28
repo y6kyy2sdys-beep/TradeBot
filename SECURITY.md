@@ -46,5 +46,9 @@ Empfehlung: fein-granulares Token, nur dieses Repository, nur „Actions: Read a
 - Workflows: kein `pull_request_target`, keine Ausgabe von Secrets, Rechte auf `contents: write` begrenzt.
 - Keine externen `<script>`-Quellen (nur Google-Fonts-CSS).
 
+### Stream-Prüfung (28.11.2026)
+- `YT_API_KEY` nur als GitHub-Secret; der Bot schreibt ihn nie in Datei, Ausgabe oder Fehlermeldung (Test vorhanden).
+- Empfehlung für den Schlüssel: in der Google Cloud auf „YouTube Data API v3“ beschränken (API-Einschränkung), kein Abrechnungskonto nötig.
+
 ## Meldewege
 Sicherheitsprobleme bitte nicht als öffentliches Issue melden, sondern direkt an den Eigentümer.

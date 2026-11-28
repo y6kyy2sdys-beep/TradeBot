@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – Stream-Prüfung für die Camera Wall
+- Befund: Bei mehreren Sendern (Bloomberg, Sky News, ABC News) zeigt der Kanal-Embed `live_stream?channel=` „Video nicht verfügbar“,
+  obwohl der Sender live und einbettbar ist; per Video-ID eingebettet läuft der Stream (im Browser geprüft).
+- Neu `bot/streamcheck.py`: prüft alle freigegebenen Quellen. YouTube über die offizielle **YouTube Data API v3** (Secret `YT_API_KEY`,
+  Entscheidung des Eigentümers): laufender, einbettbarer Livestream + Video-ID; sonst OFFLINE mit Grund; ohne Schlüssel „unbekannt“.
+  Keine YouTube-Webseiten-Abrufe (Nutzungsbedingungen). Bildquellen: HTTP-Abruf (erreichbar + Bildformat). Schreibt `docs/streamstatus.js`.
+- Neu `.github/workflows/streamcheck.yml`: alle 8 Stunden + manuell; Actions per SHA, `requests==2.34.2`; gleiche Concurrency-Gruppe wie die Bots.
+- `camwall.js`: nutzt Prüfergebnisse ≤ 24 h: LIVE mit geprüfter Video-ID (Einbettung per Video), OFFLINE ohne Player-Laden, sonst wie bisher.
+- Tests: `tests/test_streamcheck.py` (8 Prüfungen, nachgebildete Antworten, Schlüssel erscheint nie in Fehlertexten). Playwright mit nachgebildetem Prüfergebnis.
+
 ## [master] – 28.11.2026 – Redesign „Noir“ live
 - Fast-Forward `70d507b..c32bd96` auf master mit Freigabe; Sicherung `backup/master-vor-noir` (`70d507b`); kein Force-Push.
 - Vorher: 32 Tests grün, Datendateien unverändert, keine Geheimnisse. Pages gebaut 14:00 UTC.

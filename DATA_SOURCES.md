@@ -35,6 +35,12 @@ Legende Abruf: **Bot** = GitHub Actions (Server), **Browser** = direkt im Gerät
 | NASA EONET v3 `events?status=open&days=14` | offene Naturereignisse (Waldbrand, Sturm, Vulkan, Flut …) | Browser, nur bei eingeschalteter Ebene | 30 min | nein | offene NASA-Daten, EONET-Disclaimer; CORS `*` geprüft; Eisberge/Wasserfarbe ausgelassen, Erdbeben nur von USGS |
 | GDACS (UN/EU) | Katastrophenwarnungen | – | – | nein | erreichbar, CORS `*`; **Nutzungsbedingungen nicht geprüft → nicht eingebunden** (Kandidat) |
 
+## Stream-Prüfung Camera Wall (28.11.2026, `alfred-dev`)
+| Quelle | Zweck | Abruf | Takt | Schlüssel | Bemerkung |
+|---|---|---|---|---|---|
+| YouTube Data API v3 (`search.list` eventType=live, `videos.list`) | Live-Status + Video-ID der 28 freigegebenen Sender | Bot | alle 8 h | ja, Secret `YT_API_KEY` (kostenlos im Tageskontingent) | ca. 2.800 von 10.000 Einheiten je Lauf; ohne Schlüssel kein Abruf |
+| Bildquellen des Katalogs | Erreichbarkeit | Bot | alle 8 h | nein | gleicher Abruf wie im Browser |
+
 ## Für Global Risk (Phase 4) – weitere Kandidaten, nicht eingebunden
 GDACS, NASA FIRMS, NASA Worldview, GDELT, Open-Meteo, OpenSky, Cloudflare Radar,
 Windy Webcams (API-Schlüssel, Lizenzbedingungen), offiziell einbettbare Kameras, Wirtschaftskalender.

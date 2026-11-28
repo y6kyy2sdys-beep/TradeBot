@@ -50,9 +50,21 @@
   }
   // Status nur aus belegten Angaben: Katalogprüfung, berechneter Bildzeitpunkt oder erklärte Verzögerung – sonst „unbekannt“.
   // OFFLINE setzt die Kachel selbst, wenn ein Bild nicht abrufbar ist. YouTube-Livestatus ist ohne Player-API nicht feststellbar.
+  // Ergebnis der Bot-Prüfung (docs/streamstatus.js, bot/streamcheck.py) – nur verwendet, wenn höchstens 24 h alt
+  const CHECK_MAX_H = 24;
+  function checked(c) {
+    const S = window.CAMSTATUS, r = S && S.items && S.items[c.id];
+    if (!r || !r.checked) return null;
+    const age = (Date.now() - new Date(r.checked)) / 36e5;
+    return age >= 0 && age <= CHECK_MAX_H ? r : null;
+  }
+  const liveVideo = c => { const k = checked(c); return c.embed.typ === "youtube" && k && k.status === "live" && /^[\w-]{11}$/.test(k.videoId || "") ? k : null; };
   function statusOf(c) {
     const chk = c.status_pruefung;
     if (chk && STATUS[chk.status]) return { s: chk.status, zeit: chk.zeit || null };
+    const k = checked(c);
+    if (k && k.status === "offline") return { s: "offline", zeit: k.checked, checked: true, note: k.note };
+    if (liveVideo(c)) return { s: "live", zeit: k.checked, checked: true };
     const r = resolve(c);
     if (r.zeit) return { s: "delayed", zeit: r.zeit, tag: r.tag };
     if (c.verzoegerung_min > 0) return { s: "delayed", zeit: null };
@@ -65,7 +77,8 @@
   const day = iso => new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
   function tileHtml(c, i) {
     const st = statusOf(c);
-    const when = st.tag ? "Tagesbild " + day(st.zeit) + " (UTC)" : st.zeit ? "Stand " + hhmm(st.zeit)
+    const when = st.checked ? (st.s === "live" ? "live laut Prüfung " : (st.note || "nicht erreichbar") + " · Prüfung ") + hhmm(st.zeit)
+      : st.tag ? "Tagesbild " + day(st.zeit) + " (UTC)" : st.zeit ? "Stand " + hhmm(st.zeit)
       : c.verzoegerung_min > 0 ? `verzögert ca. ${c.verzoegerung_min} Min.` : c.embed.typ === "skyline" ? "Vorschau · Stand unbekannt" : "Stand unbekannt";
     return `<div class="cw-tile" data-i="${i}">
       <div class="cw-th"><div class="who">${esc(ART[c.art] || c.art)}${c.kennzeichnung ? ` <span class="cw-tag">${esc(c.kennzeichnung)}</span>` : ""}<b title="${esc(c.betreiber)} · ${esc(c.ort || "")}">${esc(c.betreiber)}${c.ort ? " · " + esc(c.ort) : ""}</b>${esc(when)}</div>
@@ -100,7 +113,8 @@
   }
 
   function embedUrl(c) {
-    let u = c.embed.url;
+    const k = liveVideo(c);   // geprüfte Video-ID: Einbettung per Video funktioniert auch, wo der Kanal-Embed versagt
+    let u = k ? "https://www.youtube-nocookie.com/embed/" + k.videoId : c.embed.url;
     if (c.embed.typ === "youtube") u += (u.includes("?") ? "&" : "?") + "autoplay=1&mute=1&playsinline=1&rel=0";
     return u;
   }
@@ -118,6 +132,8 @@
   }
   function mountTile(tile, c) {
     const m = tile.querySelector(".cw-media"); if (!m || m.firstChild) return;
+    const st = statusOf(c);
+    if (st.checked && st.s === "offline" && c.embed.typ === "youtube") { markOffline(tile, `${st.note || "kein laufender Livestream"} · Prüfung ${hhmm(st.zeit)}`); return; }
     if (c.embed.typ === "skyline") {
       // Auflage SkylineWebcams: unveränderter Original-Embed = Vorschaubild, verlinkt auf die Kameraseite
       const a = document.createElement("a"); a.href = c.quelle_url; a.target = "_blank"; a.rel = "noopener noreferrer";

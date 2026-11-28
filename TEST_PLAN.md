@@ -50,6 +50,13 @@ Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenr
 | Schweiz | 2 Skyline-Vorschauen, Link unverändert auf Kameraseite |
 Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot-Prüfung (ROADMAP 17e).
 
+## Ergebnisse Stream-Prüfung (28.11.2026)
+| Prüfung | Ergebnis |
+|---|---|
+| `tests/test_streamcheck.py` (ohne Schlüssel kein Abruf, live+einbettbar → Video-ID, nicht einbettbar/kein Stream → OFFLINE, API-Fehler → unbekannt, Schlüssel nie im Text, Bild ok/offline, Vorlagen, echter Katalog) | 8/8 |
+| Browser mit nachgebildetem Prüfergebnis | Bloomberg LIVE per Video-ID spielt; ABC OFFLINE ohne Player; Ergebnis > 24 h ignoriert |
+| Echter Bot-Lauf mit API-Schlüssel | ausstehend (nach Übernahme auf master und Hinterlegen des Secrets) |
+
 ## Ergebnisse Redesign „Noir“ (28.11.2026, Playwright, lokal)
 | Prüfung | Ergebnis |
 |---|---|
