@@ -55,7 +55,7 @@ Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot
 |---|---|
 | `tests/test_streamcheck.py` (ohne Schlüssel kein Abruf, live+einbettbar → Video-ID, nicht einbettbar/kein Stream → OFFLINE, API-Fehler → unbekannt, Schlüssel nie im Text, Bild ok/offline, Vorlagen, echter Katalog) | 8/8 |
 | Browser mit nachgebildetem Prüfergebnis | Bloomberg LIVE per Video-ID spielt; ABC OFFLINE ohne Player; Ergebnis > 24 h ignoriert |
-| Echter Bot-Lauf mit API-Schlüssel | ausstehend (nach Übernahme auf master und Hinterlegen des Secrets) |
+| Echter Bot-Lauf mit API-Schlüssel (46153832833) | erfolgreich: 26 live, 2 offline, 30 Bilder ok; live geprüft: ABC/Sky spielen |
 
 ## Ergebnisse Redesign „Noir“ (28.11.2026, Playwright, lokal)
 | Prüfung | Ergebnis |

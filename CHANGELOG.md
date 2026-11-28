@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [master] – 28.11.2026 – Stream-Prüfung live
+- Fast-Forward `c32bd96..6e05945` mit Freigabe; Sicherung `backup/master-vor-streamcheck` (`c32bd96`); kein Force-Push.
+- Erster Lauf (manuell, 46153832833, mit `YT_API_KEY`): 58 Quellen – 26 YouTube live mit Video-ID, 2 ohne laufenden Livestream
+  (phoenix, NTN24), 30 Bildquellen erreichbar. Kein Schlüssel in `docs/streamstatus.js`.
+- Live-Prüfung: ABC News und Sky News (vorher „Video nicht verfügbar“) laufen jetzt per Video-ID, ebenso DW und NHK.
+  Hinweis: Bei Einbettung per Video-ID kann YouTube Werbung vorschalten (Verhalten von YouTube); Konsolenmeldungen aus dem
+  YouTube-Player (Werbe-Messaufrufe) stammen nicht vom Dashboard.
+
 ## [alfred-dev] – 28.11.2026 – Stream-Prüfung für die Camera Wall
 - Befund: Bei mehreren Sendern (Bloomberg, Sky News, ABC News) zeigt der Kanal-Embed `live_stream?channel=` „Video nicht verfügbar“,
   obwohl der Sender live und einbettbar ist; per Video-ID eingebettet läuft der Stream (im Browser geprüft).

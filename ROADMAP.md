@@ -33,7 +33,7 @@ Lagezentrale „GLOBAL INTELLIGENCE NETWORK“ und PROJECT CHRONOS; Sicherung `b
 Offen: Entscheidung über das alte Szenariomodell der Weltkarte (Basis/Stagnation/Dystopie bis 2050).
 
 ## Nächste Schritte (je mit Freigabe)
-1. ◐ Stream-Prüfung umgesetzt auf `alfred-dev` (28.11.2026) – wirksam nach Übernahme auf master und mit Secret `YT_API_KEY`.
+1. ✔ Stream-Prüfung live seit 28.11.2026 (alle 8 h, YouTube Data API); erster Lauf: 26 live, 2 ohne Livestream, 30 Bilder ok.
 2. P3 Flugrouten.
 3. Entscheidung Git-Historie (alte S1-Einträge in früheren Commits).
 4. Automatische Tests in GitHub Actions (`node --test`, `unittest`), S4 (Schrift lokal, Favicon), S2-Hinweis.
