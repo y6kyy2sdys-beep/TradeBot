@@ -6,12 +6,13 @@
   und nachgebildeten Datenquellen. Diese Ergebnisse sind nicht reproduzierbar abgelegt.
 - In Phase 0/1 wurden **keine** Tests ausgeführt (nur Analyse und Dokumentation).
 - 24.11.2026: MCP-Funktionstest (Playwright, Chrome DevTools) gegen die Live-Seite: keine JS-Fehler; Befunde in ROADMAP.md.
-- 28.11.2026: `tests/test_depot_keys.py` (S1) – lokal: `python3 -m unittest discover -s tests`. Läuft noch nicht in Actions.
+- 28.11.2026: `tests/test_depot_keys.py` (S1) – lokal: `python3 -m unittest discover -s tests`.
+- 28.11.2026: Workflow `.github/workflows/tests.yml` – Python-Tests (26), JS-Tests (23), `node --check` aller Module und Syntaxprüfung der Inline-Skripte in `index.html` bei jedem Code-Push auf `alfred-dev`/`master` und bei Pull-Requests; Bot-Datencommits lösen ihn nicht aus. Erster Lauf 46156253603 grün.
 
 ## Geplante Test-Ebenen
 | Ebene | Werkzeug (Vorschlag) | Läuft wo | Status |
 |---|---|---|---|
-| Python-Berechnungen (Indikatoren, Backtest, Depot-Schlüssel) | `unittest` (Standardbibliothek, keine Installation) | GitHub Actions vor jedem Lauf | ausstehend |
+| Python-Berechnungen (Indikatoren, Backtest, Depot-Schlüssel) | `unittest` (Standardbibliothek, keine Installation) | GitHub Actions bei Code-Änderungen (`tests.yml`) | aktiv seit 28.11.2026 |
 | Seite lädt ohne JS-Fehler, alle Blöcke rendern | Playwright (Python oder Node) mit lokalen Beispieldaten | Actions / lokal | ausstehend |
 | Globus: Drehen, Zoom, Klick auf Land/Flugzeug, Infofenster, Esc | Playwright | lokal / Actions | ausstehend |
 | Kartenebenen ein/aus, Doomsday an/aus, Intro überspringbar | Playwright | lokal / Actions | ausstehend |

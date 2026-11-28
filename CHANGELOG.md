@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – Tests in GitHub Actions
+- Neu `.github/workflows/tests.yml`: Python-Unittests (26), Node-Tests (23), `node --check` für `docs/*.js`, Syntaxprüfung der Inline-Skripte in `docs/index.html`.
+- Auslöser: Push auf `alfred-dev`/`master` mit Pfadfilter (nur Code, nicht die Bot-Datendateien), Pull-Requests, manuell.
+- Sicherheit: `permissions: contents: read`, `persist-credentials: false`, Actions per Commit-SHA gepinnt (setup-node v4 `49933ea`), Pakete aus `requirements.txt` mit festen Versionen; keine Secrets.
+- Erster Lauf auf `alfred-dev` (46156253603) grün. Auf `master` noch nicht übernommen.
+
 ## [master] – 28.11.2026 – CHRONOS KLIMA live
 - Fast-Forward `097b6bd..858b022` mit Freigabe; Sicherung `backup/master-vor-klima` (`097b6bd`); kein Force-Push; 49 Tests grün.
 - Pages gebaut 14:41 UTC. Live-Prüfung: Klimadaten geladen, Deutschland 2040–2059 SSP2-4.5 +1,34 °C (Spanne +0,86 bis +2,37 °C), nur Favicon-Fehler.
