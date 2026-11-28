@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – Redesign Variante A „Noir“: Lagezentrale + PROJECT CHRONOS
+- Auswahl des Eigentümers aus drei Prototypen (`docs/proto/alfred-design.html`): Variante A „Noir“.
+- Neu `docs/globe3d.js` (`window.TB_globe`): Globus-Renderer mit d3-geo auf Canvas (keine neue Bibliothek) – Sternenhimmel,
+  Atmosphärenleuchten, leuchtende Grenzen, Koordinatennetz, Kamerafahrten, Ziehen zum Drehen, Länderauswahl; zeichnet nur bei Bedarf,
+  Eigendrehung nur ohne reduzierte Bewegung und bei sichtbarem Tab.
+- Camera Wall: Noir-Kacheln (goldene/grüne Eckrahmen), neue bildschirmfüllende **Lagezentrale „GLOBAL INTELLIGENCE NETWORK“**
+  (Knopf „⛶ LAGEZENTRALE“ im Reiter LAGEBILD): Land oder Weltübersicht, große Kacheln, Mini-Globus mit Quellen, ALFRED-Lage, Regeln,
+  Vollbild für Wand und Einzelquelle. Gleiche Regeln: Laden nur nach Zustimmung, Konfliktfilter, Aufräumen beim Schließen (Esc).
+- **PROJECT CHRONOS** (`docs/chronos.js`) ersetzt die frühere Doomsday-Cartoon-Animation: DOOMSDAY schaltet die Kartenlage wie bisher ein
+  und öffnet CHRONOS. Zeitachse 2026–2050 mit Abspielen/Pause/Neustart/1×–4×, Reiter Geopolitik/Wirtschaft/Klima, ALFRED-Analysefenster.
+  Nur belegte Daten: IMF WEO bis zum letzten Datenjahr (2030), danach ausdrücklich keine Werte; Geopolitik nur heutiger Stand;
+  Klima „nicht konfiguriert“. IMF-Ländergruppen werden nicht als Länder gezählt. Das frühere Szenariomodell wird in CHRONOS nicht verwendet.
+- Tests: `tests/chronos.test.js` (6 Prüfungen). Playwright: CHRONOS (Bedienung, Regler, Jahr ohne Daten, Länderklick, Esc),
+  Lagezentrale (Land/Welt, Zustimmung, Aufräumen), Handy 390 px; keine neuen Konsolenfehler.
+  Bei der Prüfung behoben: Ländergruppen in der Statistik, Jahresregler setzte zurück, Indikator-Auswahl in Geopolitik sichtbar, Handy-Layout.
+
 ## [master] – 28.11.2026 – PROJECT A.L.F.R.E.D. live
 - Merge `alfred-dev` → master (`70d6711`) mit Freigabe; Sicherung `backup/master-vor-alfred` (`5ce4046`); kein Force-Push.
 - Vor dem Push: 26 Tests grün, keine Konflikte, keine Datendateien verändert, keine Geheimnisse gefunden.

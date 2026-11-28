@@ -44,6 +44,16 @@ Sicherung des heutigen Designs: Branch `backup/design-matrix-v1` (Stand vor alle
 | Ladehinweis | vor dem ersten Laden: „Beim Öffnen werden Daten an den Betreiber übertragen“, Knopf „LAGEBILD LADEN“ |
 | Wayne-Anteil | kein Gold in Kacheln; optional ein kleiner Radar-Strich im Reiterkopf (aus bei reduzierter Bewegung) |
 
+## Redesign Variante A „Noir“ (gewählt am 28.11.2026)
+| Element | Regel |
+|---|---|
+| Vollbild-Ansichten (Lagezentrale, CHRONOS) | Hintergrund `#000`, Sternenhimmel nur in CHRONOS/Globus; Titel mit großer Laufweite, Lagezentrale gold, CHRONOS grün |
+| Eckrahmen | oben links gold (2 px), unten rechts Matrix-Grün (2 px) – Kacheln, ALFRED-Fenster, Panels |
+| Globus | d3-geo orthografisch auf Canvas; Atmosphärenleuchten grün, Grenzen leuchtend `rgba(0,255,65,.55)`, Auswahl gold; Licht von oben links rein gestalterisch |
+| Datenfarben | unverändert die validierten Skalen der Weltkarte (Wachstum divergierend, Inflation sequenziell, Eskalation ordinal) |
+| Zeitachse | Band „IMF-Daten“ grün, Jahre ohne Daten schraffiert + Text; Knopf grün; Tastatur ← → Leertaste Esc |
+| Bewegung | Kamerafahrten 1,3–2,2 s ease-in-out; Eigendrehung ≤ 30 Bilder/s; bei reduzierter Bewegung keine Drehung/Fahrt |
+
 ## Verboten
 Comic-Elemente, Fledermaus-Symbole, zusätzliche Dauer-Animationen, neue Hintergrundfarben, Glassmorphism-Effekte,
 Schriftwechsel im Fließtext.

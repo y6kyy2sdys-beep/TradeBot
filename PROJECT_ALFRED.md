@@ -103,3 +103,11 @@ Ohne geeignete Quelle erscheint transparent: „Keine geprüfte öffentliche Que
 - **P4 (Integration auf `alfred-dev`):** Quellenrecherche und Freigabeliste, Katalog, Einbettung, Statuslogik, optionale Bot-Prüfung, Tests.
 - **Stand 28.11.2026:** UI-Gerüst umgesetzt (P2). Quellenkatalog recherchiert und **freigegeben** (58 Einträge, 28 Länder,
   `catalog/kamera_katalog_2026-11-28.md` mit Auflagen je Gruppe). Übernahme in `docs/cameras.js` folgt mit P4.
+
+## PROJECT CHRONOS (umgesetzt 28.11.2026, `alfred-dev`)
+Ersetzt die frühere Doomsday-Animation. Verbindlich: keine erfundenen Daten, Prognosen oder Eintrittswahrscheinlichkeiten.
+- Wirtschaft: IMF World Economic Outlook (Ist + IMF-Prognose) bis zum letzten Datenjahr – danach keine Werte, sichtbar gekennzeichnet.
+- Geopolitik: nur heutiger Stand (Schlagzeilen-Zählung, Krisenregionen 48 h), keine Fortschreibung.
+- Klima: nicht konfiguriert; mögliche Quellen (IPCC AR6, World Bank CCKP) erst nach Lizenz-/Abrufprüfung, dann als Projektion Dritter gekennzeichnet.
+- Das interne Szenariomodell der Weltkarte (Basis/Stagnation/Dystopie bis 2050) bleibt dort unverändert, wird in CHRONOS aber nicht verwendet –
+  Entscheidung über seine Zukunft steht aus.

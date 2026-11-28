@@ -82,7 +82,8 @@
     const grid = n < 2 ? 1 : choice;
     const seg = `<span class="cw-seg" role="group" aria-label="Anzahl Quellen nebeneinander">${[1, 2, 4].map(g =>
       `<button type="button" data-grid="${g}" aria-pressed="${g === grid}"${g > 1 && n < 2 ? " disabled" : ""}>${g === 4 ? "2×2" : g}</button>`).join("")}</span>`;
-    const head = `<div class="cw-head"><span class="radar" aria-hidden="true"></span><span class="t">Country Intelligence · Lagebild</span>${seg}</div>`;
+    const head = `<div class="cw-head"><span class="radar" aria-hidden="true"></span><span class="t">Country Intelligence · Lagebild</span>${seg}
+      <button type="button" class="cw-wallbtn" data-cw-wall title="Bildschirmfüllende Lagezentrale">⛶ LAGEZENTRALE</button></div>`;
     const conflictNote = S.conflict ? `<div class="cw-note" style="margin-bottom:8px">Krisen-/Konfliktgebiet: nur redaktionelle Lagebilder und zeitversetzte zivile Übersichten. Keine Kameras auf Stellungen, Truppenbewegungen, Schutzräume oder sensible Einrichtungen.</div>` : "";
     if (!n) {
       const reason = !approved().length ? "Quellenkatalog noch nicht freigegeben."
@@ -143,6 +144,7 @@
       if (e.target.closest("[data-cw-load]")) { ss.set(CONSENT_KEY, "1"); const g = pane.querySelector("[data-cw-gate]"); if (g) g.hidden = true; mountVisible(); }
       const gb = e.target.closest("[data-grid]");
       if (gb && !gb.disabled) { ss.set(GRID_KEY, gb.dataset.grid); unmountAll(pane); pane.innerHTML = html(iso, name, stufe); mountVisible(); }
+      if (e.target.closest("[data-cw-wall]")) { openWall({ iso, name, stufe }); return; }
       const fb = e.target.closest("[data-fs]");
       if (fb) { const t = fb.closest(".cw-tile"); if (document.fullscreenElement) document.exitFullscreen(); else if (t.requestFullscreen) t.requestFullscreen(); }
     });
@@ -165,5 +167,67 @@
   }
   function summary() { return { total: items().length, approved: approved().length, stand: (window.CAMS || {}).stand || null }; }
 
-  window.TB_camwall = { html, bind, hotspotLink, summary };
+  /* ---------------- Lagezentrale „GLOBAL INTELLIGENCE NETWORK“ (Variante A Noir) ----------------
+     Bildschirmfüllend, für ein Land oder eine Weltauswahl. Gleiche Regeln wie im Reiter: Laden erst nach Zustimmung,
+     Konfliktfilter, Ton aus, beim Schließen werden alle Einbettungen entfernt. */
+  const WORLD_PICK = ["deu-dw-news", "usa-abc-news-live", "jpn-nhk-world", "gbr-sky-news", "usa-goes-conus", "deu-eumetsat-mitteleuropa"];
+  function worldSources() {
+    const A = approved();
+    return WORLD_PICK.map(id => A.find(c => c.id === id)).filter(c => c && (!isConflict(c.iso) || (CONFLICT_ART.has(c.art) && c.konfliktzone_zulaessig === true)));
+  }
+  let wallEl = null;
+  function closeWall() {
+    if (!wallEl) return;
+    if (document.fullscreenElement && wallEl.contains(document.fullscreenElement)) document.exitFullscreen().catch(() => {});
+    unmountAll(wallEl); if (wallEl._globe) wallEl._globe.destroy(); wallEl.remove(); wallEl = null;
+    document.body.classList.remove("cw-wall-open"); removeEventListener("keydown", wallKey);
+  }
+  function wallKey(e) { if (e.key === "Escape" && !document.fullscreenElement) closeWall(); }
+  function openWall(scope) {
+    closeWall();
+    const list = scope && scope.iso ? sourcesFor(scope.iso).ok.slice(0, 6) : worldSources();
+    const title = scope && scope.iso ? esc(scope.name) : "WELTÜBERSICHT";
+    const consent = ss.get(CONSENT_KEY) === "1";
+    const hs = ((window.DOOM || {}).hotspots || []).filter(h => h.level >= 3).sort((a, b) => b.level - a.level).slice(0, 6);
+    const conflict = scope && scope.iso && isConflict(scope.iso);
+    wallEl = document.createElement("div"); wallEl.id = "cwWall"; wallEl.setAttribute("role", "dialog"); wallEl.setAttribute("aria-label", "Lagezentrale");
+    wallEl.innerHTML = `<div class="gw-head"><div class="gw-title">GLOBAL INTELLIGENCE NETWORK<small>WAYNE INTELLIGENCE · A.L.F.R.E.D. · LAGEZENTRALE · ${title}</small></div>
+        <div class="gw-sp"></div><span class="gw-k">QUELLEN <b>${list.length}</b></span><span class="gw-k">KATALOG <b>${esc((window.CAMS || {}).stand || "–")}</b></span>
+        <span class="gw-k"><b data-gw-clock></b></span>
+        ${scope && scope.iso ? `<button type="button" class="gw-btn" data-gw-world>◎ WELT</button>` : ""}
+        <button type="button" class="gw-btn" data-gw-fs>⛶ VOLLBILD</button><button type="button" class="gw-btn" data-gw-close aria-label="Lagezentrale schließen">✕</button></div>
+      <div class="gw-body">
+        <div class="gw-grid n${Math.max(1, list.length)}">${list.length ? list.map((c, i) => tileHtml(c, i)).join("")
+          : `<div class="cw-empty gw-empty"><span class="spill unavailable">UNAVAILABLE</span><b>Keine geprüfte öffentliche Quelle für ${title}</b>${approved().length ? "Für dieses Land ist keine zugelassene Quelle im Katalog." : "Quellenkatalog noch nicht freigegeben."}</div>`}
+          ${list.length && !consent ? `<div class="gw-gate"><div>Beim Laden werden Daten (u. a. IP-Adresse) an die Betreiber der Quellen übertragen. Ton ist aus.</div>
+            <button type="button" class="dbtn" data-gw-load>▶ LAGEBILD LADEN (${list.length} ${list.length === 1 ? "Quelle" : "Quellen"})</button></div>` : ""}</div>
+        <aside class="gw-rail">
+          <div class="gw-panel gw-globe"><h5>GLOBUS · QUELLEN</h5><div class="gw-mini"><canvas aria-label="Globus mit Quellenstandorten"></canvas></div></div>
+          <div class="gw-panel"><h5>A.L.F.R.E.D. · LAGE</h5>${hs.map(h => `<div class="gw-row"><span>${esc(h.name)}</span><b>${h.level}/5</b></div>`).join("") || '<div class="muted">keine Krisenregion ≥ 3</div>'}
+            <div class="gw-src">Meldungsdichte 48 h (doomsday.js) · keine Positionsdaten</div></div>
+          <div class="gw-panel"><h5>REGELN</h5>${conflict ? "<b class='gw-warn'>Konfliktgebiet:</b> nur redaktionelle/zeitversetzte Lagebilder. " : ""}Laden nur nach Zustimmung · Ton aus · keine Aufzeichnung · keine Kameras auf militärische oder sensible Orte</div>
+        </aside></div>
+      <div class="gw-foot">STATUS: LIVE = Quelle sendet · DELAYED = zeitversetzt/Standbild · OFFLINE = nicht erreichbar · STAND UNBEKANNT = nicht prüfbar · Esc schließt</div>`;
+    document.body.appendChild(wallEl); document.body.classList.add("cw-wall-open"); addEventListener("keydown", wallKey);
+    const clock = wallEl.querySelector("[data-gw-clock]"), tick = () => { if (clock.isConnected) { clock.textContent = new Date().toISOString().slice(11, 16) + " UTC"; setTimeout(tick, 20000); } }; tick();
+    const mount = () => wallEl.querySelectorAll(".cw-tile").forEach(t => mountTile(t, list[+t.dataset.i]));
+    if (consent) mount();
+    wallEl.addEventListener("click", e => {
+      if (e.target.closest("[data-gw-close]")) return closeWall();
+      if (e.target.closest("[data-gw-world]")) return openWall(null);
+      if (e.target.closest("[data-gw-load]")) { ss.set(CONSENT_KEY, "1"); const gt = wallEl.querySelector(".gw-gate"); if (gt) gt.remove(); mount(); return; }
+      if (e.target.closest("[data-gw-fs]")) { if (document.fullscreenElement) document.exitFullscreen(); else if (wallEl.requestFullscreen) wallEl.requestFullscreen(); return; }
+      const fb = e.target.closest("[data-fs]");
+      if (fb) { const t = fb.closest(".cw-tile"); if (document.fullscreenElement === t) document.exitFullscreen(); else if (t.requestFullscreen) t.requestFullscreen(); }
+    });
+    if (window.TB_globe) {
+      const g = window.TB_globe.create(wallEl.querySelector(".gw-mini canvas"), { r: .44, stars: 90, rotate: [-5, -40, 0], spin: true });
+      g.markers = list.map(c => { const ll = g.centroid(c.iso) || [0, 0]; return { lon: ll[0], lat: ll[1], r: 4, label: c.iso }; });
+      if (scope && scope.iso) { g.sel = scope.iso; const ll = g.centroid(scope.iso); if (ll) { g.setSpin(false); g.flyTo(ll, 1400); } }
+      g.redraw(); wallEl._globe = g;
+    }
+    wallEl.querySelector("[data-gw-close]").focus();
+  }
+
+  window.TB_camwall = { html, bind, hotspotLink, summary, openWall, closeWall };
 })();

@@ -28,6 +28,9 @@ Merge `alfred-dev` → master mit Freigabe des Eigentümers: Commit `70d6711` (F
 Sicherung `backup/master-vor-alfred` = `5ce4046`. Pages gebaut 13:16 UTC, Live-Prüfung mit Playwright bestanden,
 Bot-Lauf 46148816499 (manuell, scan) erfolgreich. Rückweg: `git revert -m 1 70d6711`.
 
+## Redesign Variante A „Noir“ (28.11.2026, `alfred-dev`, nicht live)
+Lagezentrale „GLOBAL INTELLIGENCE NETWORK“ und PROJECT CHRONOS umgesetzt und geprüft; Übernahme auf master nur mit Freigabe.
+
 ## Nächste Schritte (je mit Freigabe)
 1. Tägliche Bot-Statusprüfung der YouTube-Streams (OFFLINE statt „Video nicht verfügbar“).
 2. P3 Flugrouten.

@@ -50,6 +50,17 @@ Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenr
 | Schweiz | 2 Skyline-Vorschauen, Link unverändert auf Kameraseite |
 Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot-Prüfung (ROADMAP 17e).
 
+## Ergebnisse Redesign „Noir“ (28.11.2026, Playwright, lokal)
+| Prüfung | Ergebnis |
+|---|---|
+| `tests/chronos.test.js` | 6/6 (Datenende, keine Fortschreibung, Ländergruppen ausgeschlossen, Statistik) |
+| DOOMSDAY → Kartenlage an + CHRONOS offen | ja |
+| Zeitachse: Regler, Abspielen 4×, Pause, Neustart, ← → | funktioniert |
+| Jahr 2040 Wirtschaft | „keine gestützten Länderdaten“, keine Färbung |
+| Geopolitik / Klima | „nicht fortgeschrieben“ / „nicht konfiguriert“ |
+| Lagezentrale Land (DEU) und Welt | 0 Einbettungen vor Zustimmung, danach 4 bzw. 6; Esc entfernt alles |
+| Handy 390 px | keine Überlappung, kein Querscrollen |
+
 ## Ergebnisse P4 Global Risk Layer (28.11.2026)
 | Prüfung | Ergebnis |
 |---|---|

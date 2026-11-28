@@ -54,7 +54,9 @@ Beide nutzen `concurrency: signals`, Actions `actions/checkout@v4`, `actions/set
 (`window.TB_alfred`, ALFRED + Befehlsliste) danach. `docs/risk.js` (`window.TB_risk`, Portfolio Risk Center, rechnet nur im Browser,
 lädt profiles.js erst beim Öffnen) wird vor alfred.js geladen; sein Rechenkern ist zusätzlich als Node-Modul testbar.
 `docs/risklayer.js` (`window.TB_risklayer`, Global Risk Layer) zeichnet über `TB_map.overlay()` in eine eigene SVG-Gruppe der Weltkarte,
-die bei Zoom, Drehen und Kartenwechsel mit neu positioniert wird; die Umwandlungsfunktionen sind ebenfalls als Node-Modul testbar. `index.html` stellt dafür `window.TB_map` bereit (Land öffnen, Namen, Eskalation).
+die bei Zoom, Drehen und Kartenwechsel mit neu positioniert wird; die Umwandlungsfunktionen sind ebenfalls als Node-Modul testbar.
+`docs/globe3d.js` (`window.TB_globe`, Canvas-Globus) wird nach dem Haupt-Skript geladen und von der Lagezentrale (`camwall.js`) und
+`docs/chronos.js` (`window.TB_chronos`, geöffnet über DOOMSDAY) genutzt; der CHRONOS-Datenkern ist als Node-Modul testbar. `index.html` stellt dafür `window.TB_map` bereit (Land öffnen, Namen, Eskalation).
 
 Eine Datei, CSS inline, JavaScript in einer IIFE, Module als benannte Funktionen:
 
