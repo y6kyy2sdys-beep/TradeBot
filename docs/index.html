@@ -600,6 +600,21 @@ section.panel:hover { border-color: var(--line-strong); }
 .mapcard.camwide { width: min(760px, calc(100% - 16px)); }
 body.app .mapcard.cam { max-height: none; }
 @media (max-width: 600px) { .cw-grid.g2, .cw-grid.g4 { grid-template-columns: 1fr; } }
+/* Global Risk Layer */
+.rlbtn { background: transparent; color: var(--warn); border: 1px solid rgba(250,178,25,.55); padding: 6px 14px; cursor: pointer; letter-spacing: .18em; font-family: var(--font); font-size: calc(13px * var(--fs)); margin-left: 6px; }
+.rlbtn:hover { border-color: var(--warn); }
+.rlbtn[aria-pressed="true"] { background: var(--warn); color: #000; border-color: var(--warn); }
+.rl-bar { border: 1px solid var(--line); border-top: 0; padding: 8px 10px; font-size: calc(11.5px * var(--fs)); color: var(--muted); }
+.rl-legend, .rl-srcs { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.rl-srcs { margin-top: 6px; }
+.rl-key { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.rl-key svg { width: 14px; height: 14px; }
+.rl-key b { font-weight: normal; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rl-src a { color: var(--muted); }
+.rl-list { margin-top: 6px; }
+.rl-list summary { cursor: pointer; color: var(--matrix); letter-spacing: .1em; }
+path.rl { cursor: pointer; }
+path.rl:focus { outline: none; stroke: #fff; stroke-width: 2; }
 /* Portfolio Risk Center */
 details.risk { margin-top: 14px; border: 1px solid var(--line); background: rgba(0,6,2,.6); position: relative; }
 details.risk::before { content: ""; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
@@ -757,6 +772,7 @@ body.app #alfred { right: 8px; left: 8px; bottom: 8px; width: auto; }
       <span class="seg" role="group" aria-label="Kartenmodus" id="mapMode"></span>
       <span class="seg" role="group" aria-label="Szenario" id="mapScen"></span>
       <button type="button" class="doombtn" id="doomBtn" aria-pressed="false" title="Frühwarnsystem: Militärflugzeuge und Konflikt-Meldungslage">☢ DOOMSDAY</button>
+      <button type="button" class="rlbtn" id="riskLayerBtn" aria-pressed="false" title="Global Risk Layer: Erdbeben (USGS) und Naturereignisse (NASA EONET) – lädt erst beim Einschalten">◎ RISK LAYER</button>
     </div>
     <div class="yearbox" id="yearBox">
       <button type="button" class="tbtn" id="yearPlay" aria-label="Jahre abspielen">▶</button>
@@ -1406,6 +1422,8 @@ function renderComCards() {
   const pathsG = zg.append("g");
   const frontG = zg.append("g").attr("class", "front").attr("display", "none");
   const mk = zg.append("g").attr("class", "doomlayer").attr("display", "none");
+  const ovG = zg.append("g").attr("class", "overlays");   // Zusatzebenen (z. B. Global Risk Layer, risklayer.js)
+  const overlays = [];
   const tip = document.getElementById("mapTip");
   const resetBtn = document.getElementById("mapReset"), card = document.getElementById("mapCard"), flatBtn = document.getElementById("mapFlat");
   // Globus: beim Herauszoomen (unter ~85 %) wird die Karte zur drehbaren Kugel
@@ -1551,8 +1569,15 @@ function renderComCards() {
     frontG.attr("display", null);
     frontG.selectAll("path").data(F.features).join("path").attr("class", f => "fr " + f.properties.k).attr("d", globe ? gpath : path);
   }
+  function drawOverlays() {
+    if (!overlays.length) return;
+    const P = globe ? ortho : projection, rot = ortho.rotate(), center = [-rot[0], -rot[1]];
+    const pos = (lon, lat) => { if (globe && d3.geoDistance([lon, lat], center) > Math.PI / 2 - 0.03) return null; return P([lon, lat]); };
+    overlays.forEach(fn => { try { fn(pos, 1 / curK); } catch (e) { console.warn("Zusatzebene:", e); } });
+  }
   function drawMarkers() {
     drawFront();
+    drawOverlays();
     if (!doom || !acSel || !hsSel) { mk.attr("display", doom ? null : "none"); if (!doom || !hsSel) return; }
     mk.attr("display", null);
     const P = globe ? ortho : projection, s = 1 / curK, rot = ortho.rotate(), center = [-rot[0], -rot[1]];
@@ -1971,6 +1996,13 @@ function renderComCards() {
     name: nameOf,
     list: () => Object.keys(NAME).map(iso => [iso, nameOf(iso)]).sort((a, b) => a[1].localeCompare(b[1], "de")),
     escalation: iso => W.escalation[iso] || null,
+    // Zusatzebenen: eigene SVG-Gruppe; fn(pos, scale) wird bei jedem Zoomen/Drehen/Kartenwechsel aufgerufen
+    overlay(fn) { overlays.push(fn); drawOverlays(); return ovG.node(); },
+    redraw: drawOverlays,
+    info(html) { card.classList.remove("wide"); card.innerHTML = `<button class="x" type="button" aria-label="Schließen">✕</button>${html}`;
+      card.querySelector(".x").addEventListener("click", () => card.classList.remove("open")); card.classList.add("open"); },
+    showTip(html, ev) { doomTip(ev, html); },
+    hideTip() { tip.style.display = "none"; },
   };
   card.addEventListener("click", e => { const b = e.target.closest("[data-cam-iso]"); if (b) window.TB_map.open(b.dataset.camIso, "cam"); });
 
@@ -2958,6 +2990,7 @@ renderCom();
 })();
 </script>
 <script src="risk.js"></script>
+<script src="risklayer.js"></script>
 <script src="alfred.js"></script>
 </body>
 </html>

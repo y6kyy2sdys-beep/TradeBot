@@ -50,6 +50,17 @@ Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenr
 | Schweiz | 2 Skyline-Vorschauen, Link unverändert auf Kameraseite |
 Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot-Prüfung (ROADMAP 17e).
 
+## Ergebnisse P4 Global Risk Layer (28.11.2026)
+| Prüfung | Ergebnis |
+|---|---|
+| `tests/risklayer.test.js` (USGS/EONET-Umwandlung, Schwere-Stufen, Schnittstelle, leere Antworten) | 5/5 bestanden |
+| Ebene aus | 0 Abrufe bei USGS/NASA |
+| Ebene an (Live) | beide Quellen LIVE, 85 Ereignisse (76 Erdbeben, 9 Waldbrände), alle Marker gezeichnet |
+| Globus | nur Ereignisse der sichtbaren Halbkugel (29 von 85), drehen mit |
+| Infofenster | Schwere, bestätigt/vorläufig, Magnitude, Tiefe, PAGER, Tsunami-Hinweis, Quelle |
+| Zusammen mit Doomsday | Flugzeuge, Hotspots und Risk Layer gleichzeitig; keine neuen Konsolenfehler |
+| Ausschalten | Marker und Leiste weg, Wahl gemerkt |
+
 ## Ergebnisse P4 Portfolio Risk Center (28.11.2026)
 | Prüfung | Ergebnis |
 |---|---|

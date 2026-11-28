@@ -41,7 +41,8 @@ ALFRED
 
 ## Weitere Module (nur Planung, siehe ROADMAP.md)
 - **Flugroute** auf dem bestehenden Globus (Phase 3).
-- **Global Risk Layer** mit einheitlicher Anbieter-Schnittstelle (Phase 4):
+- **Global Risk Layer** – umgesetzt auf `alfred-dev` (28.11.2026, `docs/risklayer.js`): USGS-Erdbeben + NASA EONET, Schalter „◎ RISK LAYER“,
+  lädt erst beim Einschalten; Schwere 0–4 nach festen, im Code dokumentierten Regeln (keine amtliche Warnstufe). Schnittstelle (Phase 4):
   `{ id, name, source, license, needsKey, refreshSec, fetch(), toEvents() }` →
   Ereignis `{ id, type, lat, lon, time, severity 0–4, title, source, url, fetchedAt, confidence: fact|possible|forecast }`.
 - **Country Intelligence & Camera Wall** (UI-Gerüst P2, Integration P4) – verbindliche Anforderungen im eigenen Abschnitt unten.

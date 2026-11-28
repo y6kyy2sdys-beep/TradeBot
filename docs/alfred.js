@@ -54,7 +54,17 @@
         <div class="al-src">Zusammenhang, keine Lagebewertung: Zählung von Konflikt-Schlagzeilen (${esc((Object.values(WD.escalation || {})[0] || {}).quelle || "Nachrichten-Zählung")}). Stand ${esc(when(WD.generated))}.</div></div>
       <div class="al-sec"><h5>Krisenregionen · Meldungsdichte ≥ 3</h5>${hs.map(h =>
         `<div class="al-row"><div class="l">${esc(h.name)}<small>${(h.news || []).length} Meldungen (48 h)</small></div><b>${h.level}/5</b></div>`).join("") || '<div class="muted">keine</div>'}
-        <div class="al-src">Meldungslage der letzten 48 Stunden, keine Positionsdaten von Truppen oder Schiffen. Stand ${esc(when(DOOM.generated))}.</div></div>`;
+        <div class="al-src">Meldungslage der letzten 48 Stunden, keine Positionsdaten von Truppen oder Schiffen. Stand ${esc(when(DOOM.generated))}.</div></div>
+      ${riskLayerSec()}`;
+  }
+  function riskLayerSec() {
+    const RL = window.TB_risklayer;
+    if (!RL) return "";
+    if (!RL.isOn()) return `<div class="al-sec"><h5>Naturereignisse</h5><div class="muted">Global Risk Layer ist aus – Schalter „◎ RISK LAYER“ an der Weltkarte.</div></div>`;
+    const top = RL.events().sort((a, b) => b.severity - a.severity || new Date(b.time) - new Date(a.time)).slice(0, 5), st = RL.summary().status;
+    return `<div class="al-sec"><h5>Naturereignisse · stärkste</h5>${top.map(e =>
+        `<div class="al-row"><div class="l">${esc(e.title)}<small>${esc(RL.TYPES[e.type].label)} · ${esc(when(e.time))} · ${e.confidence === "fact" ? "bestätigt" : "vorläufig"}</small></div><b>${e.severity}/4</b></div>`).join("") || '<div class="muted">keine geladen</div>'}
+      <div class="al-src">Live-Abruf: ${st.map(s => `${esc(s.source)} ${s.ok ? "· " + esc(when(s.fetchedAt)) : "· nicht verfügbar"}`).join(" / ")}. Schwere 0–4 = Einordnung des Dashboards, keine amtliche Warnstufe.</div></div>`;
   }
   function system() {
     const files = [["Kurse & Signale", "data.js", D.generated, 12], ["Weltlage", "world.js", WD.generated, 12], ["Krisenregionen / WarMap", "doomsday.js", DOOM.generated, 12],

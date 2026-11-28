@@ -28,7 +28,14 @@ Legende Abruf: **Bot** = GitHub Actions (Server), **Browser** = direkt im Gerät
 | OpenSky Network | Historische Tracks, Flughäfen | Konto nötig, Rate-Limits, Nutzungsbedingungen (nicht-kommerziell), Abdeckung |
 | Flightradar24 | — | keine offene API; nur Verlinkung, keine Daten übernehmen |
 
-## Für Global Risk (Phase 4) – nur geplant
-USGS Earthquake API, GDACS, NASA FIRMS, NASA Worldview, GDELT, Open-Meteo, OpenSky, Cloudflare Radar,
+## Global Risk Layer (Phase 4) – eingebunden auf `alfred-dev` (28.11.2026)
+| Quelle | Inhalt | Abruf | Takt | Schlüssel | Lizenz / Prüfung |
+|---|---|---|---|---|---|
+| USGS Earthquake Feed `summary/4.5_week.geojson` | Erdbeben M4.5+, 7 Tage | Browser, nur bei eingeschalteter Ebene | 10 min (Feed: jede Minute) | nein | gemeinfrei (U.S. Public Domain), Credit „U.S. Geological Survey“; CORS `*` geprüft |
+| NASA EONET v3 `events?status=open&days=14` | offene Naturereignisse (Waldbrand, Sturm, Vulkan, Flut …) | Browser, nur bei eingeschalteter Ebene | 30 min | nein | offene NASA-Daten, EONET-Disclaimer; CORS `*` geprüft; Eisberge/Wasserfarbe ausgelassen, Erdbeben nur von USGS |
+| GDACS (UN/EU) | Katastrophenwarnungen | – | – | nein | erreichbar, CORS `*`; **Nutzungsbedingungen nicht geprüft → nicht eingebunden** (Kandidat) |
+
+## Für Global Risk (Phase 4) – weitere Kandidaten, nicht eingebunden
+GDACS, NASA FIRMS, NASA Worldview, GDELT, Open-Meteo, OpenSky, Cloudflare Radar,
 Windy Webcams (API-Schlüssel, Lizenzbedingungen), offiziell einbettbare Kameras, Wirtschaftskalender.
 Für jede Quelle vor Einbindung festzuhalten: Lizenz/AGB, Schlüssel nötig?, Limits, CORS, Aktualität, Kosten.

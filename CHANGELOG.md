@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P4: Global Risk Layer
+- Neu `docs/risklayer.js` (`window.TB_risklayer`): einheitliche Anbieter-Schnittstelle und Ereignisformat laut PROJECT_ALFRED.md.
+  Quellen nach Lizenz-/CORS-Prüfung: USGS Erdbeben M4.5+ (7 Tage, gemeinfrei) und NASA EONET v3 (offene Naturereignisse). Kein Schlüssel, keine Kosten.
+- Weltkarte/Globus: Schalter „◎ RISK LAYER“ (Standard aus, Wahl wird gemerkt; vorher kein Abruf), Marker mit Form + Farbe je Typ
+  (Farben validiert), Größe = Schwere 0–4, Tooltip, Infofenster mit Quelle/Status, Legende mit Quellen-Status LIVE/OFFLINE, Ereignisliste.
+  Abruf alle 10/30 Min. nur bei sichtbarem Tab.
+- `index.html`: allgemeine Schnittstelle für Zusatzebenen (`TB_map.overlay/redraw/info/showTip`); bestehende Ebenen unverändert.
+- ALFRED LAGE: stärkste Naturereignisse, wenn die Ebene an ist.
+- Tests: `tests/risklayer.test.js` (5 Prüfungen mit Beispielantworten im Originalformat). Playwright mit Live-Daten: 76 Erdbeben + 9 Waldbrände,
+  Karte und Globus, gemeinsam mit Doomsday; dabei Startreihenfolge-Fehler gefunden und behoben.
+
 ## [alfred-dev] – 28.11.2026 – P4: Portfolio Risk Center
 - Neu `docs/risk.js` (`window.TB_risk`): Risiko-Auswertung des Browser-Depots aus vorhandenen Daten (profiles.js, data.js, world.js).
   Kennzahlen 12 Monate: Volatilität, Max. Drawdown, Rendite, Sharpe (ohne risikofreien Zins), Value at Risk 95 % (historisch, 1 Tag),
