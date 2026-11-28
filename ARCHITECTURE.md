@@ -51,7 +51,8 @@ Beide nutzen `concurrency: signals`, Actions `actions/checkout@v4`, `actions/set
 ## Frontend (`docs/index.html`)
 **Ergänzt in P2 (28.11.2026, `alfred-dev`):** `docs/cameras.js` (Quellenkatalog `window.CAMS`, leer bis Freigabe) und
 `docs/camwall.js` (`window.TB_camwall`, Reiter LAGEBILD) werden vor dem Haupt-Skript geladen, `docs/alfred.js`
-(`window.TB_alfred`, ALFRED + Befehlsliste) danach. `index.html` stellt dafür `window.TB_map` bereit (Land öffnen, Namen, Eskalation).
+(`window.TB_alfred`, ALFRED + Befehlsliste) danach. `docs/risk.js` (`window.TB_risk`, Portfolio Risk Center, rechnet nur im Browser,
+lädt profiles.js erst beim Öffnen) wird vor alfred.js geladen; sein Rechenkern ist zusätzlich als Node-Modul testbar. `index.html` stellt dafür `window.TB_map` bereit (Land öffnen, Namen, Eskalation).
 
 Eine Datei, CSS inline, JavaScript in einer IIFE, Module als benannte Funktionen:
 

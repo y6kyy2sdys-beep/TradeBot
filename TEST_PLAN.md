@@ -50,6 +50,15 @@ Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenr
 | Schweiz | 2 Skyline-Vorschauen, Link unverändert auf Kameraseite |
 Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot-Prüfung (ROADMAP 17e).
 
+## Ergebnisse P4 Portfolio Risk Center (28.11.2026)
+| Prüfung | Ergebnis |
+|---|---|
+| `tests/risk.test.js` (Drawdown, Kursreihe, Gewichte/Wechselkurs, Korrelation ±, Beta = 1, fehlende Daten, Lage, Rückrechnung von Hand) | 9/9 bestanden |
+| Playwright mit Testdepot (8 Werte + 1 unbekanntes Symbol, nur im isolierten Testprofil) | Kennzahlen plausibel, unbekanntes Symbol ausgewiesen, keine Konsolenfehler |
+| ALFRED DEPOT + Sprung zum Risk Center | funktioniert |
+| Handy 390 px (App-Ansicht) | kein Querscrollen, Tabellen scrollen in ihrem Rahmen |
+Ausführen: `node --test tests/` und `python3 -m unittest discover -s tests`.
+
 ## Country Intelligence & Camera Wall (verbindlich, P2/P4)
 | Prüfung | Werkzeug | Phase | Status |
 |---|---|---|---|

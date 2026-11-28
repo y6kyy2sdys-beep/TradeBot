@@ -82,8 +82,29 @@
       <div class="al-src">Alarm-Protokoll des Bots (Telegram-Meldungen ohne Depot-Inhalte). Stand ${esc(when(D.generated))}.</div></div>`;
   }
 
+  // Depot-Risiko: Kurzfassung aus dem Portfolio Risk Center (risk.js), wird nach dem Rendern asynchron gefüllt
+  function depot() {
+    if (!window.TB_risk) return '<div class="al-sec"><div class="muted">Risk Center nicht geladen.</div></div>';
+    if (!window.TB_risk.depotCount()) return `<div class="al-sec"><h5>Depot</h5><div>Master Wayne, in diesem Browser ist kein Depot erfasst.</div>
+      <div class="al-src">Positionen im Block „Mein Depot“ erfassen – sie bleiben nur in diesem Browser.</div></div>`;
+    return '<div class="al-sec" data-al-depot><h5>Depot-Risiko</h5><div class="muted">Berechne aus Kursprofilen …</div></div>';
+  }
+  function depotFill(el, R) {
+    const T = window.TB_risk, p = R.port || {};
+    if (!R.ok) { el.innerHTML = `<h5>Depot-Risiko</h5><div class="muted">${esc(R.error || "Keine auswertbaren Positionen.")}</div>`; return; }
+    el.innerHTML = `<h5>Depot-Risiko · letzte 12 Monate</h5><div class="al-kv">
+        <span>Depotwert heute</span><b>${R.total.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}</b>
+        <span>Volatilität p. a.</span><b>${T.pct(p.vol)}</b><span>Max. Drawdown</span><b>${T.pct(p.mdd)}</b>
+        <span>Größte Position</span><b>${esc(R.conc.max.n)} · ${T.pct(R.conc.max.w)}</b>
+        <span>Effektive Anzahl Positionen</span><b>${T.num(R.conc.effN, 1)}</b>
+        ${(p.bench || []).filter(b => b.ok).map(b => `<span>Beta zu ${esc(b.name)}</span><b>${T.num(b.beta)}</b>`).join("")}</div>
+      <h5 style="margin-top:10px">Hinweise</h5>${R.hints.length ? `<ul class="al-list">${R.hints.slice(0, 6).map(h => `<li>${esc(h)}</li>`).join("")}</ul>` : '<div class="muted">Keine Schwelle überschritten.</div>'}
+      <div class="al-src">Rückrechnung mit heutigen Stückzahlen, Kurse in Handelswährung, Sharpe ohne risikofreien Zins. Nur in diesem Browser berechnet. Keine Anlageberatung.
+        <a href="#depot" data-al-risk>Zum Risk Center →</a></div>`;
+  }
+
   /* ---------------- Oberfläche ---------------- */
-  const TABS = [["lage", "LAGE", world], ["markt", "MARKT", market], ["system", "SYSTEM", system], ["meld", "MELDUNGEN", alerts]];
+  const TABS = [["lage", "LAGE", world], ["markt", "MARKT", market], ["depot", "DEPOT", depot], ["system", "SYSTEM", system], ["meld", "MELDUNGEN", alerts]];
   const box = document.createElement("aside");
   box.id = "alfred"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "ALFRED – Assistent");
   document.body.appendChild(box);
@@ -98,6 +119,8 @@
       <div class="tabs" role="tablist">${TABS.map(([k, l]) => `<button type="button" role="tab" data-al-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
       <div class="al-body">${(TABS.find(([k]) => k === tab) || TABS[0])[2]()}</div>
       <div class="al-foot"><span>Nur vorhandene Daten · Quelle und Stand je Wert</span><span>⌘K Befehle</span></div>`;
+    const d = box.querySelector("[data-al-depot]");
+    if (d) window.TB_risk.run().then(R => { if (d.isConnected) depotFill(d, R); });
   }
   const btn = document.getElementById("alfredBtn");
   function speak(text) {
@@ -113,6 +136,8 @@
     if (e.target.closest("[data-al-close]")) { close(); return; }
     if (e.target.closest("[data-al-voice]")) { ls.set("alfredVoice", ls.get("alfredVoice") === "1" ? "0" : "1"); if ("speechSynthesis" in window) speechSynthesis.cancel(); render(); return; }
     const c = e.target.closest("[data-al-iso]"); if (c) { e.preventDefault(); if (window.TB_map) window.TB_map.open(c.dataset.alIso); }
+    if (e.target.closest("[data-al-risk]")) { e.preventDefault(); const r = document.getElementById("riskBox");
+      if (r) { r.open = true; r.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }); } }
   });
 
   /* ---------------- Befehlsliste ⌘K / Strg+K ---------------- */
@@ -129,6 +154,7 @@
       ...TABS.map(([k, l]) => [`ALFRED: ${l[0] + l.slice(1).toLowerCase()}`, "Assistent", () => open(k)]),
       ["Doomsday-Modus an/aus", "Globus", click("doomBtn")],
       ["Aktie suchen", "Suche", () => { const q2 = document.getElementById("q"); if (q2) { q2.scrollIntoView({ block: "center" }); q2.focus(); } }],
+      ["Portfolio Risk Center öffnen", "Depot", () => { const r = document.getElementById("riskBox"); if (r) { r.open = true; r.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }); } }],
       ["Daten aktualisieren (Bot starten)", "System", click("refreshBtn")],
       ["Matrix-Regen an/aus", "Ansicht", click("rainBtn")],
       ["App-/Desktop-Ansicht umschalten", "Ansicht", click("appBtn")],

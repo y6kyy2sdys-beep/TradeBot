@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P4: Portfolio Risk Center
+- Neu `docs/risk.js` (`window.TB_risk`): Risiko-Auswertung des Browser-Depots aus vorhandenen Daten (profiles.js, data.js, world.js).
+  Kennzahlen 12 Monate: Volatilität, Max. Drawdown, Rendite, Sharpe (ohne risikofreien Zins), Value at Risk 95 % (historisch, 1 Tag),
+  Beta/Korrelation zu DAX und S&P 500, Konzentration (größte Position, Top 3, effektive Anzahl), Struktur nach Branche/Land/Währung,
+  Einzelwerte, Korrelations-Heatmap, Faustregel-Hinweise mit festen Schwellen, Lage-Verknüpfung (Sitzland auf Konfliktliste).
+- Methode sichtbar gekennzeichnet: Rückrechnung mit heutigen Stückzahlen × damaligem Kurs × heutigem Wechselkurs;
+  fehlende Kurs-/Wechselkursdaten werden ausgewiesen, nie geschätzt. Alles nur im Browser.
+- Depot-Block: einklappbares „// Portfolio Risk Center“ (rechnet erst beim Öffnen, aktualisiert bei Depot-Änderung).
+- ALFRED: neuer Reiter DEPOT (Kurzfassung) und Befehl „Portfolio Risk Center öffnen“.
+- Tests: `tests/risk.test.js` (9 Prüfungen mit festen Beispieldaten, `node --test tests/`). Playwright mit Testdepot, Handy ohne Querscrollen.
+
 ## [alfred-dev] – 28.11.2026 – P4: Camera Wall eingebunden
 - `docs/cameras.js` wird aus dem freigegebenen Katalog erzeugt (`catalog/build_cameras.py`): 58 Quellen, 28 Länder,
   Kennzeichnung staatsnaher Sender, Quellenangaben (NASA, EUMETSAT, NOAA, JMA, HKO), SkylineWebcams als Vorschau mit Link.

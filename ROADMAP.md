@@ -19,7 +19,7 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 | Globus, Militärflugzeuge, Frontlinien, Hotspots | ✔ | live (Live-Abruf adsb.lol im Browser per CORS blockiert → Bot-Stand) |
 | Flugrouten beim Anklicken | ☐ | Plan unten, kein Code |
 | Global Risk Layer | ☐ | Schnittstelle in PROJECT_ALFRED.md |
-| Portfolio Risk Center | ☐ | Kennzahlen festgelegt, kein Code |
+| Portfolio Risk Center | ◐ | auf `alfred-dev` umgesetzt und getestet (28.11.2026); nicht live |
 | Country Intelligence & Camera Wall (im Länderfenster) | ◐ | auf `alfred-dev` vollständig eingebunden (58 freigegebene Quellen); nicht live; Bot-Statusprüfung offen |
 | Automatische Tests | ◐ | `tests/test_depot_keys.py` (S1); Rest TEST_PLAN.md ausstehend |
 
@@ -55,7 +55,7 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
     Hinweis: Da der Browser-Live-Abruf per CORS blockiert ist, entsteht eine Spur zunächst nur aus den 30-Minuten-Ständen des Bots.
 
 ### P4 – Risk Center und Lage-Ebenen (Phase 4)
-15. Portfolio Risk Center: Konzentration, Branche/Land/Währung, Volatilität, Max Drawdown, Korrelation, Sharpe – nur aus vorhandenen Kursen.
+15. ✔ (alfred-dev, 28.11.2026) Portfolio Risk Center: Konzentration, Branche/Land/Währung, Volatilität, Max Drawdown, Korrelation, Sharpe – nur aus vorhandenen Kursen.
 16. Global Risk Layer: 1–2 frei nutzbare Quellen nach Lizenz- und CORS-Prüfung, einheitliches Ereignisformat.
 17. Country Intelligence & Camera Wall (auf `alfred-dev`, Vorgaben PROJECT_ALFRED.md):
     a) ✔ Quellenrecherche + Freigabe (28.11.2026): 58 Einträge, alle vier Gruppen freigegeben, Auflagen in `catalog/kamera_katalog_2026-11-28.md`;
