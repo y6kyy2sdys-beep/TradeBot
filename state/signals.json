@@ -15,12 +15,13 @@
     "move:NG=F:up": "2026-11-27T03:40+00:00",
     "move:TTF=F:up": "2026-11-12T21:50+00:00",
     "depot:15d9a80b33": "2026-11-17T15:56+00:00",
-    "warn:spx_trend": "2026-11-22T23:35+00:00",
+    "warn:spx_trend": "2026-11-28T00:15+00:00",
     "move:HG=F:down": "2026-11-25T16:02+00:00",
     "depot:130fe81e27": "2026-11-20T14:21+00:00",
     "warn:spx_dd": "2026-11-20T22:39+00:00",
     "scenario:opec": "2026-11-26T15:46+00:00",
-    "move:HG=F:up": "2026-11-27T03:40+00:00"
+    "move:HG=F:up": "2026-11-27T03:40+00:00",
+    "move:ZW=F:up": "2026-11-28T00:15+00:00"
   },
   "alert_log": [
     {
@@ -347,6 +348,16 @@
       "time": "2026-11-27T17:37+00:00",
       "kind": "macro",
       "title": "Szenario: Russland / Ukraine / NATO"
+    },
+    {
+      "time": "2026-11-28T00:15+00:00",
+      "kind": "warning",
+      "title": "S&P 500 unter seiner 200-Tage-Linie"
+    },
+    {
+      "time": "2026-11-28T00:15+00:00",
+      "kind": "macro",
+      "title": "Weizen +4.5% an einem Tag"
     }
   ]
 }
