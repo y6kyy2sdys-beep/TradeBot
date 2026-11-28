@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [master] – 28.11.2026 – Redesign „Noir“ live
+- Fast-Forward `70d507b..c32bd96` auf master mit Freigabe; Sicherung `backup/master-vor-noir` (`70d507b`); kein Force-Push.
+- Vorher: 32 Tests grün, Datendateien unverändert, keine Geheimnisse. Pages gebaut 14:00 UTC.
+- Live-Prüfung (Playwright, echte Adresse): alle 7 Module geladen; DOOMSDAY → Kartenlage an + CHRONOS; Jahr 2035 „kein Datensatz“;
+  Esc schließt CHRONOS, Kartenlage bleibt; Lagezentrale Japan: 0 Einbettungen vor Zustimmung, Esc schließt. Nur bekannte Konsolenfehler.
+- Rückweg: die vier Commits `70d507b..c32bd96` per `git revert` zurücknehmen (kein Force-Push); Sicherung `backup/master-vor-noir`.
+
 ## [alfred-dev] – 28.11.2026 – Redesign Variante A „Noir“: Lagezentrale + PROJECT CHRONOS
 - Auswahl des Eigentümers aus drei Prototypen (`docs/proto/alfred-design.html`): Variante A „Noir“.
 - Neu `docs/globe3d.js` (`window.TB_globe`): Globus-Renderer mit d3-geo auf Canvas (keine neue Bibliothek) – Sternenhimmel,
