@@ -588,6 +588,12 @@ section.panel:hover { border-color: var(--line-strong); }
 .mapcard.camwide { width: min(760px, calc(100% - 16px)); }
 body.app .mapcard.cam { max-height: none; }
 @media (max-width: 600px) { .cw-grid.g2, .cw-grid.g4 { grid-template-columns: 1fr; } }
+/* P3 Flugspur */
+.actrail path { fill: none; vector-effect: non-scaling-stroke; pointer-events: none; }
+.actrail path.rec { stroke: #00ff41; stroke-width: 2; filter: drop-shadow(0 0 3px rgba(0,255,65,.8)); }
+.actrail path.est { stroke: #00ff41; stroke-width: 1.6; stroke-dasharray: 5 5; opacity: .75; }
+.actrail circle.pt { fill: #00ff41; stroke: #000; stroke-width: .6; vector-effect: non-scaling-stroke; }
+.actr { display: contents; }
 /* Weltkarte: Szenario-Spiel als klar abgetrennte Fiktion (Entscheidung 28.11.2026) */
 .ficbtn { color: var(--warn); border-color: rgba(250,178,25,.45); letter-spacing: .1em; }
 .ficbtn[aria-pressed="true"] { background: var(--warn); color: #000; border-color: var(--warn); }
@@ -1505,6 +1511,7 @@ function renderComCards() {
   const grat = zg.append("path").attr("class", "grat").attr("d", path(d3.geoGraticule10()));
   const pathsG = zg.append("g");
   const frontG = zg.append("g").attr("class", "front").attr("display", "none");
+  const trailG = zg.append("g").attr("class", "actrail");   // P3: Flugspur des ausgewählten Flugzeugs (unter den Markern)
   const mk = zg.append("g").attr("class", "doomlayer").attr("display", "none");
   const ovG = zg.append("g").attr("class", "overlays");   // Zusatzebenen (z. B. Global Risk Layer, risklayer.js)
   const overlays = [];
@@ -1661,6 +1668,7 @@ function renderComCards() {
   }
   function drawMarkers() {
     drawFront();
+    drawTrail();
     drawOverlays();
     if (!doom || !acSel || !hsSel) { mk.attr("display", doom ? null : "none"); if (!doom || !hsSel) return; }
     mk.attr("display", null);
@@ -1694,6 +1702,57 @@ function renderComCards() {
   const flagEmoji = cc => cc.toUpperCase().replace(/./g, ch => String.fromCodePoint(127397 + ch.charCodeAt(0)));
   const CATS = { A1: "leicht", A2: "klein", A3: "groß", A4: "Großraum/hoch", A5: "schwer", A6: "sehr schnell/wendig", A7: "Hubschrauber", B2: "Ballon", B6: "Drohne (UAV)" };
   const SQUAWK = { "7500": "ENTFÜHRUNG", "7600": "FUNKAUSFALL", "7700": "NOTFALL" };
+  /* ---- P3 Flugspur: eigene Aufzeichnung aus den Bot-Abrufen (AIRCRAFT.trails), keine fremden Verlaufsdaten.
+     Linie als Großkreis (d3 behandelt Erdkrümmung und 180°-Übergang), Weiterflug nur gestrichelt als Schätzung. */
+  let selAc = null, showTrail = true;
+  const trailPts = d => ((window.AIRCRAFT && window.AIRCRAFT.trails) || {})[d.hex] || [];
+  function destPoint(lon, lat, brg, km) {   // Großkreis: Zielpunkt aus Startpunkt, Kurs und Strecke
+    const R = 6371, d = km / R, b = brg * Math.PI / 180, f1 = lat * Math.PI / 180, l1 = lon * Math.PI / 180;
+    const f2 = Math.asin(Math.sin(f1) * Math.cos(d) + Math.cos(f1) * Math.sin(d) * Math.cos(b));
+    const l2 = l1 + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(f1), Math.cos(d) - Math.sin(f1) * Math.sin(f2));
+    return [((l2 * 180 / Math.PI + 540) % 360) - 180, f2 * 180 / Math.PI];
+  }
+  const estMin = 30;
+  const canEstimate = d => d.gs != null && d.gs > 30 && d.trk != null && d.alt !== 0;
+  function drawTrail() {
+    trailG.selectAll("*").remove();
+    if (!selAc || !showTrail || !doom) return;
+    const d = selAc, gp = globe ? gpath : path, P = globe ? ortho : projection, rot = ortho.rotate(), center = [-rot[0], -rot[1]];
+    const pts = trailPts(d).map(p => [p[2], p[1], p[0]]), coords = pts.map(p => [p[0], p[1]]);
+    const last = coords[coords.length - 1];
+    if (!last || Math.abs(last[0] - d.lon) > 1e-3 || Math.abs(last[1] - d.lat) > 1e-3) coords.push([d.lon, d.lat]);
+    if (coords.length > 1) trailG.append("path").attr("class", "rec").attr("d", gp({ type: "LineString", coordinates: coords }));
+    if (canEstimate(d)) {
+      const end = destPoint(d.lon, d.lat, d.trk, d.gs * 1.852 * estMin / 60);
+      trailG.append("path").attr("class", "est").attr("d", gp({ type: "LineString", coordinates: [[d.lon, d.lat], end] }));
+    }
+    const s = 1 / curK;
+    pts.forEach(([lon, lat, tm]) => {
+      if (globe && d3.geoDistance([lon, lat], center) > Math.PI / 2 - .03) return;
+      const xy = P([lon, lat]); if (!xy) return;
+      trailG.append("circle").attr("class", "pt").attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 2.6 * s)
+        .append("title").text(new Date(tm * 60000).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" }));
+    });
+  }
+  function centerOn(lon, lat) {
+    if (globe) {
+      holdSpin = true; const r0 = ortho.rotate(), it = d3.interpolate(r0, [r0[0] + (((-lon - r0[0]) % 360 + 540) % 360 - 180), -lat]);
+      d3.transition().duration(reduced ? 0 : 900).tween("rot", () => t => { ortho.rotate(it(t)); drawGlobe(); });
+      return;
+    }
+    const [x, y] = projection([lon, lat]), k = Math.max(curK, 3);
+    svg.transition().duration(reduced ? 0 : 850).call(zoom.transform, d3.zoomIdentity.translate(480 - k * x, 235 - k * y).scale(k));
+  }
+  new MutationObserver(() => { if (selAc && (!card.classList.contains("open") || !card.querySelector("[data-ac-hex]"))) { selAc = null; drawTrail(); } })
+    .observe(card, { attributes: true, attributeFilter: ["class"], childList: true });
+  addEventListener("keydown", e => { if (e.key === "Escape" && selAc && !document.getElementById("chronos") && !document.getElementById("cwWall")) card.classList.remove("open", "wide"); });
+  function trailInfo(d) {
+    const pts = trailPts(d), when = m => new Date(m * 60000).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+    const row = (k, v) => `<span>${esc(k)}</span><span>${esc(v)}</span>`;
+    return `${row("Aufgezeichnete Spur", pts.length ? `${pts.length} Punkt${pts.length === 1 ? "" : "e"} seit ${when(pts[0][0])}` : "noch keine Punkte – Aufzeichnung läuft mit jedem Bot-Abruf")}
+      ${row("Weiterflug", canEstimate(d) ? `gestrichelt: geschätzt ${estMin} Min. (Kurs × Tempo)` : "keine Schätzung (Tempo/Kurs fehlt oder am Boden)")}
+      ${row("Ziel / Ankunft", "nicht verfügbar – keine belegte Routenquelle")}`;
+  }
   function showAircraft(d) {
     const id = d.cs || d.reg, cc = countryOf(d.hex);
     const fr = d.cs ? `https://www.flightradar24.com/${encodeURIComponent(d.cs)}` : d.reg ? `https://www.flightradar24.com/data/aircraft/${encodeURIComponent(d.reg.toLowerCase())}` : fr24Area(d.lat, d.lon, 8);
@@ -1714,11 +1773,18 @@ function renderComCards() {
         ${row("Geschwindigkeit", d.gs != null ? nf(d.gs * 1.852, 0) + " km/h · " + nf(d.gs, 0) + " kn" : "")}${row("Fahrt (IAS/TAS)", d.ias != null || d.tas != null ? [d.ias, d.tas].map(v => v == null ? "–" : nf(v, 0)).join(" / ") + " kn" : "")}
         ${row("Mach", d.mach != null ? nf(d.mach, 2) : "")}${row("Kurs", d.trk + "°")}${row("Autopilot-Ziel", d.nav_altitude_mcp != null ? nf(d.nav_altitude_mcp, 0) + " ft" + (d.nav_heading != null ? " · " + nf(d.nav_heading, 0) + "°" : "") : "")}
         ${row("Position", d.lat.toFixed(3) + "° / " + d.lon.toFixed(3) + "°")}${row("Signal", d.rssi != null ? nf(d.rssi, 1) + " dBFS" : "")}</div>
+      <span data-ac-hex="${esc(d.hex || "")}" hidden></span>
+      <div class="kv">${trailInfo(d)}</div>
+      <div style="margin-top:8px"><button type="button" class="dbtn" data-ac-center>◎ ZENTRIEREN</button>
+        <button type="button" class="dbtn" data-ac-trail aria-pressed="${showTrail}">${showTrail ? "SPUR AUS" : "SPUR EIN"}</button></div>
       <div style="margin-top:8px">${linkBtn(fr, "✈ IN FLIGHTRADAR24")}${d.hex ? linkBtn(`https://globe.adsbexchange.com/?icao=${encodeURIComponent(d.hex)}`, "📡 ADS-B EXCHANGE") : ""}</div>
       <div class="doomnote">${acState.src === "live" ? "Live-Position" : "Position"} vom ${new Date(acState.time).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "medium" })} ·
         Daten: ADS-B (adsb.lol / ADS-B Exchange-Netz) · Flagge: Land der ICAO-Adresse, nicht zwingend der Einsatzstaat.</div>`;
     card.querySelector(".x").addEventListener("click", () => { card.classList.remove("open", "wide"); });
+    card.querySelector("[data-ac-center]").addEventListener("click", () => centerOn(d.lon, d.lat));
+    card.querySelector("[data-ac-trail]").addEventListener("click", e => { showTrail = !showTrail; e.target.textContent = showTrail ? "SPUR AUS" : "SPUR EIN"; e.target.setAttribute("aria-pressed", showTrail); drawTrail(); });
     card.classList.add("open");
+    selAc = d; drawTrail();
     // Foto über Planespotters.net (erst Transponder-Kennung, dann Kennzeichen)
     const ph = card.querySelector("#acPhoto");
     const tryUrl = u => fetch(u).then(r => r.ok ? r.json() : null).then(j => j && j.photos && j.photos[0]).catch(() => null);

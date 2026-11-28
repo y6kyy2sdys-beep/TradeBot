@@ -20,7 +20,11 @@ Legende Abruf: **Bot** = GitHub Actions (Server), **Browser** = direkt im Gerät
 | GitHub REST API | „Aktualisieren“ startet Workflow | Browser | bei Klick | ja (fein-granulares Token im Browser) | |
 | Google Fonts | Schrift „Share Tech Mono“ | Browser | Seitenaufruf | nein | überträgt IP-Adresse an Google (Datenschutz) |
 
-## Für die Flugroute (Phase 3) – zu prüfen, nicht eingebunden
+## Flugspur (Phase 3) – Stand 28.11.2026
+Umgesetzt: eigene Aufzeichnung aus den Bot-Abrufen von `api.adsb.lol/v2/mil` (ODbL), 6 h, ≤ 16 Punkte je Flugzeug.
+Geprüft und nicht genutzt: `globe.adsb.lol/data/traces` (für Programme gesperrt, API-Schlüssel nötig), `api/0/routeset` (unzuverlässig, kein CORS).
+
+## Für die Flugroute (Phase 3) – frühere Prüfliste
 | Quelle | Möglicher Nutzen | Offene Fragen |
 |---|---|---|
 | Eigene Sitzungs-Spur (Browser) | Echte, selbst aufgezeichnete Positionen aus den 60-s-Abrufen | kein Problem; beginnt erst mit dem Öffnen der Seite |

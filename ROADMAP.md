@@ -17,7 +17,7 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 | Batcomputer-/Wayne-Ergänzungen | ✔ | live seit 28.11.2026 (Merge `70d6711`) |
 | ALFRED-Assistent | ✔ | live seit 28.11.2026: Lage, Markt, Depot, System, Meldungen, ⌘K; Spracheingabe/KI-Dialog bewusst „nicht konfiguriert“ |
 | Globus, Militärflugzeuge, Frontlinien, Hotspots | ✔ | live (Live-Abruf adsb.lol im Browser per CORS blockiert → Bot-Stand) |
-| Flugrouten beim Anklicken | ☐ | Plan unten, kein Code |
+| Flugrouten beim Anklicken | ◐ | Flugspur aus eigener Aufzeichnung auf `alfred-dev`; Start/Ziel nicht verfügbar |
 | Global Risk Layer | ✔ | live seit 28.11.2026 (USGS + NASA EONET); weitere Quellen nur nach Prüfung |
 | Portfolio Risk Center | ✔ | live seit 28.11.2026 |
 | Country Intelligence & Camera Wall (im Länderfenster) | ◐ | live seit 28.11.2026 (58 freigegebene Quellen); offen: tägliche Bot-Statusprüfung der Streams |
@@ -34,7 +34,7 @@ Szenariomodell der Weltkarte: als „SZENARIO-SPIEL (FIKTION)“ abgetrennt (28.
 
 ## Nächste Schritte (je mit Freigabe)
 1. ✔ Stream-Prüfung live seit 28.11.2026 (alle 8 h, YouTube Data API); erster Lauf: 26 live, 2 ohne Livestream, 30 Bilder ok.
-2. P3 Flugrouten.
+2. ◐ P3 Flugspuren umgesetzt auf `alfred-dev` (eigene Aufzeichnung, 28.11.2026); echte Routen nur mit adsb.lol-API-Schlüssel möglich.
 3. Entscheidung Git-Historie (alte S1-Einträge in früheren Commits).
 4. Automatische Tests in GitHub Actions (`node --test`, `unittest`), S4 (Schrift lokal, Favicon), S2-Hinweis.
 5. Weitere Risk-Layer-Quelle (z. B. GDACS) nach Prüfung der Bedingungen.

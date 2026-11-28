@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – P3 Flugspuren
+- Recherche: Verlaufsdaten `globe.adsb.lol/data/traces` sind laut adsb.lol nur für Menschen im Browser, Programme gehören auf die
+  API mit Schlüssel (adsb.lol/request) → nicht genutzt. Start/Ziel (`api/0/routeset`) nicht verlässlich, kein CORS → nicht genutzt.
+  Hinweis: adsb.lol meldet für das Netzwerk des Eigentümers eine bestehende Sperre (nicht durch diese Prüfung ausgelöst).
+- Entscheidung des Eigentümers: eigene Aufzeichnung. Neu `bot/trails.py`; `bot/aircraft.py` schreibt `trails` (letzte 6 h, ≤ 16 Punkte
+  je ICAO-Adresse, aus den eigenen Abrufen ca. alle 30 Min.) und `trailInfo` in `docs/aircraft.js`.
+- Weltkarte/Globus: Klick auf ein Flugzeug zeigt die aufgezeichnete Spur als Großkreis-Linie mit Zeitpunkten (d3 behandelt 180°-Übergang),
+  Weiterflug nur gestrichelt „geschätzt 30 Min. (Kurs × Tempo)“; Infofenster mit Spur-Stand und „Ziel / Ankunft: nicht verfügbar“;
+  Knöpfe ZENTRIEREN und SPUR AUS/EIN; Esc hebt die Auswahl auf.
+- Tests: `tests/test_trails.py` (6 Prüfungen). Playwright: Spur über die Datumsgrenze = 2 Teilstücke, Schätzung, Infofenster,
+  Spur aus/ein, Esc, Globus.
+
 ## [alfred-dev] – 28.11.2026 – Szenariomodell der Weltkarte als Fiktion abgetrennt
 Entscheidung des Eigentümers: „Als Fiktion abtrennen“.
 - Standard: Weltkarte, Balken und Länderdiagramm zeigen nur IMF-Daten (Ist + IMF-Prognose bis 2030); Jahresregler endet bei 2030;

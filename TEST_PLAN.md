@@ -50,6 +50,14 @@ Nicht geprüft: echte Streams (Katalog leer), Vollbild im echten Gerät, Screenr
 | Schweiz | 2 Skyline-Vorschauen, Link unverändert auf Kameraseite |
 Nicht prüfbar im Browser: YouTube-Livestatus (fremder Player) → Vorschlag Bot-Prüfung (ROADMAP 17e).
 
+## Ergebnisse P3 Flugspuren (28.11.2026)
+| Prüfung | Ergebnis |
+|---|---|
+| `tests/test_trails.py` (Anhängen, 6-h-Fenster, Höchstzahl, Doppelabruf/Stillstand, Datumsgrenze, kaputte Einträge) | 6/6 |
+| Playwright: Spur über 180° | 2 Teilstücke, kein Strich quer über die Karte |
+| Playwright: Schätzung, Infofenster, Spur aus/ein, Zentrieren, Esc, Globus | funktioniert |
+| Echte Aufzeichnung im Bot | ausstehend – füllt sich mit den Abrufen nach Übernahme auf master |
+
 ## Ergebnisse Stream-Prüfung (28.11.2026)
 | Prüfung | Ergebnis |
 |---|---|
