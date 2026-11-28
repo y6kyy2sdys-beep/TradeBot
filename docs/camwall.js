@@ -21,9 +21,14 @@
     const hs = (window.DOOM && window.DOOM.hotspots) || [];
     return hs.filter(h => HOTSPOT_ISO[h.key] === iso).reduce((m, h) => Math.max(m, h.level || 0), 0);
   }
-  function sourcesFor(iso, stufe) {
+  // Konfliktgebiet = feste, von Hand gepflegte Liste im Katalog ODER WarMap-Hotspot ab Stufe 3
+  // (Freigabe 28.11.2026; die Schlagzeilen-Zählung der Eskalationsstufe entscheidet bewusst nicht mehr)
+  const DEFAULT_CONFLICT = ["UKR", "RUS", "ISR", "PSE", "LBN", "SYR", "YEM", "SDN", "IRN", "SAU", "ARE"];
+  const conflictList = () => new Set((window.CAMS && Array.isArray(window.CAMS.konfliktzonen) ? window.CAMS.konfliktzonen : DEFAULT_CONFLICT));
+  const isConflict = iso => conflictList().has(iso) || hotspotLevel(iso) >= 3;
+  function sourcesFor(iso) {
     const all = approved().filter(c => c.iso === iso);
-    const conflict = stufe >= 3 || hotspotLevel(iso) >= 3;
+    const conflict = isConflict(iso);
     const ok = all.filter(c => !conflict || (CONFLICT_ART.has(c.art) && c.konfliktzone_zulaessig === true));
     return { all, ok, conflict, blocked: all.length - ok.length };
   }

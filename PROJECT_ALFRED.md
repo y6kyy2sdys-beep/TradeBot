@@ -84,7 +84,9 @@ Ohne geeignete Quelle erscheint transparent: „Keine geprüfte öffentliche Que
 
 ### Sicherheit und Datenschutz (Vorrang vor Funktionen)
 - Ausschließlich öffentlich freigegebene, rechtmäßig einbettbare Quellen (offizieller Einbett-Code bzw. ausdrückliche Erlaubnis des Betreibers).
-- **Aktive Konfliktgebiete** (Eskalationsstufe ≥ 3 oder Hotspot): nur redaktionelle Lagebilder etablierter Nachrichtenanbieter und
+- **Aktive Konfliktgebiete** (feste Liste `konfliktzonen` in `docs/cameras.js` – UKR, RUS, ISR, PSE, LBN, SYR, YEM, SDN, IRN, SAU,
+  ARE vorsorglich – oder WarMap-Hotspot ab Stufe 3; Entscheidung 28.11.2026, die Schlagzeilen-Zählung entscheidet nicht):
+  nur redaktionelle Lagebilder etablierter Nachrichtenanbieter und
   **zeitversetzte** zivile Übersichtsaufnahmen. Behördliche Abschalt- oder Sendeverbote für Kameras werden respektiert.
 - **Verboten:** Kameras auf militärische Stellungen, Truppenbewegungen, Schutzräume, Grenzübergänge oder andere sensible Einrichtungen;
   private Kameras; Gesichtserkennung, Kennzeichenerkennung, Personenverfolgung; Umgehung von Zugriffsbeschränkungen (Geoblocking,
@@ -97,3 +99,5 @@ Ohne geeignete Quelle erscheint transparent: „Keine geprüfte öffentliche Que
 - **P2 (UI-Gerüst, ohne externe Inhalte):** Reiter LAGEBILD, Kachel-Raster, Kachelkopf, Status-Pillen, Vollbild-Knopf,
   UNAVAILABLE-Anzeige. Katalog leer → jedes Land zeigt UNAVAILABLE „Quellenkatalog noch nicht freigegeben“. Es wird nichts Externes geladen.
 - **P4 (Integration auf `alfred-dev`):** Quellenrecherche und Freigabeliste, Katalog, Einbettung, Statuslogik, optionale Bot-Prüfung, Tests.
+- **Stand 28.11.2026:** UI-Gerüst umgesetzt (P2). Quellenkatalog recherchiert und **freigegeben** (58 Einträge, 28 Länder,
+  `catalog/kamera_katalog_2026-11-28.md` mit Auflagen je Gruppe). Übernahme in `docs/cameras.js` folgt mit P4.

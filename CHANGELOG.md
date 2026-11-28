@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – Quellenkatalog freigegeben, Konfliktregel
+- Quellenrecherche Camera Wall: 58 Einträge aus 28 Ländern (27 Nachrichten, 14 zeitversetzt/Satellit, 10 Panorama, 7 Wetter),
+  Ausschlussliste mit Gründen. Vom Eigentümer freigegeben (alle vier Gruppen, mit Auflagen) → `catalog/kamera_katalog_2026-11-28.{json,md}`.
+- `camwall.js`: Konfliktgebiet = feste Liste `konfliktzonen` (`cameras.js`, inkl. VAE vorsorglich) oder WarMap-Hotspot ≥ 3;
+  Schlagzeilen-Eskalationsstufe entscheidet nicht mehr (USA/China nicht mehr fälschlich als Konfliktgebiet). Mit Playwright geprüft.
+- Katalog-Einträge selbst noch nicht in `docs/cameras.js` (folgt mit P4).
+
 ## [alfred-dev] – 28.11.2026 – P1 abgeschlossen, P2 umgesetzt
 **P1**
 - `requirements.txt`: exakt die heute laufenden Versionen gepinnt (yfinance 1.7.0, pandas 3.1.1, numpy 2.5.5, requests 2.34.2, anthropic 2.4.0).

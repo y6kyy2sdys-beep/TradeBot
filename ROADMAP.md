@@ -58,8 +58,11 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 15. Portfolio Risk Center: Konzentration, Branche/Land/Währung, Volatilität, Max Drawdown, Korrelation, Sharpe – nur aus vorhandenen Kursen.
 16. Global Risk Layer: 1–2 frei nutzbare Quellen nach Lizenz- und CORS-Prüfung, einheitliches Ereignisformat.
 17. Country Intelligence & Camera Wall (auf `alfred-dev`, Vorgaben PROJECT_ALFRED.md):
-    a) Quellenrecherche je Land → Freigabeliste an den Eigentümer (Betreiber, Art, Lizenz/Einbett-Beleg, Verzögerung, Konfliktzonen-Eignung).
-    b) Katalog `docs/cameras.js` nur mit freigegebenen Einträgen.
+    a) ✔ Quellenrecherche + Freigabe (28.11.2026): 58 Einträge, alle vier Gruppen freigegeben, Auflagen in `catalog/kamera_katalog_2026-11-28.md`;
+       Konfliktregel = feste Liste (inkl. VAE) + Hotspot ≥ 3 – bereits in `camwall.js` umgesetzt.
+    b) Katalog `docs/cameras.js` mit den freigegebenen Einträgen füllen (Feldformat anpassen, `freigegeben: true`).
+       Technik: GIBS-Datum (Vortag, UTC) und JMA-Zeitvorlage `{HHMM}` zur Laufzeit einsetzen; Kennzeichnung „staatsnah“ und
+       Skyline-„Vorschau, kein Live-Player“ in der Kachel.
     c) Einbettung im Reiter LAGEBILD, Laden nur bei aktivem Reiter, Entfernen beim Schließen; Vollbild.
     d) Statuslogik LIVE/DELAYED/OFFLINE/UNAVAILABLE, „Stand unbekannt“ statt Raten.
     e) Optional: tägliche, kostenlose Katalogprüfung durch den Bot. f) Tests laut TEST_PLAN.md.
