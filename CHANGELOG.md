@@ -1,10 +1,14 @@
 # CHANGELOG
 
+## [master] – 28.11.2026 – Tests in Actions live
+- master (3 Bot-Datencommits) in `alfred-dev` zusammengeführt (`ba57a69`), danach Fast-Forward `76b1dd3..ba57a69` mit Freigabe; Sicherung `backup/master-vor-tests` (`76b1dd3`); kein Force-Push.
+- Erster Testlauf auf master (46177653096) grün: 26 Python-, 23 JS-Tests, Syntaxprüfung ok. Am Dashboard ändert sich nichts.
+
 ## [alfred-dev] – 28.11.2026 – Tests in GitHub Actions
 - Neu `.github/workflows/tests.yml`: Python-Unittests (26), Node-Tests (23), `node --check` für `docs/*.js`, Syntaxprüfung der Inline-Skripte in `docs/index.html`.
 - Auslöser: Push auf `alfred-dev`/`master` mit Pfadfilter (nur Code, nicht die Bot-Datendateien), Pull-Requests, manuell.
 - Sicherheit: `permissions: contents: read`, `persist-credentials: false`, Actions per Commit-SHA gepinnt (setup-node v4 `49933ea`), Pakete aus `requirements.txt` mit festen Versionen; keine Secrets.
-- Erster Lauf auf `alfred-dev` (46156253603) grün. Auf `master` noch nicht übernommen.
+- Erster Lauf auf `alfred-dev` (46156253603) grün.
 
 ## [master] – 28.11.2026 – CHRONOS KLIMA live
 - Fast-Forward `097b6bd..858b022` mit Freigabe; Sicherung `backup/master-vor-klima` (`097b6bd`); kein Force-Push; 49 Tests grün.
