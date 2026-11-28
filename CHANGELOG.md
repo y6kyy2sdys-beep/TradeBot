@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [master] – 28.11.2026 – P3 Flugspuren live
+- Fast-Forward `79a512f..9dc25c6` mit Freigabe; Sicherung `backup/master-vor-p3` (`79a512f`); kein Force-Push.
+- Flugzeug-Bot manuell gestartet (46155201444): 55 Flugzeuge, 55 Spuren mit erstem Punkt; Aufzeichnung läuft mit jedem weiteren Abruf.
+- Live-Prüfung: Spur-Info im Infofenster („1 Punkt seit …“), Zentrieren/Spur-Knöpfe, nur bekannte Konsolenfehler.
+
 ## [alfred-dev] – 28.11.2026 – P3 Flugspuren
 - Recherche: Verlaufsdaten `globe.adsb.lol/data/traces` sind laut adsb.lol nur für Menschen im Browser, Programme gehören auf die
   API mit Schlüssel (adsb.lol/request) → nicht genutzt. Start/Ziel (`api/0/routeset`) nicht verlässlich, kein CORS → nicht genutzt.

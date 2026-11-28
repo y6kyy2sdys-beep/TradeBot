@@ -34,7 +34,7 @@ Szenariomodell der Weltkarte: als „SZENARIO-SPIEL (FIKTION)“ abgetrennt (28.
 
 ## Nächste Schritte (je mit Freigabe)
 1. ✔ Stream-Prüfung live seit 28.11.2026 (alle 8 h, YouTube Data API); erster Lauf: 26 live, 2 ohne Livestream, 30 Bilder ok.
-2. ◐ P3 Flugspuren umgesetzt auf `alfred-dev` (eigene Aufzeichnung, 28.11.2026); echte Routen nur mit adsb.lol-API-Schlüssel möglich.
+2. ✔ P3 Flugspuren live seit 28.11.2026 (eigene Aufzeichnung); echte Routen nur mit adsb.lol-API-Schlüssel möglich.
 3. Entscheidung Git-Historie (alte S1-Einträge in früheren Commits).
 4. Automatische Tests in GitHub Actions (`node --test`, `unittest`), S4 (Schrift lokal, Favicon), S2-Hinweis.
 5. Weitere Risk-Layer-Quelle (z. B. GDACS) nach Prüfung der Bedingungen.
