@@ -10,18 +10,30 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 |---|---|---|
 | Phase 0/1 – Analyse, Dokumentation, Konzept | ✔ | 24.11.2026 |
 | MCP-Werkzeuge (Playwright, Chrome DevTools, Context7) | ✔ | getestet 24.11.2026, isolierte Profile |
-| S1 – Depot-Rückschluss | ✔ | live seit 28.11.2026 (master `a47bb68`); Bereinigung im ersten Bot-Lauf danach |
+| S1 – Depot-Rückschluss | ✔ | live seit 28.11.2026 (`a47bb68`); alte Einträge im Bot-Lauf 46148816499 entfernt (bestätigt) |
 | S1 – alte Einträge in der Git-Historie | – | eigene Entscheidung (Umschreiben = Force-Push) |
 | S2 Token · S3 Lieferkette · S4 Schrift/Datenschutz | ☐ | siehe SECURITY.md |
-| Matrix-Design | ✔ | live; Regen-Korrektur (bildschirmfüllend) auf `alfred-dev` |
-| Batcomputer-/Wayne-Ergänzungen | ◐ | P2 auf `alfred-dev`: Eckmarken, Status-Pillen, Kopfzeile, Radar; nicht live |
-| ALFRED-Assistent | ◐ | P2 auf `alfred-dev`: Berichte, Systemstatus, Meldungen, ⌘K; Portfolio-Bericht folgt mit P4; nicht live |
+| Matrix-Design | ✔ | live, Regen bildschirmfüllend |
+| Batcomputer-/Wayne-Ergänzungen | ✔ | live seit 28.11.2026 (Merge `70d6711`) |
+| ALFRED-Assistent | ✔ | live seit 28.11.2026: Lage, Markt, Depot, System, Meldungen, ⌘K; Spracheingabe/KI-Dialog bewusst „nicht konfiguriert“ |
 | Globus, Militärflugzeuge, Frontlinien, Hotspots | ✔ | live (Live-Abruf adsb.lol im Browser per CORS blockiert → Bot-Stand) |
 | Flugrouten beim Anklicken | ☐ | Plan unten, kein Code |
-| Global Risk Layer | ◐ | auf `alfred-dev`: USGS + NASA EONET, Schalter an der Weltkarte (28.11.2026); nicht live |
-| Portfolio Risk Center | ◐ | auf `alfred-dev` umgesetzt und getestet (28.11.2026); nicht live |
-| Country Intelligence & Camera Wall (im Länderfenster) | ◐ | auf `alfred-dev` vollständig eingebunden (58 freigegebene Quellen); nicht live; Bot-Statusprüfung offen |
+| Global Risk Layer | ✔ | live seit 28.11.2026 (USGS + NASA EONET); weitere Quellen nur nach Prüfung |
+| Portfolio Risk Center | ✔ | live seit 28.11.2026 |
+| Country Intelligence & Camera Wall (im Länderfenster) | ◐ | live seit 28.11.2026 (58 freigegebene Quellen); offen: tägliche Bot-Statusprüfung der Streams |
 | Automatische Tests | ◐ | `tests/test_depot_keys.py` (S1); Rest TEST_PLAN.md ausstehend |
+
+## Live-Übernahme 28.11.2026
+Merge `alfred-dev` → master mit Freigabe des Eigentümers: Commit `70d6711` (Fast-Forward-freier Merge, kein Force-Push),
+Sicherung `backup/master-vor-alfred` = `5ce4046`. Pages gebaut 13:16 UTC, Live-Prüfung mit Playwright bestanden,
+Bot-Lauf 46148816499 (manuell, scan) erfolgreich. Rückweg: `git revert -m 1 70d6711`.
+
+## Nächste Schritte (je mit Freigabe)
+1. Tägliche Bot-Statusprüfung der YouTube-Streams (OFFLINE statt „Video nicht verfügbar“).
+2. P3 Flugrouten.
+3. Entscheidung Git-Historie (alte S1-Einträge in früheren Commits).
+4. Automatische Tests in GitHub Actions (`node --test`, `unittest`), S4 (Schrift lokal, Favicon), S2-Hinweis.
+5. Weitere Risk-Layer-Quelle (z. B. GDACS) nach Prüfung der Bedingungen.
 
 ## Priorisierte Reihenfolge
 
@@ -34,11 +46,11 @@ Legende: ✔ abgeschlossen · ◐ teilweise · ☐ geplant (dokumentiert) · –
 ### P1 – Kleine Korrekturen und Grundlagen (`alfred-dev`)
 4. ✔ Matrix-Regen bildschirmfüllend (auf `alfred-dev`, noch nicht live).
 5. ✔ `.playwright-mcp/` ignorieren · ✔ MCP-Vorlage um Context7 ergänzt.
-6. ✔ S3: Python-Abhängigkeiten und Actions-Versionen gepinnt (wirksam erst nach Übernahme auf master).
+6. ✔ S3: Python-Abhängigkeiten und Actions-Versionen gepinnt – live, im Bot-Lauf 46148816499 bestätigt.
 7. ◐ Playwright-Basistest manuell durchgeführt (TEST_PLAN.md); als automatischer Test in Actions noch offen.
 
 ### P2 – Phase 2 Design + ALFRED-Kern
-✔ 8.–10a. umgesetzt auf `alfred-dev` (28.11.2026), Übernahme auf master nur mit Freigabe.
+✔ 8.–10a. live seit 28.11.2026.
 8. Design-Tokens und Status-Pillen (LIVE · BOT-STAND · VERALTET · NICHT KONFIGURIERT), Gold-Akzent max. 1–2 Stellen,
    taktische Eckrahmen, Kopfzeile „WAYNE INTELLIGENCE · A.L.F.R.E.D.“ (klein, `--muted`). Keine Logos, kein Comic.
 9. ALFRED-Modul `docs/alfred.js` über kleine Schnittstelle `window.TB`: Begrüßung, Systemstatus (Alter je Datendatei),

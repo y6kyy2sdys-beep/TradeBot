@@ -22,13 +22,13 @@ vollständiges Entfernen bräuchte ein Umschreiben der Historie (Force-Push auf 
 alte Einträge werden beim nächsten Bot-Lauf gelöscht). Wirksam erst nach Merge auf master. Git-Historie: offen.
 **Stand 28.11.2026:** Secret `DEPOT_SALT` hinterlegt. Übernahme vorbereitet im lokalen Branch `release/s1-master`
 (nur Code, getestet gegen den aktuellen master-Zustand).
-**Live seit 28.11.2026** (master `a47bb68`). Die 2 alten Einträge entfernt der erste Bot-Lauf danach. Git-Historie: weiterhin offen.
+**Live seit 28.11.2026** (master `a47bb68`). **Bereinigung bestätigt** im Bot-Lauf 46148816499 (13:19 UTC): keine `depot:`-Einträge mehr. Git-Historie: weiterhin offen.
 
 ### 🟠 S2 – GitHub-Token im Browser (`localStorage.ghToken`)
 Für den Aktualisieren-Knopf. Risiko bei einer künftigen XSS-Lücke oder fremdem Gerätezugriff.
 Empfehlung: fein-granulares Token, nur dieses Repository, nur „Actions: Read and write“, kurze Laufzeit.
 
-### 🟡 S3 – Lieferkette
+### ✔ S3 – Lieferkette (behoben 28.11.2026: Pakete und Actions fest gepinnt, live)
 - `requirements.txt`: pandas, numpy, requests nur mit Untergrenze → bei jedem Lauf ggf. neue Versionen. Empfehlung: feste Versionen (+ optional Hashes).
 - Workflows: Actions per Tag (`@v4`, `@v5`) statt Commit-SHA. Empfehlung: auf SHA pinnen.
 - Vendor-Bibliotheken liegen lokal (gut, keine CDN-Abhängigkeit). Herkunft/Version in README/CHANGELOG festhalten.

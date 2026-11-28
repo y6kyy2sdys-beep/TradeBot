@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [master] – 28.11.2026 – PROJECT A.L.F.R.E.D. live
+- Merge `alfred-dev` → master (`70d6711`) mit Freigabe; Sicherung `backup/master-vor-alfred` (`5ce4046`); kein Force-Push.
+- Vor dem Push: 26 Tests grün, keine Konflikte, keine Datendateien verändert, keine Geheimnisse gefunden.
+- GitHub Pages gebaut 13:16 UTC. Live-Prüfung (Playwright, echte Adresse): alle Module, ⌘K, ALFRED, LAGEBILD (lädt nichts ohne Zustimmung),
+  Risk Layer (USGS + NASA LIVE, 86 Ereignisse), nur bekannter Favicon-Fehler.
+- Bot-Lauf 46148816499 (manuell, scan): erfolgreich; Actions per SHA, Pakete exakt gepinnt (yfinance 1.7.0, pandas 3.1.1, numpy 2.5.5,
+  requests 2.34.2, anthropic 2.4.0); **S1-Bereinigung bestätigt** – keine `depot:`-Einträge mehr in `state/signals.json`.
+  Bekannter, älterer Fehler unverändert: Wikidata-Ausweichabfrage gelegentlich 504 (abgefangen).
+- Beobachtung: GitHub löst die geplanten Läufe am 28.11. sehr unregelmäßig aus (unabhängig von dieser Übernahme).
+
 ## [alfred-dev] – 28.11.2026 – P4: Global Risk Layer
 - Neu `docs/risklayer.js` (`window.TB_risklayer`): einheitliche Anbieter-Schnittstelle und Ereignisformat laut PROJECT_ALFRED.md.
   Quellen nach Lizenz-/CORS-Prüfung: USGS Erdbeben M4.5+ (7 Tage, gemeinfrei) und NASA EONET v3 (offene Naturereignisse). Kein Schlüssel, keine Kosten.
