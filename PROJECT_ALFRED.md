@@ -108,6 +108,6 @@ Ohne geeignete Quelle erscheint transparent: „Keine geprüfte öffentliche Que
 Ersetzt die frühere Doomsday-Animation. Verbindlich: keine erfundenen Daten, Prognosen oder Eintrittswahrscheinlichkeiten.
 - Wirtschaft: IMF World Economic Outlook (Ist + IMF-Prognose) bis zum letzten Datenjahr – danach keine Werte, sichtbar gekennzeichnet.
 - Geopolitik: nur heutiger Stand (Schlagzeilen-Zählung, Krisenregionen 48 h), keine Fortschreibung.
-- Klima: nicht konfiguriert; mögliche Quellen (IPCC AR6, World Bank CCKP) erst nach Lizenz-/Abrufprüfung, dann als Projektion Dritter gekennzeichnet.
+- Klima (seit 28.11.2026): CMIP6-Projektionen der Weltbank (CCKP, CC BY 4.0), Periodenmittel je Szenario, als Projektion Dritter ohne Eintrittswahrscheinlichkeit gekennzeichnet.
 - Das Szenariomodell der Weltkarte ist seit 28.11.2026 als „⚠ SZENARIO-SPIEL (FIKTION)“ abgetrennt (Standard aus, Warnbanner, beginnt erst
   nach den IMF-Daten, keine Abschläge auf IMF-Jahre) und wird von CHRONOS und ALFRED nicht verwendet.

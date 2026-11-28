@@ -45,3 +45,28 @@ test("Länderreihe 2026–2050: nach dem Datenende null, nie fortgeschrieben", (
   assert.ok(s.filter(([y]) => y > 2030).every(([, v]) => v === null));
   assert.ok(C.seriesFor(W, "NGDP_RPCH", "XXX").every(([, v]) => v === null));
 });
+
+test("Klima: Jahr → 20-Jahres-Periode, außerhalb keine", () => {
+  assert.equal(C.periodFor(2026), "2020-2039"); assert.equal(C.periodFor(2039), "2020-2039");
+  assert.equal(C.periodFor(2040), "2040-2059"); assert.equal(C.periodFor(2050), "2040-2059");
+  assert.equal(C.periodFor(2019), null); assert.equal(C.periodFor(2060), null);
+});
+
+test("Klima: nur vorhandene Werte, Spanne je Land, Ländergruppen-Filter", () => {
+  const CL = { daten: { ssp245: { "2040-2059": { DEU: [1.34, 0.86, 2.37], USA: [1.91, 1.3, 2.6], EUQ: [1.5, 1, 2], XXX: [null, null, null] } } } };
+  assert.deepEqual(C.climateValues(CL, "ssp245", "2040-2059", new Set(["DEU", "USA"])).sort(), [["DEU", 1.34], ["USA", 1.91]]);
+  assert.deepEqual(C.climateOf(CL, "ssp245", "2040-2059", "DEU"), { median: 1.34, p10: 0.86, p90: 2.37 });
+  assert.equal(C.climateOf(CL, "ssp585", "2040-2059", "DEU"), null);   // anderes Szenario nicht vorhanden → nichts geschätzt
+  assert.deepEqual(C.climateValues(CL, "ssp245", "2020-2039"), []);
+});
+
+test("Klimadatei: Quelle, Lizenz, Bezugszeitraum und Vollständigkeit", () => {
+  const vm = require("vm"), fs = require("fs"), ctx = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require("path").join(__dirname, "../docs/climate.js"), "utf8"), ctx);
+  const CL = ctx.window.CLIMATE;
+  assert.equal(CL.bezug, "1995-2014"); assert.match(CL.lizenz, /CC BY 4\.0/);
+  for (const ssp of ["ssp126", "ssp245", "ssp585"]) for (const per of ["2020-2039", "2040-2059"]) {
+    const d = CL.daten[ssp][per]; assert.ok(Object.keys(d).length > 200, `${ssp} ${per}`);
+    for (const v of Object.values(d)) assert.ok(v[1] == null || v[2] == null || (v[1] <= v[0] && v[0] <= v[2]), "Median liegt in der Spanne");
+  }
+});

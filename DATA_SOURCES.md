@@ -39,6 +39,11 @@ Geprüft und nicht genutzt: `globe.adsb.lol/data/traces` (für Programme gesperr
 | NASA EONET v3 `events?status=open&days=14` | offene Naturereignisse (Waldbrand, Sturm, Vulkan, Flut …) | Browser, nur bei eingeschalteter Ebene | 30 min | nein | offene NASA-Daten, EONET-Disclaimer; CORS `*` geprüft; Eisberge/Wasserfarbe ausgelassen, Erdbeben nur von USGS |
 | GDACS (UN/EU) | Katastrophenwarnungen | – | – | nein | erreichbar, CORS `*`; **Nutzungsbedingungen nicht geprüft → nicht eingebunden** (Kandidat) |
 
+## Klimaprojektionen CHRONOS (28.11.2026, `alfred-dev`)
+| Quelle | Inhalt | Abruf | Takt | Schlüssel | Lizenz |
+|---|---|---|---|---|---|
+| World Bank CCKP, CMIP6 (`cckpapi.worldbank.org/cckp/v1/cmip6-x0.25_climatology_tas_anomaly_annual_…`) | Erwärmung ggü. 1995–2014, 2020–2039/2040–2059, Median/p10/p90, SSP1-2.6/2-4.5/5-8.5 | `bot/climate.py` von Hand | einmalig (Daten statisch) | nein | CC BY 4.0 – The World Bank |
+
 ## Stream-Prüfung Camera Wall (28.11.2026, `alfred-dev`)
 | Quelle | Zweck | Abruf | Takt | Schlüssel | Bemerkung |
 |---|---|---|---|---|---|

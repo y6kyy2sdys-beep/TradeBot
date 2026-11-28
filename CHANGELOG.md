@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – CHRONOS: Reiter KLIMA mit CMIP6-Projektionen
+- Quelle geprüft: World Bank Climate Change Knowledge Portal (CCKP), CMIP6 auf Länder umgerechnet; Lizenz CC BY 4.0 laut Nutzungsbedingungen
+  des Portals; öffentliche Schnittstelle ohne Schlüssel; Bezugszeitraum 1995–2014 laut Metadaten (im Browser gelesen, da automatische Abrufe blockiert).
+- Neu `bot/climate.py` (nur Standardbibliothek, einmaliger Abruf von Hand) → `docs/climate.js` (34 KB): Erwärmung der Jahresmitteltemperatur,
+  20-Jahres-Mittel 2020–2039 / 2040–2059, Median + 10./90. Perzentil, SSP1-2.6 / SSP2-4.5 / SSP5-8.5, 246 Länder.
+- `chronos.js`: Reiter KLIMA mit gleichrangiger Szenario-Auswahl, Jahr → Periodenmittel (ausdrücklich kein Jahreswert), einfarbige Wärmeskala,
+  ALFRED mit Land (Median + Modellspanne), Median aller Länder, Länder ≥ +2 °C; Kennzeichnung „Projektion Dritter, keine Eintrittswahrscheinlichkeit“.
+- Tests: 3 neue in `tests/chronos.test.js` (Periodenzuordnung, nur vorhandene Werte, Datei-Vollständigkeit, Median in Spanne). Playwright geprüft.
+
 ## [master] – 28.11.2026 – P3 Flugspuren live
 - Fast-Forward `79a512f..9dc25c6` mit Freigabe; Sicherung `backup/master-vor-p3` (`79a512f`); kein Force-Push.
 - Flugzeug-Bot manuell gestartet (46155201444): 55 Flugzeuge, 55 Spuren mit erstem Punkt; Aufzeichnung läuft mit jedem weiteren Abruf.
