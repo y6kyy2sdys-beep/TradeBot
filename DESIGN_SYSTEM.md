@@ -54,6 +54,10 @@ Sicherung des heutigen Designs: Branch `backup/design-matrix-v1` (Stand vor alle
 | Zeitachse | Band „IMF-Daten“ grün, Jahre ohne Daten schraffiert + Text; Knopf grün; Tastatur ← → Leertaste Esc |
 | Bewegung | Kamerafahrten 1,3–2,2 s ease-in-out; Eigendrehung ≤ 30 Bilder/s; bei reduzierter Bewegung keine Drehung/Fahrt |
 
+## Fiktion kennzeichnen (verbindlich)
+Eigene Modellrechnungen oder Gedankenspiele erscheinen nur in einem ausdrücklich eingeschalteten Modus mit gestricheltem, gelb schraffiertem
+Warnbanner, dem Kennzeichen „FIKTION“ an jeder Zahl-Anzeige und ohne Veränderung belegter Daten.
+
 ## Verboten
 Comic-Elemente, Fledermaus-Symbole, zusätzliche Dauer-Animationen, neue Hintergrundfarben, Glassmorphism-Effekte,
 Schriftwechsel im Fließtext.

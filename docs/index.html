@@ -588,6 +588,12 @@ section.panel:hover { border-color: var(--line-strong); }
 .mapcard.camwide { width: min(760px, calc(100% - 16px)); }
 body.app .mapcard.cam { max-height: none; }
 @media (max-width: 600px) { .cw-grid.g2, .cw-grid.g4 { grid-template-columns: 1fr; } }
+/* Weltkarte: Szenario-Spiel als klar abgetrennte Fiktion (Entscheidung 28.11.2026) */
+.ficbtn { color: var(--warn); border-color: rgba(250,178,25,.45); letter-spacing: .1em; }
+.ficbtn[aria-pressed="true"] { background: var(--warn); color: #000; border-color: var(--warn); }
+.ficbanner { margin: 8px 0; padding: 8px 12px; border: 1px dashed var(--warn); background: repeating-linear-gradient(45deg, rgba(250,178,25,.06) 0 8px, transparent 8px 16px);
+  color: var(--text); font-size: calc(12px * var(--fs)); line-height: 1.5; }
+.ficbanner b:first-child { color: var(--warn); letter-spacing: .14em; font-weight: normal; margin-right: 8px; }
 /* Camera Wall – Variante A „Noir“: goldene Ecke oben links, grüne unten rechts */
 .cw-tile::before { border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); width: 10px; height: 10px; }
 .cw-tile::after { content: ""; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--matrix); border-right: 2px solid var(--matrix); pointer-events: none; }
@@ -844,13 +850,15 @@ body.app #alfred { right: 8px; left: 8px; bottom: 8px; width: auto; }
   </section>
 
   <section class="panel" aria-labelledby="h-world">
-    <h2 id="h-world">// Weltlage<span class="sub">Eskalation, Wirtschaft &amp; Inflation · Land anklicken für Details · Szenarien bis 2050</span></h2>
+    <h2 id="h-world">// Weltlage<span class="sub">Eskalation, Wirtschaft &amp; Inflation · Land anklicken für Details · IMF-Daten · Szenario-Spiel optional (Fiktion)</span></h2>
     <div class="controls">
       <span class="seg" role="group" aria-label="Kartenmodus" id="mapMode"></span>
-      <span class="seg" role="group" aria-label="Szenario" id="mapScen"></span>
+      <button type="button" class="tbtn ficbtn" id="ficBtn" aria-pressed="false" title="Eigene Modellrechnung bis 2050 – Fiktion, keine Prognose">⚠ SZENARIO-SPIEL (FIKTION)</button>
+      <span class="seg" role="group" aria-label="Szenario (Fiktion)" id="mapScen" hidden></span>
       <button type="button" class="doombtn" id="doomBtn" aria-pressed="false" title="Frühwarnsystem: Militärflugzeuge und Konflikt-Meldungslage">☢ DOOMSDAY</button>
       <button type="button" class="rlbtn" id="riskLayerBtn" aria-pressed="false" title="Global Risk Layer: Erdbeben (USGS) und Naturereignisse (NASA EONET) – lädt erst beim Einschalten">◎ RISK LAYER</button>
     </div>
+    <div class="ficbanner" id="ficBanner" role="note" hidden><b>⚠ FIKTION – SZENARIO-SPIEL</b> Ab dem ersten Jahr nach den IMF-Daten eine eigene Modellrechnung des Dashboards, <b>keine Prognose</b>. „Stagnation“ und „Dystopie“ sind ausgedachte Gedankenspiele. Die IMF-Werte selbst bleiben unverändert. ALFRED und PROJECT CHRONOS verwenden diese Werte nicht.</div>
     <div class="yearbox" id="yearBox">
       <button type="button" class="tbtn" id="yearPlay" aria-label="Jahre abspielen">▶</button>
       <b id="yearVal">2026</b>
@@ -1418,6 +1426,7 @@ function renderComCards() {
     const raw = ind(code, iso); if (!raw) return null;
     const out = YRS.map(y => { const i = W.years.indexOf(y); return i >= 0 ? raw[i] : null; });
     const L = lastIdx(out); if (L < 0) return out;
+    if (!scen) return cache[key] = out;   // ohne Szenario-Spiel: ausschließlich IMF-Werte, keine Fortschreibung
     const recent = out.slice(Math.max(0, L - 2), L + 1).filter(v => v != null);
     const gL = recent.reduce((a, b) => a + b, 0) / recent.length;
     const ppp = latestReal("PPPPC", iso), adv = ppp && ppp.v > 40000;
@@ -1436,12 +1445,7 @@ function renderComCards() {
         out[i] = v;
       } else out[i] = null;
     }
-    if (scen === "dystopie") {       // Jahre 1–5: plausibles Abwärtsszenario (Schockgrößen ähnlich IMF-Risikoszenarien)
-      const e = (W.escalation[iso] || {}).stufe || 0, debt = latestReal("GGXWDG_NGDP", iso);
-      for (let i = 0; i <= L; i++) { const k = YRS[i] - NOW; if (k < 1) continue;
-        if (code === "NGDP_RPCH") out[i] -= [0, .4, .8, 1, .9, .8][Math.min(5, k)] + (e >= 3 ? .5 : 0) + (debt && debt.v > 100 ? .2 : 0);
-        if (code === "PCPIPCH") out[i] += [0, .5, .9, 1, .8, .6][Math.min(5, k)]; }
-    }
+    // (Entscheidung 28.11.2026: keine Abschläge mehr auf die IMF-Jahre – das Szenario-Spiel beginnt erst nach den IMF-Daten)
     return cache[key] = out;
   }
   function gdpIndex(iso, scen) {     // reales BIP, 2025 = 100
@@ -1464,13 +1468,15 @@ function renderComCards() {
   const GOLD_BINS = { goldr: [100, 500, 2000], goldp: [50, 100, 200] };
   const goldColor = (v, m) => v == null ? NODATA : GOLD_RAMP[GOLD_BINS[m].filter(b => v >= b).length];
   const rankOf = (obj, iso) => Object.entries(obj).sort((a, b) => b[1] - a[1]).findIndex(([k]) => k === iso) + 1;
-  const ui = { mode: store.get("mapMode") || "esc", scen: store.get("mapScen") || "basis", year: Math.min(2050, NOW), sel: "DEU" };
+  const ui = { mode: store.get("mapMode") || "esc", scen: store.get("mapScen") || "basis", fic: store.get("mapFiction") === "1", year: NOW, sel: "DEU" };
+  const maxYear = () => ui.fic ? 2050 : lastImfYear;   // ohne Szenario-Spiel endet die Zeitachse beim letzten IMF-Jahr
+  ui.year = Math.min(ui.year, maxYear());
   if (!MODES[ui.mode]) ui.mode = "esc"; if (!SCEN[ui.scen]) ui.scen = "basis";
   const value = iso => {
     if (ui.mode === "esc") return (W.escalation[iso] || {}).stufe ?? 0;
     if (ui.mode === "goldr") return GOLD.reserven[iso] ?? null;
     if (ui.mode === "goldp") return GOLD.foerderung[iso] ?? null;
-    const a = proj(ui.mode === "gdp" ? "NGDP_RPCH" : "PCPIPCH", iso, ui.scen);
+    const a = proj(ui.mode === "gdp" ? "NGDP_RPCH" : "PCPIPCH", iso, ui.fic ? ui.scen : null);
     return a ? a[YRS.indexOf(ui.year)] : null;
   };
   const color = iso => ui.mode === "esc" ? ESC[value(iso)] : ui.mode === "gdp" ? growthColor(value(iso)) : ui.mode === "infl" ? inflColor(value(iso)) : goldColor(value(iso), ui.mode);
@@ -1776,9 +1782,14 @@ function renderComCards() {
   playBtn.addEventListener("click", () => {
     if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; return; }
     if (STATIC(ui.mode)) { ui.mode = "gdp"; }
-    if (ui.year >= 2050) ui.year = 2000;
+    if (ui.year >= maxYear()) ui.year = 2000;
     playBtn.textContent = "❚❚";
-    timer = setInterval(() => { ui.year++; yr.value = ui.year; render(); if (ui.year >= 2050) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; } }, 220);
+    timer = setInterval(() => { ui.year++; yr.value = ui.year; render(); if (ui.year >= maxYear()) { clearInterval(timer); timer = null; playBtn.textContent = "▶"; } }, 220);
+  });
+  document.getElementById("ficBtn").addEventListener("click", () => {
+    ui.fic = !ui.fic; store.set("mapFiction", ui.fic ? "1" : "0");
+    if (!ui.fic && ui.year > lastImfYear) ui.year = lastImfYear;
+    render();
   });
 
   // ---- Balken: wichtigste Volkswirtschaften
@@ -1805,7 +1816,7 @@ function renderComCards() {
       g += `<text x="${x + bwid / 2 + 4}" y="${H - bot + 12}" text-anchor="end" transform="rotate(-45 ${x + bwid / 2 + 4} ${H - bot + 12})">${esc(BAR[k] || nameOf(k).slice(0, 9))}</text>`;
     });
     const title = ui.mode === "goldr" ? "Top 12: Goldreserven der Zentralbanken in Tonnen" : ui.mode === "goldp" ? "Top 12: Goldförderung in Tonnen pro Jahr"
-      : ui.mode === "esc" ? "Eskalationsstufe (0–4), aktuell" : `${ui.mode === "gdp" ? "BIP-Wachstum" : "Inflation"} ${ui.year} in %${ui.year > lastImfYear ? " · Szenario " + SCEN[ui.scen] : ui.year > NOW ? " · IMF-Prognose" : ""}`;
+      : ui.mode === "esc" ? "Eskalationsstufe (0–4), aktuell" : `${ui.mode === "gdp" ? "BIP-Wachstum" : "Inflation"} ${ui.year} in %${ui.year > lastImfYear ? " · FIKTION (Szenario-Spiel " + SCEN[ui.scen] + ")" : ui.year > NOW ? " · IMF-Prognose" : ""}`;
     document.getElementById("bars").innerHTML = `<div class="muted" style="font-size:calc(12px * var(--fs))">${esc(title)}</div><svg viewBox="0 0 ${w} ${H}" aria-label="${esc(title)}">${g}</svg>`;
     document.querySelectorAll("#bars rect").forEach(r => r.addEventListener("click", () => pick(r.dataset.iso)));
   }
@@ -1912,7 +1923,8 @@ function renderComCards() {
     const lur = latestReal("LUR", iso), debt = latestReal("GGXWDG_NGDP", iso), size = latestReal("NGDPD", iso);
     const infl = ind("PCPIPCH", iso); let pp = null;
     if (infl) { pp = 100; for (let y = 2021; y <= Math.min(NOW, W.years[W.years.length - 1]); y++) { const v = infl[W.years.indexOf(y)]; if (v != null) pp /= 1 + v / 100; } }
-    const series = Object.keys(SCEN).map(sc => gdpIndex(iso, sc));
+    const series = ui.fic ? Object.keys(SCEN).map(sc => gdpIndex(iso, sc)) : [gdpIndex(iso, null)];
+    const serLabels = ui.fic ? Object.values(SCEN) : ["IMF-Prognose"];
     let chart = "";
     if (series[0]) {
       const w = 420, h = 130, l = 34, r = 8, t = 8, b = 18;
@@ -1922,13 +1934,13 @@ function renderComCards() {
       const fc = X(YRS.indexOf(lastImfYear));
       chart = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;margin-top:8px" aria-label="BIP-Index bis 2050">
         <rect x="${fc}" y="${t}" width="${w - r - fc}" height="${h - t - b}" fill="rgba(250,178,25,.06)"/>
-        <text x="${fc + 4}" y="${t + 10}" fill="#fab219" font-size="12" font-family="Share Tech Mono">SZENARIO</text>
+        <text x="${fc + 4}" y="${t + 10}" fill="#fab219" font-size="12" font-family="Share Tech Mono">${ui.fic ? "FIKTION" : "KEINE DATEN"}</text>
         ${[mn, (mn + mx) / 2, mx].map(v => `<text x="2" y="${Y(v) + 3}" fill="${css("--muted")}" font-size="12" font-family="Share Tech Mono">${nf(v, 0)}</text>`).join("")}
         ${[2000, 2025, 2050].map(y => `<text x="${X(YRS.indexOf(y))}" y="${h - 4}" fill="${css("--muted")}" font-size="12" text-anchor="middle" font-family="Share Tech Mono">${y}</text>`).join("")}
         ${series.map((s, k) => `<polyline fill="none" stroke="${cols[k]}" stroke-width="2" points="${s.map((v, i) => v == null || YRS[i] < NOW ? "" : `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>`).join("")}
         <polyline fill="none" stroke="${css("--text")}" stroke-width="2" points="${series[0].map((v, i) => v == null || YRS[i] > NOW ? "" : `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>
         <line x1="${X(YRS.indexOf(ui.year))}" x2="${X(YRS.indexOf(ui.year))}" y1="${t}" y2="${h - b}" stroke="#00ff41" stroke-dasharray="3 3"/>
-      </svg><div class="maplegend"><span><i style="background:${css("--text")}"></i>Ist</span>${Object.values(SCEN).map((n, k) => `<span><i style="background:${cols[k]}"></i>${n}: ${nf(series[k][YRS.length - 1], 0)} (2050)</span>`).join("")}</div>`;
+      </svg><div class="maplegend"><span><i style="background:${css("--text")}"></i>Ist</span>${serLabels.map((n, k) => { const s = series[k]; let j = s.length - 1; while (j > 0 && s[j] == null) j--; return `<span><i style="background:${cols[k]}"></i>${n}: ${nf(s[j], 0)} (${YRS[j]})</span>`; }).join("")}</div>`;
     }
     const nowInf = W.inflation_now[iso];
     document.getElementById("detail").innerHTML = `<h3>${esc(nameOf(iso))}</h3>
@@ -1950,7 +1962,7 @@ function renderComCards() {
         <span>Goldreserven</span><span>${GOLD.reserven[iso] ? nf(GOLD.reserven[iso], 0) + " t (Platz " + rankOf(GOLD.reserven, iso) + ")" : "–"}</span>
         <span>Goldförderung</span><span>${GOLD.foerderung[iso] ? nf(GOLD.foerderung[iso], 0) + " t/Jahr (Platz " + rankOf(GOLD.foerderung, iso) + ")" : "–"}</span>
       </div>
-      <div class="muted" style="margin-top:8px;font-size:calc(12px * var(--fs))">Reales BIP (2025 = 100) – bis ${lastImfYear} IMF, danach Szenarien:</div>${chart}`;
+      <div class="muted" style="margin-top:8px;font-size:calc(12px * var(--fs))">Reales BIP (2025 = 100) – bis ${lastImfYear} IMF${ui.fic ? ", danach Szenario-Spiel (Fiktion, keine Prognose)" : "; danach keine Daten"}:</div>${chart}`;
   }
 
   document.getElementById("mapLegend").addEventListener("change", e => { if (e.target.id === "acInt") { store.set("acInt", e.target.value); startLive(); } });
@@ -2134,7 +2146,7 @@ function renderComCards() {
     return REAL.filter(ev => k >= (ev.from || 1) && ev.test(iso))
       .map(ev => [ev, ev.w + hash01(iso + ev.id) * 3]).sort((a, b) => b[1] - a[1]).map(([ev]) => ev);
   }
-  const dystoOn = () => ui.scen === "dystopie" && ui.year > NOW;
+  const dystoOn = () => ui.fic && ui.scen === "dystopie" && ui.year > lastImfYear;
   const dystoAt = (code, iso) => { const a = proj(code, iso, "dystopie"); return a ? a[YRS.indexOf(ui.year)] : null; };
   const ART = { USA: "den USA", NLD: "den Niederlanden", PHL: "den Philippinen", ARE: "den Vereinigten Arabischen Emiraten", CHE: "der Schweiz", TUR: "der Türkei",
     UKR: "der Ukraine", SVK: "der Slowakei", MNG: "der Mongolei", DOM: "der Dominikanischen Republik", CAF: "der Zentralafrikanischen Republik", CZE: "Tschechien" };
@@ -2221,16 +2233,23 @@ function renderComCards() {
   function outlook() {
     if (ui.mode === "goldr" || ui.mode === "goldp") return goldBranch();
     const ki = W.ausblick_2050 || {};
-    const model = `Bis ${lastImfYear}: IMF-Prognose. Danach Modell (keine Vorhersage): <b>Basis</b> = Wachstum nähert sich dem langfristigen Potenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = bis ${NOW + 5} plausibles Abwärtsszenario auf Basis heutiger Risiken, danach fiktiv: Schulden-/Konfliktkrise 2033, Klimaschock 2041, dauerhaft −2 Prozentpunkte und Inflationsschub.`;
+    if (!ui.fic) { document.getElementById("outlook").innerHTML = `<div class="muted">Daten: IMF World Economic Outlook bis ${lastImfYear} (Ist-Werte und IMF-Prognose). Keine eigene Fortschreibung. Ein Gedankenspiel bis 2050 gibt es nur im Modus „⚠ SZENARIO-SPIEL (FIKTION)“.</div>`; return; }
+    const model = `<b>FIKTION:</b> Bis ${lastImfYear} unveränderte IMF-Werte. Danach eigene Modellrechnung (keine Prognose): <b>Basis</b> = Wachstum nähert sich einem angenommenen Langfristpotenzial; <b>Stagnation</b> = dauerhaft −1,2 Prozentpunkte und höhere Inflation; <b>Dystopie</b> = ausgedachte Krisen (Schulden-/Konfliktkrise 2033, Klimaschock 2041), dauerhaft −2 Prozentpunkte und Inflationsschub.`;
     const txt = ui.scen === "dystopie" ? ki.dystopie : ui.scen === "basis" ? ki.basis : null;
-    document.getElementById("outlook").innerHTML = (dystoOn() ? dystoWorld() : ui.scen === "dystopie" ? `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO</span> Jahresregler auf ein Jahr nach ${NOW} stellen, um das fiktive Lagebild der Welt und der Länder zu sehen.</div>` : "") + (txt ? `<div><b>Ausblick 2050 · ${SCEN[ui.scen]}</b> (KI): ${esc(txt)}</div>` : "") + `<div class="muted">${model}</div>`;
+    document.getElementById("outlook").innerHTML = (dystoOn() ? dystoWorld() : ui.scen === "dystopie" ? `<div class="dysto"><span class="dtag">FIKTIVES SZENARIO</span> Jahresregler auf ein Jahr nach ${lastImfYear} stellen, um das fiktive Lagebild der Welt und der Länder zu sehen.</div>` : "") + (txt ? `<div><b>Ausblick 2050 · ${SCEN[ui.scen]}</b> (KI): ${esc(txt)}</div>` : "") + `<div class="muted">${model}</div>`;
   }
 
   function render() {
     ["mapMode", "mapScen"].forEach(id => document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute("aria-pressed", b.dataset.k === (id === "mapMode" ? ui.mode : ui.scen))));
     document.getElementById("yearBox").style.opacity = STATIC(ui.mode) ? .4 : 1;
     document.getElementById("yearVal").textContent = STATIC(ui.mode) ? "JETZT" : ui.year;
+    if (ui.year > maxYear()) ui.year = maxYear();
+    yr.max = maxYear(); yr.value = ui.year;
     document.getElementById("yearTag").hidden = STATIC(ui.mode) || ui.year <= lastImfYear;
+    document.getElementById("yearTag").textContent = "FIKTION";
+    document.getElementById("ficBtn").setAttribute("aria-pressed", ui.fic);
+    document.getElementById("mapScen").hidden = !ui.fic;
+    document.getElementById("ficBanner").hidden = !ui.fic;
     yr.disabled = STATIC(ui.mode);
     paths.attr("fill", f => doom ? "#07120b" : color(f.iso)).classed("sel", f => f.iso === ui.sel)
       .classed("hot", f => ui.mode === "esc" && !reduced && (W.escalation[f.iso] || {}).stufe >= 3);

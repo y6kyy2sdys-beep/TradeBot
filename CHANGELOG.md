@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [alfred-dev] – 28.11.2026 – Szenariomodell der Weltkarte als Fiktion abgetrennt
+Entscheidung des Eigentümers: „Als Fiktion abtrennen“.
+- Standard: Weltkarte, Balken und Länderdiagramm zeigen nur IMF-Daten (Ist + IMF-Prognose bis 2030); Jahresregler endet bei 2030;
+  Ausblick-Text nennt die Datenbasis. Keine eigene Fortschreibung.
+- Neuer Modus „⚠ SZENARIO-SPIEL (FIKTION)“ (Standard aus, Wahl gemerkt): erst dann Szenario-Umschalter Basis/Stagnation/Dystopie,
+  Regler bis 2050, Warnbanner, Kennzeichen „FIKTION“ in Regler, Balkenüberschrift und Diagramm; fiktive Weltlage-Texte nur hier.
+- **Keine Abschläge mehr auf die IMF-Jahre:** Das Dystopie-Szenario veränderte bisher auch 2027–2030; die Fiktion beginnt jetzt erst nach den IMF-Daten
+  (geprüft: Dystopie 2028 = IMF-Wert, z. B. Deutschland +1,1 %).
+- ALFRED und PROJECT CHRONOS verwenden das Szenario-Spiel nicht.
+
 ## [master] – 28.11.2026 – Stream-Prüfung live
 - Fast-Forward `c32bd96..6e05945` mit Freigabe; Sicherung `backup/master-vor-streamcheck` (`c32bd96`); kein Force-Push.
 - Erster Lauf (manuell, 46153832833, mit `YT_API_KEY`): 58 Quellen – 26 YouTube live mit Video-ID, 2 ohne laufenden Livestream

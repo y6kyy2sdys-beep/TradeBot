@@ -30,7 +30,7 @@ Bot-Lauf 46148816499 (manuell, scan) erfolgreich. Rückweg: `git revert -m 1 70d
 
 ## Redesign Variante A „Noir“ – live seit 28.11.2026 (`c32bd96`)
 Lagezentrale „GLOBAL INTELLIGENCE NETWORK“ und PROJECT CHRONOS; Sicherung `backup/master-vor-noir`.
-Offen: Entscheidung über das alte Szenariomodell der Weltkarte (Basis/Stagnation/Dystopie bis 2050).
+Szenariomodell der Weltkarte: als „SZENARIO-SPIEL (FIKTION)“ abgetrennt (28.11.2026, `alfred-dev`).
 
 ## Nächste Schritte (je mit Freigabe)
 1. ✔ Stream-Prüfung live seit 28.11.2026 (alle 8 h, YouTube Data API); erster Lauf: 26 live, 2 ohne Livestream, 30 Bilder ok.

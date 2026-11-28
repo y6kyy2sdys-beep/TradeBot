@@ -109,5 +109,5 @@ Ersetzt die frühere Doomsday-Animation. Verbindlich: keine erfundenen Daten, Pr
 - Wirtschaft: IMF World Economic Outlook (Ist + IMF-Prognose) bis zum letzten Datenjahr – danach keine Werte, sichtbar gekennzeichnet.
 - Geopolitik: nur heutiger Stand (Schlagzeilen-Zählung, Krisenregionen 48 h), keine Fortschreibung.
 - Klima: nicht konfiguriert; mögliche Quellen (IPCC AR6, World Bank CCKP) erst nach Lizenz-/Abrufprüfung, dann als Projektion Dritter gekennzeichnet.
-- Das interne Szenariomodell der Weltkarte (Basis/Stagnation/Dystopie bis 2050) bleibt dort unverändert, wird in CHRONOS aber nicht verwendet –
-  Entscheidung über seine Zukunft steht aus.
+- Das Szenariomodell der Weltkarte ist seit 28.11.2026 als „⚠ SZENARIO-SPIEL (FIKTION)“ abgetrennt (Standard aus, Warnbanner, beginnt erst
+  nach den IMF-Daten, keine Abschläge auf IMF-Jahre) und wird von CHRONOS und ALFRED nicht verwendet.
